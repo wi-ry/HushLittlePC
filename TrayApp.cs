@@ -1,0 +1,140 @@
+using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
+
+namespace HushLittlePC;
+
+class TrayApp : ApplicationContext
+{
+    readonly Settings _settings = Settings.Load();
+    readonly AudioController _audio = new();
+    readonly NotifyIcon _tray = new();
+    readonly ToolStripMenuItem _enabledItem = new("Enabled") { CheckOnClick = false };
+    readonly System.Windows.Forms.Timer _timer = new() { Interval = 1000 };
+    SettingsForm? _form;
+    bool _mutedByUs;
+
+    public TrayApp()
+    {
+        var menu = new ContextMenuStrip();
+        _enabledItem.Click += (_, _) => Toggle();
+        menu.Items.Add(_enabledItem);
+        menu.Items.Add("Mute now", null, (_, _) => { _audio.SetMute(true); });
+        menu.Items.Add("Settings...", null, (_, _) => ShowSettings());
+        menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add("Exit", null, (_, _) => ExitApp());
+
+        _tray.ContextMenuStrip = menu;
+        _tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) Toggle(); };
+        _tray.Visible = true;
+
+        _timer.Tick += (_, _) => Tick();
+        _timer.Start();
+
+        StartupManager.Set(_settings.RunOnStartup);
+        RefreshUi();
+    }
+
+    void Toggle()
+    {
+        _settings.Enabled = !_settings.Enabled;
+        _settings.Save();
+        RefreshUi();
+    }
+
+    void Tick()
+    {
+        if (!_settings.Enabled) return;
+
+        var idle = IdleTime.Get();
+        if (idle >= TimeSpan.FromMinutes(_settings.IdleMinutes))
+        {
+            if (_mutedByUs || _audio.IsMuted) return;
+            if (_settings.SkipWhileAudioPlaying && _audio.IsPlaying) return;
+
+            _audio.SetMute(true);
+            _mutedByUs = true;
+            if (_settings.ShowNotification)
+                _tray.ShowBalloonTip(2000, "HushLittlePC",
+                    $"Muted after {_settings.IdleMinutes} min of inactivity.", ToolTipIcon.Info);
+        }
+        else if (_mutedByUs)
+        {
+            // User is back
+            if (_settings.UnmuteOnActivity && _audio.IsMuted) _audio.SetMute(false);
+            _mutedByUs = false;
+        }
+    }
+
+    void ShowSettings()
+    {
+        if (_form is { IsDisposed: false }) { _form.Activate(); return; }
+
+        using (_form = new SettingsForm(_settings))
+        {
+            // Modal, so OK/Cancel set DialogResult and close it. The 1-second idle
+            // timer keeps running while it's open.
+            if (_form.ShowDialog() == DialogResult.OK)
+            {
+                _settings.Save();
+                StartupManager.Set(_settings.RunOnStartup);
+                RefreshUi();
+            }
+        }
+        _form = null;
+    }
+
+    void RefreshUi()
+    {
+        _enabledItem.Checked = _settings.Enabled;
+        var old = _tray.Icon;
+        _tray.Icon = MakeIcon(_settings.Enabled);
+        old?.Dispose();
+        _tray.Text = _settings.Enabled
+            ? $"HushLittlePC: ON ({_settings.IdleMinutes} min)"
+            : "HushLittlePC: OFF";
+    }
+
+    [DllImport("user32.dll")] static extern bool DestroyIcon(IntPtr handle);
+
+    internal static Icon MakeIcon(bool enabled)
+    {
+        using var bmp = new Bitmap(32, 32);
+        using (var g = Graphics.FromImage(bmp))
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            var color = enabled ? Color.FromArgb(46, 160, 67) : Color.FromArgb(140, 140, 140);
+            using var brush = new SolidBrush(color);
+            using var pen = new Pen(color, 3f);
+
+            // speaker body
+            g.FillPolygon(brush, new[] {
+                new Point(3, 12), new Point(10, 12), new Point(18, 5),
+                new Point(18, 27), new Point(10, 20), new Point(3, 20) });
+
+            if (enabled)
+            {
+                g.DrawArc(pen, 14, 9, 10, 14, -60, 120);
+                g.DrawArc(pen, 12, 4, 18, 24, -60, 120);
+            }
+            else
+            {
+                using var red = new Pen(Color.FromArgb(200, 50, 50), 3.5f);
+                g.DrawLine(red, 22, 11, 30, 21);
+                g.DrawLine(red, 30, 11, 22, 21);
+            }
+        }
+        IntPtr h = bmp.GetHicon();
+        var icon = (Icon)Icon.FromHandle(h).Clone();
+        DestroyIcon(h);
+        return icon;
+    }
+
+    void ExitApp()
+    {
+        _timer.Stop();
+        _tray.Visible = false;
+        _tray.Dispose();
+        _audio.Dispose();
+        Application.Exit();
+    }
+}
