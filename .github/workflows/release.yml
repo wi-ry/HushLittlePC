@@ -132,7 +132,7 @@ jobs:
           $msix = Get-ChildItem -Path artifacts/msix -Filter *.msix | Select-Object -First 1
 
           # 1. Upload the package, leave the submission as a draft
-          Invoke-Store publish $msix.FullName -id $env:STORE_ID --noCommit -v --uploadTimeout 300
+          Invoke-Store publish $msix.FullName -id $env:STORE_ID --priceId Tier1014 --noCommit -v --uploadTimeout 300
 
           # 2. Turn the markdown notes into plain text that fits the Store limit
           $notes = $env:RELEASE_NOTES

@@ -54,7 +54,7 @@ static class StartupManager
     static extern int GetCurrentPackageFullName(ref uint length, StringBuilder? name);
 
     /// <summary>True when running from an MSIX package (e.g. the Microsoft Store version).</summary>
-    static bool IsPackaged
+    internal static bool IsPackaged
     {
         get { uint len = 0; return GetCurrentPackageFullName(ref len, null) != APPMODEL_ERROR_NO_PACKAGE; }
     }
