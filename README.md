@@ -13,7 +13,8 @@ Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray 
 - **Native tray menu:** right-click for Enabled, Mute now, Settings and Exit. It uses the standard Windows menu, so it matches the Windows 11 look and follows light/dark mode.
 - **Unmute when I come back (optional):** only unmutes if HushLittlePC did the muting, so a mute you set yourself is never undone.
 - **Stay unmuted while audio is playing (optional):** handy for watching videos or listening to music without touching the PC.
-- **Notification (optional):** a small notice from the tray icon when audio is muted.
+- **Mute on output change (optional):** mutes the new device when Windows switches the default playback device, for example when Bluetooth headphones connect or you switch to speakers.
+- **Notification with an Unmute button (optional):** a native Windows notification whenever HushLittlePC mutes, so you can undo it with one click.
 - **Start with Windows (optional):** per-user startup entry, no admin rights needed.
 - **Follows your output device:** switching to headphones, HDMI or Bluetooth just works.
 - **Single instance:** launching it twice won't create a second tray icon.
@@ -40,17 +41,6 @@ The exe is created at `bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Hu
 
 To produce an exe that runs without the .NET runtime installed (larger file), use `--self-contained true` instead.
 
-## Pre-commit checks
-
-Install [pre-commit](https://pre-commit.com/) and enable the hooks:
-
-```
-python -m pip install pre-commit
-pre-commit install
-```
-
-Before each commit, the hooks check whitespace, final newlines, merge-conflict markers and YAML syntax. Changes to C# files or the project file also trigger a Release build. Run all checks manually with `pre-commit run --all-files`.
-
 ## Usage
 
 | Action | Result |
@@ -63,10 +53,11 @@ Before each commit, the hooks check whitespace, final newlines, merge-conflict m
 | Setting | Description |
 | --- | --- |
 | Mute after *N* minutes | Idle time before muting. Slider goes up to 2 hours; type up to 24 hours. |
-| Enable idle muting | Same as clicking the tray icon. |
+| Enable HushLittlePC | Turns all muting on or off. Same as clicking the tray icon. |
 | Unmute when I come back | Unmutes on activity, only if HushLittlePC muted it. |
 | Stay unmuted while audio is playing | Skips muting while sound is being output. |
-| Show a notification when audio is muted | Tray balloon notification on mute. |
+| Mute when the audio output changes | Mutes the new default playback device whenever Windows switches outputs. |
+| Show a notification when audio is muted | Windows notification with an Unmute button each time audio is muted. |
 | Start HushLittlePC with Windows | Adds an entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. |
 
 Settings are saved to `%AppData%\HushLittlePC\settings.json`.
@@ -74,7 +65,9 @@ Settings are saved to `%AppData%\HushLittlePC\settings.json`.
 ## How it works
 
 - Idle time comes from the Win32 `GetLastInputInfo` API, checked once per second. Only keyboard and mouse input counts as activity.
+- Notifications use the [Windows Community Toolkit notifications library](https://learn.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast) (`Microsoft.Toolkit.Uwp.Notifications`).
 - Muting uses the Windows Core Audio API (through [NAudio](https://github.com/naudio/NAudio)) on the current default playback device.
+- Output changes are detected through the Windows Core Audio device notifications (the default playback device changing).
 - "Audio is playing" is detected from the device's master peak meter.
 - The tray menu is a native Win32 popup menu. Light/dark theming uses undocumented `uxtheme.dll` calls; on versions of Windows that lack them, the menu simply stays light.
 
@@ -97,6 +90,7 @@ Settings are saved to `%AppData%\HushLittlePC\settings.json`.
 
 ## Limitations
 
+- "Mute when the audio output changes" reacts to Windows changing the *default device* (Bluetooth, USB, HDMI, or picking another output). Plugging headphones into a wired 3.5 mm jack usually doesn't change the default device, so it won't trigger.
 - Only the default playback device is muted, not every audio device.
 - Idle detection is system-wide input only. Playing media without touching the keyboard or mouse counts as idle unless "Stay unmuted while audio is playing" is on.
 

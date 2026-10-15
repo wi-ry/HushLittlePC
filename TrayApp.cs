@@ -8,6 +8,8 @@ class TrayApp : ApplicationContext
     readonly Settings _settings = Settings.Load();
     readonly AudioController _audio = new();
     readonly NotifyIcon _tray = new();
+    readonly Control _ui = new();            // hidden control, used to hop back onto the UI thread
+    DeviceWatcher? _watcher;
     readonly System.Windows.Forms.Timer _timer = new() { Interval = 1000 };
     SettingsForm? _form;
     bool _mutedByUs;
@@ -22,6 +24,19 @@ class TrayApp : ApplicationContext
 
         _timer.Tick += (_, _) => Tick();
         _timer.Start();
+
+        _ = _ui.Handle;   // force handle creation so BeginInvoke works from COM callbacks
+        // "Unmute" button on the notification (arrives on a background thread)
+        Notifier.OnUnmuteClicked(id =>
+        {
+            if (_ui.IsHandleCreated) _ui.BeginInvoke(() => _audio.SetMuteById(id, false));
+        });
+
+        _watcher = new DeviceWatcher();
+        _watcher.DefaultOutputChanged += id =>
+        {
+            if (_ui.IsHandleCreated) _ui.BeginInvoke(() => OnOutputChanged(id));
+        };
 
         StartupManager.Set(_settings.RunOnStartup);
         RefreshUi();
@@ -52,6 +67,17 @@ class TrayApp : ApplicationContext
         RefreshUi();
     }
 
+    /// <summary>The default playback device changed: mute the new one so nothing plays at a surprise volume.
+    /// This is deliberately not tracked as "muted by us", so "unmute when I come back" won't undo it.</summary>
+    void OnOutputChanged(string deviceId)
+    {
+        if (!_settings.Enabled || !_settings.MuteOnDeviceChange) return;
+
+        var name = _audio.MuteDeviceById(deviceId);
+        if (name != null && _settings.ShowNotification)
+            Notifier.Muted($"Muted {name} because the audio output changed.", deviceId);
+    }
+
     void Tick()
     {
         if (!_settings.Enabled) return;
@@ -62,11 +88,10 @@ class TrayApp : ApplicationContext
             if (_mutedByUs || _audio.IsMuted) return;
             if (_settings.SkipWhileAudioPlaying && _audio.IsPlaying) return;
 
-            _audio.SetMute(true);
-            _mutedByUs = true;
-            if (_settings.ShowNotification)
-                _tray.ShowBalloonTip(2000, "HushLittlePC",
-                    $"Muted after {_settings.IdleMinutes} min of inactivity.", ToolTipIcon.Info);
+            var device = _audio.MuteDefault();
+            _mutedByUs = device != null;
+            if (device is { } d && _settings.ShowNotification)
+                Notifier.Muted($"Muted {d.Name} after {_settings.IdleMinutes} min of inactivity.", d.Id);
         }
         else if (_mutedByUs)
         {
@@ -142,6 +167,9 @@ class TrayApp : ApplicationContext
     void ExitApp()
     {
         _timer.Stop();
+        _watcher?.Dispose();
+        Notifier.ClearAll();
+        _ui.Dispose();
         _tray.Visible = false;
         _tray.Dispose();
         _audio.Dispose();

@@ -59,14 +59,16 @@ class SettingsForm : Form
         timeRow.Controls.Add(new Label { Text = "minutes of inactivity", AutoSize = true, Margin = new Padding(0, 4, 0, 0) });
 
         // ---- Group 2 & 3: options ----------------------------------------------
-        var cbEnabled = Check("Enable idle muting", s.Enabled,
-            "You can also click the tray icon to turn this on or off.");
+        var cbEnabled = Check("Enable HushLittlePC", s.Enabled,
+            "Turns all muting on or off. You can also click the tray icon.");
         var cbUnmute = Check("Unmute when I come back (only if HushLittlePC muted it)", s.UnmuteOnActivity,
             "A mute you set yourself is never undone.");
         var cbSkip = Check("Stay unmuted while audio is playing", s.SkipWhileAudioPlaying,
             "Handy for videos or music when you aren't touching the keyboard or mouse.");
+        var cbDevice = Check("Mute when the audio output changes", s.MuteOnDeviceChange,
+            "For example when Bluetooth headphones connect or Windows switches to your speakers. The new device is muted so nothing plays at a surprising volume.");
         var cbNotify = Check("Show a notification when audio is muted", s.ShowNotification,
-            "A small notice from the tray icon each time HushLittlePC mutes.");
+            "A Windows notification with an Unmute button each time HushLittlePC mutes.");
         var cbStartup = Check("Start HushLittlePC with Windows", s.RunOnStartup,
             "Adds HushLittlePC to your startup apps (current user only).");
 
@@ -76,7 +78,7 @@ class SettingsForm : Form
         };
         _root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         _root.Controls.Add(Group("Idle time", timeRow, slider));
-        _root.Controls.Add(Group("Behaviour", cbEnabled, cbUnmute, cbSkip));
+        _root.Controls.Add(Group("Behaviour", cbEnabled, cbUnmute, cbSkip, cbDevice));
         _root.Controls.Add(Group("General", cbNotify, cbStartup));
 
         _body = new Panel
@@ -97,6 +99,7 @@ class SettingsForm : Form
             s.Enabled = cbEnabled.Checked;
             s.UnmuteOnActivity = cbUnmute.Checked;
             s.SkipWhileAudioPlaying = cbSkip.Checked;
+            s.MuteOnDeviceChange = cbDevice.Checked;
             s.ShowNotification = cbNotify.Checked;
             s.RunOnStartup = cbStartup.Checked;
         };

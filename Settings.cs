@@ -12,6 +12,7 @@ public class Settings
     public int IdleMinutes { get; set; } = 10;
     public bool UnmuteOnActivity { get; set; } = false;
     public bool SkipWhileAudioPlaying { get; set; } = false;
+    public bool MuteOnDeviceChange { get; set; } = false;
     public bool ShowNotification { get; set; } = true;
     public bool RunOnStartup { get; set; } = false;
 
