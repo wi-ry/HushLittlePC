@@ -17,4 +17,7 @@
   <ItemGroup>
     <EmbeddedResource Include="resources\ToastIcon.png" LogicalName="HushLittlePC.ToastIcon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
+  </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@ namespace HushLittlePC;
 
 class TrayApp : ApplicationContext
 {
-    readonly Settings _settings = Settings.Load();
+    readonly Settings _settings = SettingsStore.Load();
     readonly AudioController _audio = new();
     readonly NotifyIcon _tray = new();
     readonly Control _ui = new();            // hidden control, used to hop back onto the UI thread
@@ -62,8 +62,8 @@ class TrayApp : ApplicationContext
 
     void Toggle()
     {
-        _settings.Enabled = !_settings.Enabled;
-        _settings.Save();
+        _settings.ToggleEnabled();
+        SettingsStore.Save(_settings);
         RefreshUi();
     }
 
@@ -71,10 +71,10 @@ class TrayApp : ApplicationContext
     /// This is deliberately not tracked as "muted by us", so "unmute when I come back" won't undo it.</summary>
     void OnOutputChanged(string deviceId)
     {
-        if (!_settings.Enabled || !_settings.MuteOnDeviceChange) return;
+        if (!IdleMutePolicy.ShouldMuteOnOutputChange(_settings.Enabled, _settings.MuteOnDeviceChange)) return;
 
         var device = _audio.MuteDeviceById(deviceId);
-        if (device is { WasMuted: false } d && _settings.ShowNotification)
+        if (device is { } d && IdleMutePolicy.ShouldNotify(_settings.ShowNotification, d.WasMuted))
             Notifier.Muted($"Muted {d.Name} because the audio output changed.", deviceId);
     }
 
@@ -83,21 +83,35 @@ class TrayApp : ApplicationContext
         if (!_settings.Enabled) return;
 
         var idle = IdleTime.Get();
-        if (idle >= TimeSpan.FromMinutes(_settings.IdleMinutes))
-        {
-            if (_mutedByUs || _audio.IsMuted) return;
-            if (_settings.SkipWhileAudioPlaying && _audio.IsPlaying) return;
+        var idleThreshold = TimeSpan.FromMinutes(_settings.IdleMinutes);
+        var idleReached = idle >= idleThreshold;
+        var deviceMuted = (idleReached || (_mutedByUs && _settings.UnmuteOnActivity)) && _audio.IsMuted;
+        var audioPlaying = idleReached && _settings.SkipWhileAudioPlaying && _audio.IsPlaying;
+        var decision = IdleMutePolicy.Evaluate(
+            _settings.Enabled,
+            idle,
+            idleThreshold,
+            _mutedByUs,
+            deviceMuted,
+            _settings.SkipWhileAudioPlaying,
+            audioPlaying,
+            _settings.UnmuteOnActivity);
 
-            var device = _audio.MuteDefault();
-            _mutedByUs = device is { WasMuted: false };
-            if (device is { WasMuted: false } d && _settings.ShowNotification)
-                Notifier.Muted($"Muted {d.Name} after {_settings.IdleMinutes} min of inactivity.", d.Id);
-        }
-        else if (_mutedByUs)
-        {
-            // User is back
-            if (_settings.UnmuteOnActivity && _audio.IsMuted) _audio.SetMute(false);
+        if (decision.ClearMuteOwnership)
             _mutedByUs = false;
+
+        switch (decision.Action)
+        {
+            case IdleAction.Mute:
+                var device = _audio.MuteDefault();
+                _mutedByUs = device is { WasMuted: false };
+                if (device is { WasMuted: false } d &&
+                    IdleMutePolicy.ShouldNotify(_settings.ShowNotification, d.WasMuted))
+                    Notifier.Muted($"Muted {d.Name} after {_settings.IdleMinutes} min of inactivity.", d.Id);
+                break;
+            case IdleAction.Unmute:
+                _audio.SetMute(false);
+                break;
         }
     }
 
@@ -111,7 +125,7 @@ class TrayApp : ApplicationContext
             // timer keeps running while it's open.
             if (_form.ShowDialog() == DialogResult.OK)
             {
-                _settings.Save();
+                SettingsStore.Save(_settings);
                 StartupManager.Set(_settings.RunOnStartup);
                 RefreshUi();
             }

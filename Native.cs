@@ -51,8 +51,9 @@ class AudioController : IDisposable
         {
             using var d = GetDevice();
             if (d == null) return null;
-            var wasMuted = d.AudioEndpointVolume.Mute;
-            if (!wasMuted) d.AudioEndpointVolume.Mute = true;
+            var wasMuted = MuteTransition.MuteIfNeeded(
+                () => d.AudioEndpointVolume.Mute,
+                mute => d.AudioEndpointVolume.Mute = mute);
             return (d.ID, d.FriendlyName, wasMuted);
         }
         catch { return null; }
@@ -71,8 +72,9 @@ class AudioController : IDisposable
         try
         {
             using var d = _enumerator.GetDevice(deviceId);
-            var wasMuted = d.AudioEndpointVolume.Mute;
-            if (!wasMuted) d.AudioEndpointVolume.Mute = true;
+            var wasMuted = MuteTransition.MuteIfNeeded(
+                () => d.AudioEndpointVolume.Mute,
+                mute => d.AudioEndpointVolume.Mute = mute);
             return (d.FriendlyName, wasMuted);
         }
         catch { return null; }
@@ -90,7 +92,6 @@ class AudioController : IDisposable
 
     public void Dispose() => _enumerator.Dispose();
 }
-
 
 /// <summary>Raises <see cref="DefaultOutputChanged"/> when Windows switches the default playback device
 /// (Bluetooth connects, USB/HDMI device appears or disappears, the user picks another output...).

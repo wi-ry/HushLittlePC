@@ -12,7 +12,7 @@ class SettingsForm : Form
     const int PageMargin = 20;      // outer margin (Win32 minimum is ~11; a bit more room on purpose)
     const int GroupGap = 16;        // between group boxes
     const int BarHeight = 52;       // command bar
-    static readonly Size ButtonSize = new(80, 26);
+    static readonly Size ButtonSize = new(104, 26);
 
     readonly ToolTip _tips = new() { InitialDelay = 400, ShowAlways = true };
     readonly TableLayoutPanel _root;
@@ -88,12 +88,16 @@ class SettingsForm : Form
         };
         _body.Controls.Add(_root);
 
-        // ---- Command bar: OK then Cancel, right-aligned -------------------------
-        var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Size = ButtonSize, Margin = new Padding(0) };
+        // ---- Command bar: Save changes then Cancel, right-aligned ---------------
+        var save = new Button
+        {
+            Text = "Save changes", DialogResult = DialogResult.OK,
+            Size = ButtonSize, Margin = new Padding(0), Enabled = false
+        };
         var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Size = ButtonSize, Margin = new Padding(8, 0, 0, 0) };
-        AcceptButton = ok;
+        AcceptButton = save;
         CancelButton = cancel;
-        ok.Click += (_, _) =>
+        save.Click += (_, _) =>
         {
             s.IdleMinutes = (int)minutes.Value;
             s.Enabled = cbEnabled.Checked;
@@ -104,13 +108,46 @@ class SettingsForm : Form
             s.RunOnStartup = cbStartup.Checked;
         };
 
+        void UpdateSaveButton() =>
+            save.Enabled =
+                (int)minutes.Value != s.IdleMinutes ||
+                cbEnabled.Checked != s.Enabled ||
+                cbUnmute.Checked != s.UnmuteOnActivity ||
+                cbSkip.Checked != s.SkipWhileAudioPlaying ||
+                cbDevice.Checked != s.MuteOnDeviceChange ||
+                cbNotify.Checked != s.ShowNotification ||
+                cbStartup.Checked != s.RunOnStartup;
+
+        minutes.ValueChanged += (_, _) => UpdateSaveButton();
+        slider.ValueChanged += (_, _) => UpdateSaveButton();
+        cbEnabled.CheckedChanged += (_, _) => UpdateSaveButton();
+        cbUnmute.CheckedChanged += (_, _) => UpdateSaveButton();
+        cbSkip.CheckedChanged += (_, _) => UpdateSaveButton();
+        cbDevice.CheckedChanged += (_, _) => UpdateSaveButton();
+        cbNotify.CheckedChanged += (_, _) => UpdateSaveButton();
+        cbStartup.CheckedChanged += (_, _) => UpdateSaveButton();
+
+        FormClosing += (_, e) =>
+        {
+            if (DialogResult == DialogResult.OK || !save.Enabled) return;
+
+            var result = MessageBox.Show(
+                this,
+                "You have unsaved changes. If you close now, your changes will be lost.\n\nClose without saving?",
+                "Unsaved changes",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2);
+            e.Cancel = result != DialogResult.Yes;
+        };
+
         var buttons = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill, FlowDirection = FlowDirection.RightToLeft, WrapContents = false,
             Padding = new Padding(PageMargin, (BarHeight - ButtonSize.Height) / 2, PageMargin, 0),
         };
         buttons.Controls.Add(cancel);
-        buttons.Controls.Add(ok);
+        buttons.Controls.Add(save);
 
         _bar = new Panel { Dock = DockStyle.Bottom, Height = BarHeight, BackColor = SystemColors.Control };
         _bar.Controls.Add(buttons);

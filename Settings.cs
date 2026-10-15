@@ -1,21 +1,12 @@
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 using Microsoft.Win32;
 using Windows.ApplicationModel;
 
 namespace HushLittlePC;
 
-public class Settings
+static class SettingsStore
 {
-    public bool Enabled { get; set; } = true;
-    public int IdleMinutes { get; set; } = 10;
-    public bool UnmuteOnActivity { get; set; } = false;
-    public bool SkipWhileAudioPlaying { get; set; } = false;
-    public bool MuteOnDeviceChange { get; set; } = false;
-    public bool ShowNotification { get; set; } = true;
-    public bool RunOnStartup { get; set; } = false;
-
     static readonly string FilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "HushLittlePC", "settings.json");
@@ -25,19 +16,19 @@ public class Settings
         try
         {
             if (File.Exists(FilePath))
-                return JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath)) ?? new Settings();
+                return SettingsJson.Deserialize(File.ReadAllText(FilePath)) ?? new Settings();
         }
         catch { /* fall back to defaults */ }
         return new Settings();
     }
 
-    public void Save()
+    public static void Save(Settings settings)
     {
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
             File.WriteAllText(FilePath,
-                JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+                SettingsJson.Serialize(settings));
         }
         catch { }
     }

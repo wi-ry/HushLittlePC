@@ -15,3 +15,9 @@ repos:
         language: system
         files: \.(cs|csproj)$
         pass_filenames: false
+      - id: dotnet-test
+        name: Test .NET project
+        entry: dotnet test tests/HushLittlePC.Tests.csproj --configuration Release
+        language: system
+        files: \.(cs|csproj)$
+        pass_filenames: false

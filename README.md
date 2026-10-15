@@ -53,6 +53,8 @@ pre-commit install
 
 Before each commit, the hooks check whitespace, final newlines, merge-conflict markers and YAML syntax. Changes to C# files or the project file also trigger a Release build. Run all checks manually with `pre-commit run --all-files`.
 
+Run the core unit tests directly with `dotnet test tests/HushLittlePC.Tests.csproj -c Release`. They cover idle-threshold muting, manually muted and app-muted devices, return-from-idle unmuting, skipping active playback, output-change gating, notification eligibility, mute transitions, enabled-state toggling, and settings defaults/serialization. Windows-specific audio hardware, toast delivery, startup registration, tray rendering, and single-instance behavior still require Windows integration testing.
+
 ## Usage
 
 | Action | Result |
@@ -71,6 +73,8 @@ Before each commit, the hooks check whitespace, final newlines, merge-conflict m
 | Mute when the audio output changes | Mutes the new default playback device whenever Windows switches outputs. |
 | Show a notification when audio is muted | Windows notification with an Unmute button each time audio is muted. |
 | Start HushLittlePC with Windows | Adds an entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. |
+
+Settings are saved with **Save changes**, which is enabled only after an option changes. Closing with unsaved edits asks for confirmation before discarding them.
 
 Settings are saved to `%AppData%\HushLittlePC\settings.json`.
 
