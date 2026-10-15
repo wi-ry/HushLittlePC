@@ -18,7 +18,6 @@ Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray 
 - **Notification with an Unmute button (optional):** a native Windows notification when HushLittlePC changes an unmuted device to muted, so you can undo it with one click. Already-muted devices do not trigger a notification.
 - **Start with Windows (optional):** per-user startup entry, no admin rights needed.
 - **Follows your output device:** switching to headphones, HDMI or Bluetooth just works.
-- **Single instance:** launching it twice won't create a second tray icon.
 
 ## Requirements
 
