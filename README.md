@@ -40,6 +40,17 @@ The exe is created at `bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Hu
 
 To produce an exe that runs without the .NET runtime installed (larger file), use `--self-contained true` instead.
 
+## Pre-commit checks
+
+Install [pre-commit](https://pre-commit.com/) and enable the hooks:
+
+```
+python -m pip install pre-commit
+pre-commit install
+```
+
+Before each commit, the hooks check whitespace, final newlines, merge-conflict markers and YAML syntax. Changes to C# files or the project file also trigger a Release build. Run all checks manually with `pre-commit run --all-files`.
+
 ## Usage
 
 | Action | Result |
