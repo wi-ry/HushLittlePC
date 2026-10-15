@@ -8,22 +8,15 @@ class TrayApp : ApplicationContext
     readonly Settings _settings = Settings.Load();
     readonly AudioController _audio = new();
     readonly NotifyIcon _tray = new();
-    readonly ToolStripMenuItem _enabledItem = new("Enabled") { CheckOnClick = false };
     readonly System.Windows.Forms.Timer _timer = new() { Interval = 1000 };
     SettingsForm? _form;
     bool _mutedByUs;
 
     public TrayApp()
     {
-        var menu = new ContextMenuStrip();
-        _enabledItem.Click += (_, _) => Toggle();
-        menu.Items.Add(_enabledItem);
-        menu.Items.Add("Mute now", null, (_, _) => { _audio.SetMute(true); });
-        menu.Items.Add("Settings...", null, (_, _) => ShowSettings());
-        menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Exit", null, (_, _) => ExitApp());
+        NativeMenu.FollowSystemTheme();
 
-        _tray.ContextMenuStrip = menu;
+        _tray.MouseUp += (_, e) => { if (e.Button == MouseButtons.Right) ShowMenu(); };
         _tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) Toggle(); };
         _tray.Visible = true;
 
@@ -32,6 +25,24 @@ class TrayApp : ApplicationContext
 
         StartupManager.Set(_settings.RunOnStartup);
         RefreshUi();
+    }
+
+    void ShowMenu()
+    {
+        var menu = new NativeMenu();
+        menu.Add(1, "Enabled", _settings.Enabled);
+        menu.Add(2, "Mute now");
+        menu.Add(3, "Settings...");
+        menu.AddSeparator();
+        menu.Add(4, "Exit");
+
+        switch (menu.Show())
+        {
+            case 1: Toggle(); break;
+            case 2: _audio.SetMute(true); break;
+            case 3: ShowSettings(); break;
+            case 4: ExitApp(); break;
+        }
     }
 
     void Toggle()
@@ -85,7 +96,6 @@ class TrayApp : ApplicationContext
 
     void RefreshUi()
     {
-        _enabledItem.Checked = _settings.Enabled;
         var old = _tray.Icon;
         _tray.Icon = MakeIcon(_settings.Enabled);
         old?.Dispose();
