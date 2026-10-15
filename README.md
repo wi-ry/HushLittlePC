@@ -4,7 +4,8 @@ A tiny Windows tray app that automatically mutes your speakers after a configura
 
 Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray icon to turn it on or off.
 
-<!-- Add a screenshot of the settings window here, e.g. ![Settings](docs/settings.png) -->
+![Settings](docs/settings.png)
+![Example notification](docs/notification.png)
 
 ## Features
 
@@ -14,7 +15,7 @@ Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray 
 - **Unmute when I come back (optional):** only unmutes if HushLittlePC did the muting, so a mute you set yourself is never undone.
 - **Stay unmuted while audio is playing (optional):** handy for watching videos or listening to music without touching the PC.
 - **Mute on output change (optional):** mutes the new device when Windows switches the default playback device, for example when Bluetooth headphones connect or you switch to speakers.
-- **Notification with an Unmute button (optional):** a native Windows notification whenever HushLittlePC mutes, so you can undo it with one click.
+- **Notification with an Unmute button (optional):** a native Windows notification when HushLittlePC changes an unmuted device to muted, so you can undo it with one click. Already-muted devices do not trigger a notification.
 - **Start with Windows (optional):** per-user startup entry, no admin rights needed.
 - **Follows your output device:** switching to headphones, HDMI or Bluetooth just works.
 - **Single instance:** launching it twice won't create a second tray icon.

@@ -44,15 +44,16 @@ class AudioController : IDisposable
         catch { }
     }
 
-    /// <summary>Mutes the current default playback device and returns its id and name (null if there is none).</summary>
-    public (string Id, string Name)? MuteDefault()
+    /// <summary>Mutes the current default playback device and returns its id, name, and prior mute state (null if unavailable).</summary>
+    public (string Id, string Name, bool WasMuted)? MuteDefault()
     {
         try
         {
             using var d = GetDevice();
             if (d == null) return null;
-            d.AudioEndpointVolume.Mute = true;
-            return (d.ID, d.FriendlyName);
+            var wasMuted = d.AudioEndpointVolume.Mute;
+            if (!wasMuted) d.AudioEndpointVolume.Mute = true;
+            return (d.ID, d.FriendlyName, wasMuted);
         }
         catch { return null; }
     }
@@ -64,14 +65,15 @@ class AudioController : IDisposable
         catch { }
     }
 
-    /// <summary>Mutes a specific playback device by id. Returns its friendly name, or null on failure.</summary>
-    public string? MuteDeviceById(string deviceId)
+    /// <summary>Mutes a specific playback device by id and returns its friendly name and prior mute state (null on failure).</summary>
+    public (string Name, bool WasMuted)? MuteDeviceById(string deviceId)
     {
         try
         {
             using var d = _enumerator.GetDevice(deviceId);
-            d.AudioEndpointVolume.Mute = true;
-            return d.FriendlyName;
+            var wasMuted = d.AudioEndpointVolume.Mute;
+            if (!wasMuted) d.AudioEndpointVolume.Mute = true;
+            return (d.FriendlyName, wasMuted);
         }
         catch { return null; }
     }

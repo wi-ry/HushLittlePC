@@ -73,9 +73,9 @@ class TrayApp : ApplicationContext
     {
         if (!_settings.Enabled || !_settings.MuteOnDeviceChange) return;
 
-        var name = _audio.MuteDeviceById(deviceId);
-        if (name != null && _settings.ShowNotification)
-            Notifier.Muted($"Muted {name} because the audio output changed.", deviceId);
+        var device = _audio.MuteDeviceById(deviceId);
+        if (device is { WasMuted: false } d && _settings.ShowNotification)
+            Notifier.Muted($"Muted {d.Name} because the audio output changed.", deviceId);
     }
 
     void Tick()
@@ -89,8 +89,8 @@ class TrayApp : ApplicationContext
             if (_settings.SkipWhileAudioPlaying && _audio.IsPlaying) return;
 
             var device = _audio.MuteDefault();
-            _mutedByUs = device != null;
-            if (device is { } d && _settings.ShowNotification)
+            _mutedByUs = device is { WasMuted: false };
+            if (device is { WasMuted: false } d && _settings.ShowNotification)
                 Notifier.Muted($"Muted {d.Name} after {_settings.IdleMinutes} min of inactivity.", d.Id);
         }
         else if (_mutedByUs)
