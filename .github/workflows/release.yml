@@ -121,10 +121,18 @@ jobs:
           RELEASE_NOTES: ${{ needs.release.outputs.notes }}
           STORE_ID: ${{ secrets.STORE_ID }}
         run: |
+          $ErrorActionPreference = 'Stop'
+
+          # Stop at the first failing msstore command instead of carrying on with confusing follow-up errors
+          function Invoke-Store {
+            & msstore @args
+            if ($LASTEXITCODE -ne 0) { throw "msstore $($args[0]) failed (exit code $LASTEXITCODE)" }
+          }
+
           $msix = Get-ChildItem -Path artifacts/msix -Filter *.msix | Select-Object -First 1
 
           # 1. Upload the package, leave the submission as a draft
-          msstore publish $msix.FullName -id $env:STORE_ID --noCommit -v --uploadTimeout 300
+          Invoke-Store publish $msix.FullName -id $env:STORE_ID --noCommit -v --uploadTimeout 300
 
           # 2. Turn the markdown notes into plain text that fits the Store limit
           $notes = $env:RELEASE_NOTES
@@ -136,12 +144,14 @@ jobs:
           if ($notes.Length -gt 1500) { $notes = $notes.Substring(0, 1497) + '...' }
 
           # 3. Set the notes on every locale's listing (no -v here, so the output stays valid JSON)
-          $submission = msstore submission get $env:STORE_ID | ConvertFrom-Json
+          $json = & msstore submission get $env:STORE_ID
+          if ($LASTEXITCODE -ne 0) { throw "msstore submission get failed (exit code $LASTEXITCODE)" }
+          $submission = $json | ConvertFrom-Json
           foreach ($locale in $submission.Listings.PSObject.Properties) {
             $locale.Value.BaseListing.ReleaseNotes = $notes
           }
-          msstore submission update $env:STORE_ID ($submission | ConvertTo-Json -Depth 100 -Compress)
+          Invoke-Store submission update $env:STORE_ID ($submission | ConvertTo-Json -Depth 100 -Compress)
 
           # 4. Commit and wait
-          msstore submission publish $env:STORE_ID
-          msstore submission poll $env:STORE_ID
+          Invoke-Store submission publish $env:STORE_ID
+          Invoke-Store submission poll $env:STORE_ID
