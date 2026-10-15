@@ -1,0 +1,147 @@
+name: Semantic Release
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    branches:
+      - main
+    types:
+      - completed
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.semantic.outputs.new_release_published }}
+      tag: ${{ steps.semantic.outputs.new_release_git_tag }}
+      version: ${{ steps.semantic.outputs.new_release_version }}
+      notes: ${{ steps.semantic.outputs.new_release_notes }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Run semantic-release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v6
+        with:
+          extra_plugins: |
+            conventional-changelog-conventionalcommits@9.3.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-and-upload:
+    needs: release
+    if: ${{ needs.release.outputs.published == 'true' }}
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Check Store identity variables
+        shell: pwsh
+        env:
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+        run: |
+          foreach ($name in 'MSIX_IDENTITY_NAME', 'MSIX_PUBLISHER', 'MSIX_PUBLISHER_DISPLAY_NAME') {
+            if ([string]::IsNullOrWhiteSpace((Get-Item "env:$name").Value)) {
+              throw "Repository variable $name is not set (Settings > Secrets and variables > Actions > Variables)."
+            }
+          }
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Package MSIX
+        shell: pwsh
+        env:
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+        run: .github/scripts/package-msix.ps1 -Version "${{ needs.release.outputs.version }}"
+
+      - name: Build portable executable
+        shell: pwsh
+        run: |
+          dotnet publish HushLittlePC.csproj -c Release -r win-x64 --self-contained false `
+            -p:PublishSingleFile=true "-p:Version=${{ needs.release.outputs.version }}" -o artifacts/portable
+          Move-Item `
+            "artifacts/portable/HushLittlePC.exe" `
+            "artifacts/HushLittlePC_${{ needs.release.outputs.version }}_x64-portable.exe"
+
+      - name: Upload artifact to release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.release.outputs.tag }}
+          files: |
+            artifacts/HushLittlePC_${{ needs.release.outputs.version }}_x64-portable.exe
+
+      - name: Setup MSStore CLI
+        uses: microsoft/setup-msstore-cli@v1
+
+      - name: Configure MSStore CLI
+        run: |
+          msstore reconfigure `
+            --tenantId ${{ secrets.TENANT_ID }} `
+            --sellerId ${{ secrets.SELLER_ID }} `
+            --clientId ${{ secrets.CLIENT_ID }} `
+            --clientSecret ${{ secrets.SECRET_VALUE }}
+
+      - name: Publish to Store
+        shell: pwsh
+        env:
+          RELEASE_NOTES: ${{ needs.release.outputs.notes }}
+          STORE_ID: ${{ secrets.STORE_ID }}
+        run: |
+          $msix = Get-ChildItem -Path artifacts/msix -Filter *.msix | Select-Object -First 1
+
+          # 1. Upload the package, leave the submission as a draft
+          msstore publish $msix.FullName -id $env:STORE_ID --noCommit -v --uploadTimeout 300
+
+          # 2. Turn the markdown notes into plain text that fits the Store limit
+          $notes = $env:RELEASE_NOTES
+          $notes = $notes -replace '\[([^\]]+)\]\([^)]+\)', '$1'   # [text](url) -> text
+          $notes = $notes -replace '\s*\([0-9a-f]{7,}\)', ''       # drop "(abc1234)" commit refs
+          $notes = $notes -replace '(?m)^#+\s*', ''                # drop heading markers
+          $notes = $notes -replace '\*\*', ''                      # drop bold markers
+          $notes = $notes.Trim()
+          if ($notes.Length -gt 1500) { $notes = $notes.Substring(0, 1497) + '...' }
+
+          # 3. Set the notes on every locale's listing (no -v here, so the output stays valid JSON)
+          $submission = msstore submission get $env:STORE_ID | ConvertFrom-Json
+          foreach ($locale in $submission.Listings.PSObject.Properties) {
+            $locale.Value.BaseListing.ReleaseNotes = $notes
+          }
+          msstore submission update $env:STORE_ID ($submission | ConvertTo-Json -Depth 100 -Compress)
+
+          # 4. Commit and wait
+          msstore submission publish $env:STORE_ID
+          msstore submission poll $env:STORE_ID
