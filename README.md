@@ -28,7 +28,7 @@ Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray 
 
 ## Install
 
-- **Microsoft Store:** link coming once the first submission is live.
+- **Microsoft Store:** install from [HushLittlePC on the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS).
 - **Portable:** download `HushLittlePC_<version>_x64-portable.exe` from the [Releases](../../releases) page (needs the .NET 8 Desktop Runtime).
 
 ## Build
@@ -113,4 +113,4 @@ Settings are saved to `%AppData%\HushLittlePC\settings.json`.
 
 ## License
 
-Add a license of your choice (for example MIT) before publishing.
+This project is licensed under the [MIT License](LICENSE).
