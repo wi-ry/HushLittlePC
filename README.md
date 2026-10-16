@@ -9,7 +9,7 @@ Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray 
 
 ## Features
 
-- **Idle muting:** mutes your default playback device after 1 to 1440 minutes without keyboard or mouse input.
+- **Idle muting:** mutes your default playback device after 1 to 120 minutes without keyboard or mouse input.
 - **One-click toggle:** left-click the tray icon to enable or disable. The icon changes colour to show the current state.
 - **Native tray menu:** right-click for Enabled, Mute now, Settings and Exit. It uses the standard Windows menu, so it matches the Windows 11 look and follows light/dark mode.
 - **Unmute when I come back (optional):** only unmutes if HushLittlePC did the muting, so a mute you set yourself is never undone.
