@@ -4,7 +4,7 @@ A tiny Windows tray app that automatically mutes your speakers after a configura
 
 Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray icon to turn it on or off.
 
-<a href="https://get.microsoft.com/installer/download/9pkxhhbtplkn?referrer=appbadge" target="_self" >
+<a href="https://get.microsoft.com/installer/download/9pdnxtb6mg9l?referrer=appbadge" target="_self" >
 	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
 </a>
 
