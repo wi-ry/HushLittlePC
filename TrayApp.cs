@@ -181,6 +181,7 @@ class TrayApp : ApplicationContext
     void ExitApp()
     {
         _timer.Stop();
+        _timer.Dispose();
         _watcher?.Dispose();
         Notifier.ClearAll();
         _ui.Dispose();

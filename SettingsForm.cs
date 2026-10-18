@@ -36,8 +36,8 @@ class SettingsForm : Form
         // ---- Group 1: idle time -------------------------------------------------
         var minutes = new NumericUpDown
         {
-            Minimum = 1, Maximum = 1440, Width = 60,
-            Value = Math.Clamp(s.IdleMinutes, 1, 1440),
+            Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes, Width = 60,
+            Value = Math.Clamp(s.IdleMinutes, Settings.MinIdleMinutes, Settings.MaxIdleMinutes),
             Margin = new Padding(0, 0, 8, 0),
         };
         var slider = new TrackBar

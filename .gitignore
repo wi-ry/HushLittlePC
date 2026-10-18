@@ -13,6 +13,9 @@
 # Test output
 [Tt]est[Rr]esults/
 
+# IDEs
+.idea/
+
 # NuGet
 *.nupkg
 *.snupkg

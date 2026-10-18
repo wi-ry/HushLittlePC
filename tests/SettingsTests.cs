@@ -58,6 +58,28 @@ public class SettingsTests
     }
 
     [TestMethod]
+    [DataRow(-5, Settings.MinIdleMinutes)]
+    [DataRow(0, Settings.MinIdleMinutes)]
+    [DataRow(1, 1)]
+    [DataRow(1440, 1440)]
+    [DataRow(100000, Settings.MaxIdleMinutes)]
+    public void IdleMinutes_IsClampedToSupportedRange(int value, int expected)
+    {
+        var settings = new Settings { IdleMinutes = value };
+
+        Assert.AreEqual(expected, settings.IdleMinutes);
+    }
+
+    [TestMethod]
+    public void SettingsJson_WhenIdleMinutesIsOutOfRange_ClampsIt()
+    {
+        var settings = SettingsJson.Deserialize("""{"IdleMinutes":0}""");
+
+        Assert.IsNotNull(settings);
+        Assert.AreEqual(Settings.MinIdleMinutes, settings.IdleMinutes);
+    }
+
+    [TestMethod]
     public void SettingsJson_WhenFieldsAreMissing_PreservesTheirDefaults()
     {
         var settings = SettingsJson.Deserialize("""{"Enabled":false}""");
