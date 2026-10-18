@@ -34,5 +34,3 @@ jobs:
       # Bundles commitlint + the conventional config, so no package.json is needed in this .NET repo.
       - name: Lint commits in PR range
         uses: wagoid/commitlint-github-action@v6
-        with:
-          firstParent: false
