@@ -1,8 +1,8 @@
-# HushLittlePC
+# Hush Little PC
 
 A tiny Windows tray app that automatically mutes your speakers after a configurable period of keyboard and mouse inactivity.
 
-Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray icon to turn it on or off.
+Step away from your PC and Hush Little PC quietly mutes the sound. Click the tray icon to turn it on or off.
 
 <a href="https://get.microsoft.com/installer/download/9pdnxtb6mg9l?referrer=appbadge" target="_self" >
 	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
@@ -16,10 +16,10 @@ Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray 
 - **Idle muting:** mutes your default playback device after 1 to 1440 minutes (24 hours) without keyboard or mouse input.
 - **One-click toggle:** left-click the tray icon to enable or disable. The icon changes colour to show the current state.
 - **Native tray menu:** right-click for Enabled, Mute now, Settings and Exit. It uses the standard Windows menu, so it matches the Windows 11 look and follows light/dark mode.
-- **Unmute when I come back (optional):** only unmutes if HushLittlePC did the muting, so a mute you set yourself is never undone.
+- **Unmute when I come back (optional):** only unmutes if Hush Little PC did the muting, so a mute you set yourself is never undone.
 - **Stay unmuted while audio is playing (optional):** handy for watching videos or listening to music without touching the PC.
 - **Mute on output change (optional):** mutes the new device when Windows switches the default playback device, for example when Bluetooth headphones connect or you switch to speakers.
-- **Notification with an Unmute button (optional):** a native Windows notification when HushLittlePC changes an unmuted device to muted, so you can undo it with one click. Already-muted devices do not trigger a notification.
+- **Notification with an Unmute button (optional):** a native Windows notification when Hush Little PC changes an unmuted device to muted, so you can undo it with one click. Already-muted devices do not trigger a notification.
 - **Start with Windows (optional):** per-user startup entry, no admin rights needed.
 - **Follows your output device:** switching to headphones, HDMI or Bluetooth just works.
 
@@ -30,7 +30,7 @@ Step away from your PC and HushLittlePC quietly mutes the sound. Click the tray 
 
 ## Install
 
-- **Microsoft Store:** install from [HushLittlePC on the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS). Updates are delivered by the Store.
+- **Microsoft Store:** install from [Hush Little PC on the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS). Updates are delivered by the Store.
 - **Portable:** download `HushLittlePC_<version>_x64-portable.exe` from the [Releases](../../releases) page (needs the .NET 8 Desktop Runtime).
 
 ## Build
@@ -70,12 +70,12 @@ Run the core unit tests directly with `dotnet test tests/HushLittlePC.Tests.cspr
 | Setting | Description |
 | --- | --- |
 | Mute after *N* minutes | Idle time before muting. Slider goes up to 2 hours; type up to 24 hours. |
-| Enable HushLittlePC | Turns all muting on or off. Same as clicking the tray icon. |
-| Unmute when I come back | Unmutes on activity, only if HushLittlePC muted it. |
+| Enable Hush Little PC | Turns all muting on or off. Same as clicking the tray icon. |
+| Unmute when I come back | Unmutes on activity, only if Hush Little PC muted it. |
 | Stay unmuted while audio is playing | Skips muting while sound is being output. |
 | Mute when the audio output changes | Mutes the new default playback device whenever Windows switches outputs. |
 | Show a notification when audio is muted | Windows notification with an Unmute button each time audio is muted. |
-| Start HushLittlePC with Windows | Portable exe: adds an entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. Store version: enables its startup task (manage it under **Settings > Apps > Startup**; if you turn it off there, Windows only lets you turn it back on there). |
+| Start Hush Little PC with Windows | Portable exe: adds an entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. Store version: enables its startup task (manage it under **Settings > Apps > Startup**; if you turn it off there, Windows only lets you turn it back on there). |
 
 Settings are saved with **Save changes**, which is enabled only after an option changes. Closing with unsaved edits asks for confirmation before discarding them.
 
@@ -121,7 +121,7 @@ Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the fi
 
 ## Uninstall
 
-1. Untick **Start HushLittlePC with Windows** in Settings.
+1. Untick **Start Hush Little PC with Windows** in Settings.
 2. Right-click the tray icon and choose **Exit**.
 3. Delete the exe and, if you like, the `%AppData%\HushLittlePC` and `%LocalAppData%\HushLittlePC` folders (the latter holds the notification icon).
 
