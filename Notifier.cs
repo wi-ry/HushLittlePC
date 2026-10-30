@@ -16,7 +16,7 @@ static class Notifier
         {
             var toast = new ToastContentBuilder()
                 .AddArgument("deviceId", deviceId)        // top-level args are also returned for button clicks
-                .AddText("HushLittlePC")
+                .AddText("Hush Little PC")
                 .AddText(message)
                 .AddAudio(new ToastAudio { Silent = true })  // the device was just muted; a ping would be pointless
                 .AddButton(new ToastButton()

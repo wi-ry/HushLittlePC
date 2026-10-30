@@ -139,8 +139,8 @@ class TrayApp : ApplicationContext
         _tray.Icon = MakeIcon(_settings.Enabled);
         old?.Dispose();
         _tray.Text = _settings.Enabled
-            ? $"HushLittlePC: ON ({_settings.IdleMinutes} min)"
-            : "HushLittlePC: OFF";
+            ? $"Hush Little PC: ON ({_settings.IdleMinutes} min)"
+            : "Hush Little PC: OFF";
     }
 
     [DllImport("user32.dll")] static extern bool DestroyIcon(IntPtr handle);

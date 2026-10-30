@@ -25,7 +25,7 @@ class SettingsForm : Form
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
         Font = new Font("Segoe UI", 9F);
-        Text = "HushLittlePC Settings";
+        Text = "Hush Little PC Settings";
         Icon = TrayApp.MakeIcon(true);
         BackColor = SystemColors.Control;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -59,18 +59,18 @@ class SettingsForm : Form
         timeRow.Controls.Add(new Label { Text = "minutes of inactivity", AutoSize = true, Margin = new Padding(0, 4, 0, 0) });
 
         // ---- Group 2 & 3: options ----------------------------------------------
-        var cbEnabled = Check("Enable HushLittlePC", s.Enabled,
+        var cbEnabled = Check("Enable Hush Little PC", s.Enabled,
             "Turns all muting on or off. You can also click the tray icon.");
-        var cbUnmute = Check("Unmute when I come back (only if HushLittlePC muted it)", s.UnmuteOnActivity,
+        var cbUnmute = Check("Unmute when I come back (only if Hush Little PC muted it)", s.UnmuteOnActivity,
             "A mute you set yourself is never undone.");
         var cbSkip = Check("Stay unmuted while audio is playing", s.SkipWhileAudioPlaying,
             "Handy for videos or music when you aren't touching the keyboard or mouse.");
         var cbDevice = Check("Mute when the audio output changes", s.MuteOnDeviceChange,
             "For example when Bluetooth headphones connect or Windows switches to your speakers. The new device is muted so nothing plays at a surprising volume.");
         var cbNotify = Check("Show a notification when audio is muted", s.ShowNotification,
-            "A Windows notification with an Unmute button each time HushLittlePC mutes.");
-        var cbStartup = Check("Start HushLittlePC with Windows", s.RunOnStartup,
-            "Adds HushLittlePC to your startup apps (current user only).");
+            "A Windows notification with an Unmute button each time Hush Little PC mutes.");
+        var cbStartup = Check("Start Hush Little PC with Windows", s.RunOnStartup,
+            "Adds Hush Little PC to your startup apps (current user only).");
 
         _root = new TableLayoutPanel
         {
