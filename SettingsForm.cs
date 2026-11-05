@@ -19,11 +19,12 @@ class SettingsForm : Form
     readonly Panel _body;
     readonly Panel _bar;
     readonly Func<Settings, bool> _trySaveSettings;
+    readonly SettingsDraft _draft;
 
     public SettingsForm(Settings s, Func<Settings, bool> trySaveSettings)
     {
         _trySaveSettings = trySaveSettings;
-        SavedSettings = s;
+        _draft = new SettingsDraft(s);
         SuspendLayout();
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
@@ -112,9 +113,8 @@ class SettingsForm : Form
                 ShowNotification = cbNotify.Checked,
                 RunOnStartup = cbStartup.Checked
             };
-            if (!_trySaveSettings(updatedSettings)) return;
+            if (!_draft.TrySave(updatedSettings, _trySaveSettings)) return;
 
-            SavedSettings = updatedSettings;
             DialogResult = DialogResult.OK;
         };
 
@@ -170,7 +170,7 @@ class SettingsForm : Form
         ResumeLayout(true);
     }
 
-    public Settings SavedSettings { get; private set; }
+    public Settings SavedSettings => _draft.SavedSettings;
 
     protected override void OnLoad(EventArgs e)
     {

@@ -15,8 +15,11 @@ sealed class MuteOwnership
     public string? DeviceId { get; private set; }
     public bool IsOwned => DeviceId is not null;
 
-    public void Claim(string deviceId, bool wasAlreadyMuted) =>
-        DeviceId = wasAlreadyMuted ? null : deviceId;
+    public void Claim(string deviceId, bool wasAlreadyMuted)
+    {
+        if (!wasAlreadyMuted)
+            DeviceId = deviceId;
+    }
 
     public string? Release()
     {
@@ -29,5 +32,15 @@ sealed class MuteOwnership
     {
         if (DeviceId == deviceId)
             DeviceId = null;
+    }
+
+    public bool UnmuteIfStillMuted(Func<string, bool> isMuted, Action<string, bool> setMute)
+    {
+        var deviceId = Release();
+        if (deviceId is null || !isMuted(deviceId))
+            return false;
+
+        setMute(deviceId, false);
+        return true;
     }
 }

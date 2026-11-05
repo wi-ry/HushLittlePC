@@ -111,7 +111,7 @@ class TrayApp : ApplicationContext
             audioPlaying,
             _settings.UnmuteOnActivity);
 
-        if (decision.ClearMuteOwnership)
+        if (decision.ClearMuteOwnership && decision.Action != IdleAction.Unmute)
             _muteOwnership.Release();
 
         switch (decision.Action)
@@ -125,8 +125,9 @@ class TrayApp : ApplicationContext
                     Notifier.Muted($"Muted {d.Name} after {_settings.IdleMinutes} min of inactivity.", d.Id);
                 break;
             case IdleAction.Unmute:
-                if (mutedDeviceId is { } id)
-                    _audio.SetMuteById(id, false);
+                _muteOwnership.UnmuteIfStillMuted(
+                    _audio.IsMutedById,
+                    _audio.SetMuteById);
                 break;
         }
     }

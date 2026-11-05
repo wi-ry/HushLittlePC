@@ -89,4 +89,30 @@ public class SettingsTests
         Assert.AreEqual(10, settings.IdleMinutes);
         Assert.IsTrue(settings.ShowNotification);
     }
+
+    [TestMethod]
+    public void SettingsDraft_WhenSaveFails_KeepsPreviouslySavedSettings()
+    {
+        var savedSettings = new Settings { IdleMinutes = 10 };
+        var draft = new SettingsDraft(savedSettings);
+        var candidate = new Settings { IdleMinutes = 20 };
+
+        var wasSaved = draft.TrySave(candidate, _ => false);
+
+        Assert.IsFalse(wasSaved);
+        Assert.AreSame(savedSettings, draft.SavedSettings);
+    }
+
+    [TestMethod]
+    public void SettingsDraft_WhenSaveSucceeds_UpdatesSavedSettings()
+    {
+        var savedSettings = new Settings { IdleMinutes = 10 };
+        var draft = new SettingsDraft(savedSettings);
+        var candidate = new Settings { IdleMinutes = 20 };
+
+        var wasSaved = draft.TrySave(candidate, _ => true);
+
+        Assert.IsTrue(wasSaved);
+        Assert.AreSame(candidate, draft.SavedSettings);
+    }
 }

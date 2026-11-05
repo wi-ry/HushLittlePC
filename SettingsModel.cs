@@ -28,6 +28,20 @@ public class Settings
     public bool ToggleEnabled() => Enabled = !Enabled;
 }
 
+sealed class SettingsDraft(Settings savedSettings)
+{
+    public Settings SavedSettings { get; private set; } = savedSettings;
+
+    public bool TrySave(Settings candidate, Func<Settings, bool> save)
+    {
+        if (!save(candidate))
+            return false;
+
+        SavedSettings = candidate;
+        return true;
+    }
+}
+
 static class SettingsJson
 {
     static readonly JsonSerializerOptions Options = new() { WriteIndented = true };

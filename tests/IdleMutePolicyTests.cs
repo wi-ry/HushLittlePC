@@ -106,6 +106,19 @@ public class IdleMutePolicyTests
     }
 
     [TestMethod]
+    public void Evaluate_WhenActivityReturnsAfterOwnedDeviceWasAlreadyUnmuted_ClearsOwnershipWithoutUnmuting()
+    {
+        var result = Evaluate(
+            idleTime: TimeSpan.Zero,
+            mutedByUs: true,
+            deviceMuted: false,
+            unmuteOnActivity: true);
+
+        Assert.AreEqual(IdleAction.None, result.Action);
+        Assert.IsTrue(result.ClearMuteOwnership);
+    }
+
+    [TestMethod]
     public void ShouldMuteOnOutputChange_RequiresAppEnabledAndOptionEnabled()
     {
         Assert.IsTrue(IdleMutePolicy.ShouldMuteOnOutputChange(enabled: true, muteOnDeviceChange: true));

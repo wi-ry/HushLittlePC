@@ -41,8 +41,8 @@ public class MuteTransitionTests
         Assert.AreEqual("device-1", ownership.DeviceId);
 
         ownership.Claim("device-2", wasAlreadyMuted: true);
-        Assert.IsNull(ownership.DeviceId);
-        Assert.IsFalse(ownership.IsOwned);
+        Assert.AreEqual("device-1", ownership.DeviceId);
+        Assert.IsTrue(ownership.IsOwned);
     }
 
     [TestMethod]
@@ -68,5 +68,45 @@ public class MuteTransitionTests
 
         Assert.AreEqual("device-1", ownership.DeviceId);
         Assert.IsTrue(ownership.IsOwned);
+    }
+
+    [TestMethod]
+    public void MuteOwnership_UnmuteIfStillMutedTargetsTheOwnedDeviceAfterOutputSwitch()
+    {
+        var ownership = new MuteOwnership();
+        ownership.Claim("previous-default", wasAlreadyMuted: false);
+        var checkedDevices = new List<string>();
+        var muteChanges = new List<(string DeviceId, bool Muted)>();
+
+        var didUnmute = ownership.UnmuteIfStillMuted(
+            deviceId =>
+            {
+                checkedDevices.Add(deviceId);
+                return true;
+            },
+            (deviceId, muted) => muteChanges.Add((deviceId, muted)));
+
+        Assert.IsTrue(didUnmute);
+        CollectionAssert.AreEqual(new[] { "previous-default" }, checkedDevices);
+        CollectionAssert.AreEqual(
+            new[] { ("previous-default", false) },
+            muteChanges);
+        Assert.IsFalse(ownership.IsOwned);
+    }
+
+    [TestMethod]
+    public void MuteOwnership_UnmuteIfAlreadyUnmutedClearsOwnershipWithoutChangingMute()
+    {
+        var ownership = new MuteOwnership();
+        ownership.Claim("device-1", wasAlreadyMuted: false);
+        var setMuteCalls = 0;
+
+        var didUnmute = ownership.UnmuteIfStillMuted(
+            _ => false,
+            (_, _) => setMuteCalls++);
+
+        Assert.IsFalse(didUnmute);
+        Assert.AreEqual(0, setMuteCalls);
+        Assert.IsFalse(ownership.IsOwned);
     }
 }
