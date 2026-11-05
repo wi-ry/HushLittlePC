@@ -18,9 +18,12 @@ class SettingsForm : Form
     readonly TableLayoutPanel _root;
     readonly Panel _body;
     readonly Panel _bar;
+    readonly Func<Settings, bool> _trySaveSettings;
 
-    public SettingsForm(Settings s)
+    public SettingsForm(Settings s, Func<Settings, bool> trySaveSettings)
     {
+        _trySaveSettings = trySaveSettings;
+        SavedSettings = s;
         SuspendLayout();
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
@@ -91,7 +94,7 @@ class SettingsForm : Form
         // ---- Command bar: Save changes then Cancel, right-aligned ---------------
         var save = new Button
         {
-            Text = "Save changes", DialogResult = DialogResult.OK,
+            Text = "Save changes",
             Size = ButtonSize, Margin = new Padding(0), Enabled = false
         };
         var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Size = ButtonSize, Margin = new Padding(8, 0, 0, 0) };
@@ -99,13 +102,20 @@ class SettingsForm : Form
         CancelButton = cancel;
         save.Click += (_, _) =>
         {
-            s.IdleMinutes = (int)minutes.Value;
-            s.Enabled = cbEnabled.Checked;
-            s.UnmuteOnActivity = cbUnmute.Checked;
-            s.SkipWhileAudioPlaying = cbSkip.Checked;
-            s.MuteOnDeviceChange = cbDevice.Checked;
-            s.ShowNotification = cbNotify.Checked;
-            s.RunOnStartup = cbStartup.Checked;
+            var updatedSettings = new Settings
+            {
+                IdleMinutes = (int)minutes.Value,
+                Enabled = cbEnabled.Checked,
+                UnmuteOnActivity = cbUnmute.Checked,
+                SkipWhileAudioPlaying = cbSkip.Checked,
+                MuteOnDeviceChange = cbDevice.Checked,
+                ShowNotification = cbNotify.Checked,
+                RunOnStartup = cbStartup.Checked
+            };
+            if (!_trySaveSettings(updatedSettings)) return;
+
+            SavedSettings = updatedSettings;
+            DialogResult = DialogResult.OK;
         };
 
         void UpdateSaveButton() =>
@@ -159,6 +169,8 @@ class SettingsForm : Form
 
         ResumeLayout(true);
     }
+
+    public Settings SavedSettings { get; private set; }
 
     protected override void OnLoad(EventArgs e)
     {

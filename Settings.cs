@@ -28,19 +28,12 @@ static class SettingsStore
 
     public static void Save(Settings settings)
     {
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
 
-            // Write to a temp file and swap it in, so a crash mid-write can't leave a truncated settings.json.
-            var tempPath = FilePath + ".tmp";
-            File.WriteAllText(tempPath, SettingsJson.Serialize(settings));
-            File.Move(tempPath, FilePath, overwrite: true);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            // Settings are a convenience; failing to persist them must not crash the tray app.
-        }
+        // Write to a temp file and swap it in, so a crash mid-write can't leave a truncated settings.json.
+        var tempPath = FilePath + ".tmp";
+        File.WriteAllText(tempPath, SettingsJson.Serialize(settings));
+        File.Move(tempPath, FilePath, overwrite: true);
     }
 }
 

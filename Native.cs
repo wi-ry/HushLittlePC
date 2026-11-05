@@ -38,6 +38,12 @@ class AudioController : IDisposable
         get { using var d = GetDevice(); return d?.AudioEndpointVolume.Mute ?? false; }
     }
 
+    public bool IsMutedById(string deviceId)
+    {
+        try { using var d = _enumerator.GetDevice(deviceId); return d.AudioEndpointVolume.Mute; }
+        catch { return false; }
+    }
+
     public void SetMute(bool mute)
     {
         try { using var d = GetDevice(); if (d != null) d.AudioEndpointVolume.Mute = mute; }

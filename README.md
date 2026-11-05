@@ -77,7 +77,7 @@ Run the core unit tests directly with `dotnet test tests/HushLittlePC.Tests.cspr
 | Show a notification when audio is muted | Windows notification with an Unmute button each time audio is muted. |
 | Start Hush Little PC with Windows | Portable exe: adds an entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. Store version: enables its startup task (manage it under **Settings > Apps > Startup**; if you turn it off there, Windows only lets you turn it back on there). |
 
-Settings are saved with **Save changes**, which is enabled only after an option changes. Closing with unsaved edits asks for confirmation before discarding them.
+Settings are saved with **Save changes**, which is enabled only after an option changes. Closing with unsaved edits asks for confirmation before discarding them. If saving fails, an error is shown and the dialog stays open so you can retry.
 
 Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the file by hand, the idle time is kept within 1 to 1440 minutes. For the Store version Windows redirects this folder to the package's private storage, and it is removed when you uninstall.
 
@@ -86,7 +86,7 @@ Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the fi
 - Idle time comes from the Win32 `GetLastInputInfo` API, checked once per second. Only keyboard and mouse input counts as activity.
 - Notifications use the [Windows Community Toolkit notifications library](https://learn.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast) (`Microsoft.Toolkit.Uwp.Notifications`).
 - Muting uses the Windows Core Audio API (through [NAudio](https://github.com/naudio/NAudio)) on the current default playback device, which is looked up again on every check so output switches are picked up.
-- Muting is tracked so the app only unmutes what it muted itself. The decision logic lives in `IdleMutePolicy` and is covered by unit tests.
+- Idle-mute ownership is tracked by device ID, so returning from idle only unmutes the device Hush Little PC muted, even if Windows switched outputs meanwhile. The decision logic lives in `IdleMutePolicy` and is covered by unit tests.
 - Startup uses the per-user `Run` registry key for the portable exe and the manifest's `StartupTask` for the Store (MSIX) package, because packaged apps can't write to the `Run` key.
 - Output changes are detected through the Windows Core Audio device notifications (the default playback device changing).
 - "Audio is playing" is detected from the device's master peak meter.

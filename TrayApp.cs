@@ -5,14 +5,14 @@ namespace HushLittlePC;
 
 class TrayApp : ApplicationContext
 {
-    readonly Settings _settings = SettingsStore.Load();
+    Settings _settings = SettingsStore.Load();
     readonly AudioController _audio = new();
     readonly NotifyIcon _tray = new();
     readonly Control _ui = new();            // hidden control, used to hop back onto the UI thread
     DeviceWatcher? _watcher;
     readonly System.Windows.Forms.Timer _timer = new() { Interval = 1000 };
     SettingsForm? _form;
-    bool _mutedByUs;
+    readonly MuteOwnership _muteOwnership = new();
 
     public TrayApp()
     {
@@ -29,7 +29,11 @@ class TrayApp : ApplicationContext
         // "Unmute" button on the notification (arrives on a background thread)
         Notifier.OnUnmuteClicked(id =>
         {
-            if (_ui.IsHandleCreated) _ui.BeginInvoke(() => _audio.SetMuteById(id, false));
+            if (_ui.IsHandleCreated) _ui.BeginInvoke(() =>
+            {
+                _audio.SetMuteById(id, false);
+                _muteOwnership.Release(id);
+            });
         });
 
         _watcher = new DeviceWatcher();
@@ -62,8 +66,13 @@ class TrayApp : ApplicationContext
 
     void Toggle()
     {
+        var wasEnabled = _settings.Enabled;
         _settings.ToggleEnabled();
-        SettingsStore.Save(_settings);
+        if (!TrySaveSettings(_settings))
+        {
+            _settings.Enabled = wasEnabled;
+            return;
+        }
         RefreshUi();
     }
 
@@ -85,32 +94,39 @@ class TrayApp : ApplicationContext
         var idle = IdleTime.Get();
         var idleThreshold = TimeSpan.FromMinutes(_settings.IdleMinutes);
         var idleReached = idle >= idleThreshold;
-        var deviceMuted = (idleReached || (_mutedByUs && _settings.UnmuteOnActivity)) && _audio.IsMuted;
+        var mutedDeviceId = _muteOwnership.DeviceId;
+        var deviceMuted = idleReached
+            ? _audio.IsMuted
+            : _settings.UnmuteOnActivity &&
+              mutedDeviceId is { } ownedDeviceId &&
+              _audio.IsMutedById(ownedDeviceId);
         var audioPlaying = idleReached && _settings.SkipWhileAudioPlaying && _audio.IsPlaying;
         var decision = IdleMutePolicy.Evaluate(
             _settings.Enabled,
             idle,
             idleThreshold,
-            _mutedByUs,
+            _muteOwnership.IsOwned,
             deviceMuted,
             _settings.SkipWhileAudioPlaying,
             audioPlaying,
             _settings.UnmuteOnActivity);
 
         if (decision.ClearMuteOwnership)
-            _mutedByUs = false;
+            _muteOwnership.Release();
 
         switch (decision.Action)
         {
             case IdleAction.Mute:
                 var device = _audio.MuteDefault();
-                _mutedByUs = device is { WasMuted: false };
+                if (device is { } mutedDevice)
+                    _muteOwnership.Claim(mutedDevice.Id, mutedDevice.WasMuted);
                 if (device is { WasMuted: false } d &&
                     IdleMutePolicy.ShouldNotify(_settings.ShowNotification, d.WasMuted))
                     Notifier.Muted($"Muted {d.Name} after {_settings.IdleMinutes} min of inactivity.", d.Id);
                 break;
             case IdleAction.Unmute:
-                _audio.SetMute(false);
+                if (mutedDeviceId is { } id)
+                    _audio.SetMuteById(id, false);
                 break;
         }
     }
@@ -119,18 +135,37 @@ class TrayApp : ApplicationContext
     {
         if (_form is { IsDisposed: false }) { _form.Activate(); return; }
 
-        using (_form = new SettingsForm(_settings))
+        using (_form = new SettingsForm(_settings, TrySaveSettings))
         {
             // Modal, so OK/Cancel set DialogResult and close it. The 1-second idle
             // timer keeps running while it's open.
             if (_form.ShowDialog() == DialogResult.OK)
             {
-                SettingsStore.Save(_settings);
+                _settings = _form.SavedSettings;
                 StartupManager.Set(_settings.RunOnStartup);
                 RefreshUi();
             }
         }
         _form = null;
+    }
+
+    bool TrySaveSettings(Settings settings)
+    {
+        try
+        {
+            SettingsStore.Save(settings);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                _form,
+                $"Couldn't save settings. Check that the settings file is writable, then try again.\n\n{ex.Message}",
+                "Hush Little PC",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+            return false;
+        }
     }
 
     void RefreshUi()
