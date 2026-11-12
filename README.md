@@ -56,7 +56,7 @@ pre-commit install
 
 Before each commit, the hooks check whitespace, final newlines, merge-conflict markers and YAML syntax, and the commit message is checked against [Conventional Commits](https://www.conventionalcommits.org/). Changes to C# files or the project file also trigger a Release build and the unit tests. Run all checks manually with `pre-commit run --all-files`.
 
-Run the core unit tests directly with `dotnet test tests/HushLittlePC.Tests.csproj -c Release`. They cover idle-threshold muting, manually muted and app-muted devices, return-from-idle unmuting, skipping active playback, output-change gating, notification eligibility, mute transitions, enabled-state toggling, and settings defaults, limits and serialization. Windows-specific audio hardware, toast delivery, startup registration, tray rendering, and single-instance behavior still require Windows integration testing.
+Run the core unit tests directly with `dotnet test tests/HushLittlePC.Tests.csproj -c Release`. They cover idle-threshold muting, manually muted and app-muted devices, return-from-idle unmuting, skipping active playback, output-change gating, notification eligibility, mute transitions, enabled-state toggling, and settings defaults, limits and JSON compatibility. These tests do not exercise Windows audio hardware or shell integration; see [Windows integration testing](docs/windows-integration-testing.md) for the manual test matrix and safe test procedure.
 
 ## Usage
 
@@ -96,20 +96,29 @@ Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the fi
 
 | Path | Purpose |
 | --- | --- |
-| `Program.cs` | Entry point and single-instance check |
-| `TrayApp.cs` | Tray icon, idle-check timer, mute orchestration |
-| `IdleMutePolicy.cs` | Pure decision logic: when to mute, unmute or notify |
-| `MuteTransition.cs` | Mutes a device only if needed and reports its prior state |
-| `NativeMenu.cs` | Native Win32 tray menu |
-| `Notifier.cs` | Native Windows notifications with an Unmute button |
-| `SettingsForm.cs` | Settings window |
-| `SettingsModel.cs` | `Settings` type and JSON serialization (no Windows dependencies, so it is unit-tested) |
-| `Settings.cs` | Settings file storage and the start-with-Windows logic (registry or MSIX startup task) |
-| `Native.cs` | Idle-time, audio-device and output-change helpers |
-| `tests/` | MSTest unit tests for the platform-independent logic |
+| `Program.cs` | Entry point, single-instance check, and top-level exception logging |
+| `src/UI/TrayApp.cs` | Tray icon, idle-check timer, mute orchestration |
+| `src/Core/IdleMutePolicy.cs` | Pure decision logic: when to mute, unmute or notify |
+| `src/Core/MuteTransition.cs` | Mutes a device only if needed and reports its prior state |
+| `src/UI/NativeMenu.cs` | Native Win32 tray menu |
+| `src/UI/Notifier.cs` | Native Windows notifications with an Unmute button |
+| `src/UI/SettingsForm.cs` | Settings window |
+| `src/Core/SettingsModel.cs` | `Settings` type and JSON serialization (no Windows dependencies, so it is unit-tested) |
+| `src/Platform/Windows/SettingsStore.cs` | Settings file storage |
+| `src/Platform/Windows/StartupManager.cs` | Portable registry and MSIX startup-task integration |
+| `src/Platform/Windows/IdleTime.cs` | Win32 idle-time helper |
+| `src/Platform/Windows/AudioController.cs` | Windows audio control |
+| `src/Platform/Windows/DeviceWatcher.cs` | Default playback-device change notifications |
+| `src/Platform/Windows/IdleMonitor.cs` | Periodic idle-policy execution |
+| `src/Platform/Windows/AppLog.cs` | Best-effort local diagnostic logging |
+| `tests/` | MSTest coverage for platform-independent logic |
 | `packaging/` | MSIX manifest and Store assets |
-| `store/`, `docs/`, `resources/` | Store listing art, README images, embedded notification icon |
+| `store/`, `docs/`, `resources/` | Store listing art, README images, integration-testing guide, embedded notification icon |
 | `.github/` | CI, release and commit-lint workflows, Dependabot config, MSIX packaging script |
+
+## Diagnostics
+
+Application errors are written to `%LocalAppData%\HushLittlePC\app.log`. The log is capped at approximately 512 KiB; when it reaches the limit, the next write starts a fresh log. Logging is best-effort and will never prevent the app from running.
 
 ## Contributing
 
@@ -123,7 +132,7 @@ Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the fi
 
 1. Untick **Start Hush Little PC with Windows** in Settings.
 2. Right-click the tray icon and choose **Exit**.
-3. Delete the exe and, if you like, the `%AppData%\HushLittlePC` and `%LocalAppData%\HushLittlePC` folders (the latter holds the notification icon).
+3. Delete the exe and, if you like, the `%AppData%\HushLittlePC` and `%LocalAppData%\HushLittlePC` folders (the latter holds the diagnostic log and notification icon).
 
 For the Store version, uninstall it from **Settings > Apps > Installed apps** instead; that also removes its settings.
 
