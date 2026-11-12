@@ -92,7 +92,7 @@ public class SettingsStoreTests
         Assert.AreEqual(10, settings.IdleMinutes);
         Assert.AreEqual(1, errors.Count);
         Assert.AreEqual("Failed to load settings; defaults will be used.", errors[0].Message);
-        Assert.IsInstanceOfType<JsonException>(errors[0].Exception);
+        Assert.IsTrue(errors[0].Exception is JsonException);
     }
 
     sealed class TemporaryDirectory : IDisposable
