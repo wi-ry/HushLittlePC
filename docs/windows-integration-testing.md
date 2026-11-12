@@ -1,8 +1,25 @@
 # Windows integration testing
 
-The automated MSTest suite exercises platform-independent policy and settings-serialization logic. It does not emulate Windows audio endpoints, the notification system, the registry, the shell tray, or MSIX activation.
+The automated MSTest suite exercises platform-independent policy and settings-serialization logic. The Windows CI smoke test additionally launches the published portable application and checks process startup, single-instance enforcement, and restart after the first process exits. Neither suite emulates Windows audio endpoints, the notification system, the registry, the shell tray, or MSIX activation.
 
-Run the unit tests first:
+## Automated Windows smoke test
+
+The `smoke-test` job in `.github/workflows/ci.yml` runs on a Windows GitHub Actions runner. It publishes the portable application and runs:
+
+```powershell
+./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/smoke/HushLittlePC.exe
+```
+
+The script verifies that:
+
+1. The first application instance remains running after startup.
+2. A second instance exits successfully while the first instance is running.
+3. The first instance remains running after the second launch.
+4. A new instance can start after the original process has exited.
+
+The runner forcibly terminates each test process during cleanup. This is a process-level smoke test, not a test of the tray's Exit menu or graceful shutdown. It does not prove that audio muting, notifications, startup registration, settings UI, or MSIX activation work.
+
+Run the core unit tests first:
 
 ```powershell
 dotnet test tests/HushLittlePC.Tests.csproj -c Release
@@ -14,7 +31,7 @@ Build the Windows application:
 dotnet build HushLittlePC.csproj -c Release
 ```
 
-For integration testing, use a disposable Windows account or VM where practical. Record the Windows version, app version/commit, package type (portable or MSIX), and relevant audio-device setup with the results.
+For manual integration testing, use a disposable Windows account or VM where practical. Record the Windows version, app version/commit, package type (portable or MSIX), and relevant audio-device setup with the results.
 
 ## Scenario checklist
 
