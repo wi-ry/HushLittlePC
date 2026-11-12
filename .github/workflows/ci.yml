@@ -59,3 +59,25 @@ jobs:
           path: tests/TestResults/*.trx
           if-no-files-found: ignore
           retention-days: 14
+
+  smoke-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish portable application
+        shell: pwsh
+        run: |
+          dotnet publish HushLittlePC.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o artifacts/smoke
+          if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXITCODE" }
+
+      - name: Test startup and single-instance behavior
+        shell: pwsh
+        run: ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/smoke/HushLittlePC.exe
