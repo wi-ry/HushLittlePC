@@ -1,6 +1,6 @@
 # Windows integration testing
 
-The automated MSTest suite exercises platform-independent policy and settings-serialization logic. The Windows CI smoke test additionally launches the published portable application and checks process startup, single-instance enforcement, and restart after the first process exits. Neither suite emulates Windows audio endpoints, the notification system, the registry, the shell tray, or MSIX activation.
+The automated MSTest suite covers idle/mute policy, settings serialization, and settings file persistence. Persistence tests use isolated temporary directories and exercise directory creation, saving, overwriting, reloading, missing-file defaults, and malformed-file recovery. The Windows CI smoke test additionally launches the published portable application and checks process startup, single-instance enforcement, and restart after the first process exits. None of these tests emulates Windows audio endpoints, the notification system, the registry, the shell tray, or MSIX activation.
 
 ## Automated Windows smoke test
 
@@ -19,7 +19,18 @@ The script verifies that:
 
 The runner forcibly terminates each test process during cleanup. This is a process-level smoke test, not a test of the tray's Exit menu or graceful shutdown. It does not prove that audio muting, notifications, startup registration, settings UI, or MSIX activation work.
 
-Run the core unit tests first:
+## Settings persistence tests
+
+The MSTest suite links the production `SettingsStore` implementation and supplies a temporary file path and a test error callback. It verifies:
+
+- Loading a missing file returns default settings without reporting an error.
+- Saving creates the parent directory and writes settings that can be loaded again.
+- Saving over an existing settings file replaces the previous values.
+- Malformed JSON returns defaults and reports the parsing error through the supplied callback.
+
+These tests exercise the actual file I/O code without touching the user's real settings file or writing test errors to the user's application log.
+
+Run the core unit and persistence tests:
 
 ```powershell
 dotnet test tests/HushLittlePC.Tests.csproj -c Release
