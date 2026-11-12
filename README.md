@@ -41,7 +41,7 @@ You need the [.NET 8 SDK](https://dotnet.microsoft.com/download).
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
 ```
 
-The exe is created at `bin\\Release\\net8.0-windows10.0.19041.0\\win-x64\\publish\\HushLittlePC.exe`.
+The exe is created at `bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\HushLittlePC.exe`.
 
 To produce an exe that runs without the .NET runtime installed (larger file), use `--self-contained true` instead.
 
@@ -75,11 +75,11 @@ Run the core unit tests directly with `dotnet test tests/HushLittlePC.Tests.cspr
 | Stay unmuted while audio is playing | Skips muting while sound is being output. |
 | Mute when the audio output changes | Mutes the new default playback device whenever Windows switches outputs. |
 | Show a notification when audio is muted | Windows notification with an Unmute button each time audio is muted. |
-| Start Hush Little PC with Windows | Portable exe: adds an entry under `HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`. Store version: enables its startup task (manage it under **Settings > Apps > Startup**; if you turn it off there, Windows only lets you turn it back on there). |
+| Start Hush Little PC with Windows | Portable exe: adds an entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. Store version: enables its startup task (manage it under **Settings > Apps > Startup**; if you turn it off there, Windows only lets you turn it back on there). |
 
 Settings are saved with **Save changes**, which is enabled only after an option changes. Closing with unsaved edits asks for confirmation before discarding them.
 
-Settings are saved to `%AppData%\\HushLittlePC\\settings.json`. If you edit the file by hand, the idle time is kept within 1 to 1440 minutes. For the Store version Windows redirects this folder to the package's private storage, and it is removed when you uninstall.
+Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the file by hand, the idle time is kept within 1 to 1440 minutes. For the Store version Windows redirects this folder to the package's private storage, and it is removed when you uninstall.
 
 ## How it works
 
@@ -118,7 +118,7 @@ Settings are saved to `%AppData%\\HushLittlePC\\settings.json`. If you edit the 
 
 ## Diagnostics
 
-Application errors are written to `%LocalAppData%\\HushLittlePC\\app.log`. The log is capped at approximately 512 KiB; when it reaches the limit, the next write starts a fresh log. Logging is best-effort and will never prevent the app from running.
+Application errors are written to `%LocalAppData%\HushLittlePC\app.log`. The log is capped at approximately 512 KiB; when it reaches the limit, the next write starts a fresh log. Logging is best-effort and will never prevent the app from running.
 
 ## Contributing
 
@@ -132,7 +132,7 @@ Application errors are written to `%LocalAppData%\\HushLittlePC\\app.log`. The l
 
 1. Untick **Start Hush Little PC with Windows** in Settings.
 2. Right-click the tray icon and choose **Exit**.
-3. Delete the exe and, if you like, the `%AppData%\\HushLittlePC` and `%LocalAppData%\\HushLittlePC` folders (the latter holds the diagnostic log and notification icon).
+3. Delete the exe and, if you like, the `%AppData%\HushLittlePC` and `%LocalAppData%\HushLittlePC` folders (the latter holds the diagnostic log and notification icon).
 
 For the Store version, uninstall it from **Settings > Apps > Installed apps** instead; that also removes its settings.
 
