@@ -15,5 +15,7 @@
     <Compile Include="..\src\Core\MuteTransition.cs" Link="MuteTransition.cs" />
     <Compile Include="..\src\Core\IdleMutePolicy.cs" Link="IdleMutePolicy.cs" />
     <Compile Include="..\src\Core\SettingsModel.cs" Link="SettingsModel.cs" />
+    <Compile Include="..\src\Platform\Windows\AppLog.cs" Link="AppLog.cs" />
+    <Compile Include="..\src\Platform\Windows\SettingsStore.cs" Link="SettingsStore.cs" />
   </ItemGroup>
 </Project>
