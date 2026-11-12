@@ -1,4 +1,5 @@
 using HushLittlePC;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HushLittlePC.Tests;
@@ -88,5 +89,27 @@ public class SettingsTests
         Assert.IsFalse(settings.Enabled);
         Assert.AreEqual(10, settings.IdleMinutes);
         Assert.IsTrue(settings.ShowNotification);
+    }
+
+    [TestMethod]
+    public void SettingsJson_WhenUnknownFieldsArePresent_IgnoresThem()
+    {
+        var settings = SettingsJson.Deserialize("""{"Enabled":false,"FutureOption":true}""");
+
+        Assert.IsNotNull(settings);
+        Assert.IsFalse(settings.Enabled);
+        Assert.AreEqual(10, settings.IdleMinutes);
+    }
+
+    [TestMethod]
+    public void SettingsJson_WhenJsonIsMalformed_ThrowsJsonException()
+    {
+        Assert.ThrowsException<JsonException>(() => SettingsJson.Deserialize("""{"Enabled":"""));
+    }
+
+    [TestMethod]
+    public void SettingsJson_WhenDocumentIsNull_ReturnsNull()
+    {
+        Assert.IsNull(SettingsJson.Deserialize("null"));
     }
 }
