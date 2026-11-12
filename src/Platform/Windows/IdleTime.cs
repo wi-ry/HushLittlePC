@@ -1,6 +1,5 @@
+
 using System.Runtime.InteropServices;
-using NAudio.CoreAudioApi;
-using NAudio.CoreAudioApi.Interfaces;
 
 namespace HushLittlePC;
 
