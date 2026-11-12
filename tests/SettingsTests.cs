@@ -1,5 +1,5 @@
-using HushLittlePC;
 using System.Text.Json;
+using HushLittlePC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HushLittlePC.Tests;
@@ -104,7 +104,7 @@ public class SettingsTests
     [TestMethod]
     public void SettingsJson_WhenJsonIsMalformed_ThrowsJsonException()
     {
-        Assert.ThrowsException<JsonException>(() => SettingsJson.Deserialize("""{"Enabled":"""));
+        Assert.Throws<JsonException>(() => SettingsJson.Deserialize("""{"Enabled":"""));
     }
 
     [TestMethod]
