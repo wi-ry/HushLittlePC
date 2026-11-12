@@ -39,4 +39,4 @@ For integration testing, use a disposable Windows account or VM where practical.
 
 ## Diagnostic log
 
-The app writes best-effort error diagnostics to `%LocalAppData%\\HushLittlePC\\app.log`. The log is capped at approximately 512 KiB; when the limit is reached, the next write starts a fresh log. Logging failures are intentionally ignored so diagnostics cannot crash or block the tray app.
+The app writes best-effort error diagnostics to `%LocalAppData%\HushLittlePC\app.log`. The log is capped at approximately 512 KiB; when the limit is reached, the next write starts a fresh log. Logging failures are intentionally ignored so diagnostics cannot crash or block the tray app.
