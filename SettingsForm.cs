@@ -36,13 +36,17 @@ class SettingsForm : Form
         // ---- Group 1: idle time -------------------------------------------------
         var minutes = new NumericUpDown
         {
-            Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes, Width = 60,
+            Minimum = Settings.MinIdleMinutes,
+            Maximum = Settings.MaxIdleMinutes,
+            Width = 60,
             Value = Math.Clamp(s.IdleMinutes, Settings.MinIdleMinutes, Settings.MaxIdleMinutes),
             Margin = new Padding(0, 0, 8, 0),
         };
         var slider = new TrackBar
         {
-            Minimum = 1, Maximum = 120, TickStyle = TickStyle.None,
+            Minimum = 1,
+            Maximum = 120,
+            TickStyle = TickStyle.None,
             Value = Math.Clamp(s.IdleMinutes, 1, 120),
             Anchor = AnchorStyles.Left | AnchorStyles.Right,
             Margin = new Padding(0, 4, 0, 4),
@@ -74,7 +78,10 @@ class SettingsForm : Form
 
         _root = new TableLayoutPanel
         {
-            AutoSize = true, ColumnCount = 1, Dock = DockStyle.Top, BackColor = Color.White,
+            AutoSize = true,
+            ColumnCount = 1,
+            Dock = DockStyle.Top,
+            BackColor = Color.White,
         };
         _root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         _root.Controls.Add(Group("Idle time", timeRow, slider));
@@ -83,7 +90,8 @@ class SettingsForm : Form
 
         _body = new Panel
         {
-            Dock = DockStyle.Fill, BackColor = Color.White,
+            Dock = DockStyle.Fill,
+            BackColor = Color.White,
             Padding = new Padding(PageMargin, PageMargin, PageMargin, PageMargin - GroupGap),
         };
         _body.Controls.Add(_root);
@@ -91,8 +99,11 @@ class SettingsForm : Form
         // ---- Command bar: Save changes then Cancel, right-aligned ---------------
         var save = new Button
         {
-            Text = "Save changes", DialogResult = DialogResult.OK,
-            Size = ButtonSize, Margin = new Padding(0), Enabled = false
+            Text = "Save changes",
+            DialogResult = DialogResult.OK,
+            Size = ButtonSize,
+            Margin = new Padding(0),
+            Enabled = false
         };
         var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Size = ButtonSize, Margin = new Padding(8, 0, 0, 0) };
         AcceptButton = save;
@@ -143,7 +154,9 @@ class SettingsForm : Form
 
         var buttons = new FlowLayoutPanel
         {
-            Dock = DockStyle.Fill, FlowDirection = FlowDirection.RightToLeft, WrapContents = false,
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = false,
             Padding = new Padding(PageMargin, (BarHeight - ButtonSize.Height) / 2, PageMargin, 0),
         };
         buttons.Controls.Add(cancel);
@@ -197,7 +210,9 @@ class SettingsForm : Form
 
         var box = new GroupBox
         {
-            Text = caption, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Text = caption,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
             Padding = new Padding(12, 4, 12, 8),
             Anchor = AnchorStyles.Left | AnchorStyles.Right,
             Margin = new Padding(0, 0, 0, GroupGap),
