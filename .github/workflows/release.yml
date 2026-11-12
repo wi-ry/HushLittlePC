@@ -10,9 +10,7 @@ on:
       - completed
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: release
@@ -20,8 +18,12 @@ concurrency:
 
 jobs:
   release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     outputs:
       published: ${{ steps.semantic.outputs.new_release_published }}
       tag: ${{ steps.semantic.outputs.new_release_git_tag }}
@@ -29,10 +31,10 @@ jobs:
       notes: ${{ steps.semantic.outputs.new_release_notes }}
 
     steps:
-      - name: Checkout
+      - name: Checkout validated commit
         uses: actions/checkout@v7
         with:
-          ref: main
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
       - name: Run semantic-release
@@ -48,6 +50,8 @@ jobs:
     needs: release
     if: ${{ needs.release.outputs.published == 'true' }}
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -143,10 +147,10 @@ jobs:
 
           # 2. Turn the markdown notes into plain text that fits the Store limit
           $notes = $env:RELEASE_NOTES
-          $notes = $notes -replace '\[([^\]]+)\]\([^)]+\)', '$1'   # [text](url) -> text
-          $notes = $notes -replace '\s*\([0-9a-f]{7,}\)', ''       # drop "(abc1234)" commit refs
-          $notes = $notes -replace '(?m)^#+\s*', ''                # drop heading markers
-          $notes = $notes -replace '\*\*', ''                      # drop bold markers
+          $notes = $notes -replace '\\[([^\\]]+)\\]\\([^)]+\\)', '$1'   # [text](url) -> text
+          $notes = $notes -replace '\\s*\\([0-9a-f]{7,}\\)', ''       # drop "(abc1234)" commit refs
+          $notes = $notes -replace '(?m)^#+\\s*', ''                # drop heading markers
+          $notes = $notes -replace '\\*\\*', ''                      # drop bold markers
           $notes = $notes.Trim()
           if ($notes.Length -gt 1500) { $notes = $notes.Substring(0, 1497) + '...' }
 
