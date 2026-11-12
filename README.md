@@ -123,7 +123,7 @@ Application errors are written to `%LocalAppData%\HushLittlePC\app.log`. The log
 ## Contributing
 
 - Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/) (for example `fix: ...`, `feat: ...`), because the title becomes the commit message on `main` and drives versioning. CI lints the title on every pull request, and the check is required before merging. The pre-commit hook gives the same feedback locally for individual commits.
-- CI builds the app and runs the unit tests on every pull request and push to `main`.
+- CI runs formatting, build and unit tests, plus a Windows portable-app smoke test for startup, single-instance enforcement and restart, on every pull request and push to `main`.
 - When CI succeeds on `main`, [semantic-release](https://semantic-release.gitbook.io/) creates the version tag and GitHub release, attaches the portable exe, and submits the MSIX package to the Microsoft Store.
 - Store publishing needs these repository settings: variables `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER` and `MSIX_PUBLISHER_DISPLAY_NAME`, and secrets `TENANT_ID`, `SELLER_ID`, `CLIENT_ID`, `SECRET_VALUE` and `STORE_ID`. The release workflow stops early with a clear message if the variables are missing.
 - Enable the [pre-commit checks](#pre-commit-checks) to catch problems before pushing.
