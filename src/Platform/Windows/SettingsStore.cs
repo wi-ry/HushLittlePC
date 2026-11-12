@@ -1,4 +1,3 @@
-
 using System.Text.Json;
 
 namespace HushLittlePC;
@@ -18,7 +17,7 @@ static class SettingsStore
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
-            // Unreadable or corrupt settings file: fall back to defaults.
+            AppLog.Error("Failed to load settings; defaults will be used.", ex);
         }
         return new Settings();
     }
@@ -36,8 +35,7 @@ static class SettingsStore
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Settings are a convenience; failing to persist them must not crash the tray app.
+            AppLog.Error("Failed to save settings.", ex);
         }
     }
 }
-
