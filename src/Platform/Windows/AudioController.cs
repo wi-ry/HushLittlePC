@@ -4,25 +4,6 @@ using NAudio.CoreAudioApi.Interfaces;
 
 namespace HushLittlePC;
 
-static class IdleTime
-{
-    [StructLayout(LayoutKind.Sequential)]
-    struct LASTINPUTINFO { public uint cbSize; public uint dwTime; }
-
-    [DllImport("user32.dll")]
-    static extern bool GetLastInputInfo(ref LASTINPUTINFO info);
-
-    public static TimeSpan Get()
-    {
-        var info = new LASTINPUTINFO { cbSize = (uint)Marshal.SizeOf<LASTINPUTINFO>() };
-        if (!GetLastInputInfo(ref info)) return TimeSpan.Zero;
-        uint idleMs = unchecked((uint)Environment.TickCount - info.dwTime);
-        return TimeSpan.FromMilliseconds(idleMs);
-    }
-}
-
-/// <summary>Wraps the default playback device. The device is re-queried every call so
-/// switching outputs (headphones, HDMI...) is handled automatically.</summary>
 class AudioController : IDisposable
 {
     readonly MMDeviceEnumerator _enumerator = new();
@@ -96,37 +77,3 @@ class AudioController : IDisposable
 /// <summary>Raises <see cref="DefaultOutputChanged"/> when Windows switches the default playback device
 /// (Bluetooth connects, USB/HDMI device appears or disappears, the user picks another output...).
 /// Events arrive on a COM thread, so subscribers should marshal to the UI thread.</summary>
-sealed class DeviceWatcher : IMMNotificationClient, IDisposable
-{
-    readonly MMDeviceEnumerator _enumerator = new();
-    string? _lastId;
-    DateTime _lastAt = DateTime.MinValue;
-
-    public event Action<string>? DefaultOutputChanged;
-
-    public DeviceWatcher() => _enumerator.RegisterEndpointNotificationCallback(this);
-
-    public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
-    {
-        // Windows reports each role separately; Multimedia is the one that matters for normal playback.
-        if (flow != DataFlow.Render || role != Role.Multimedia || string.IsNullOrEmpty(defaultDeviceId)) return;
-
-        // Ignore duplicate notifications for the same device in quick succession.
-        if (defaultDeviceId == _lastId && DateTime.UtcNow - _lastAt < TimeSpan.FromSeconds(2)) return;
-        _lastId = defaultDeviceId;
-        _lastAt = DateTime.UtcNow;
-
-        DefaultOutputChanged?.Invoke(defaultDeviceId);
-    }
-
-    public void OnDeviceStateChanged(string deviceId, DeviceState newState) { }
-    public void OnDeviceAdded(string pwstrDeviceId) { }
-    public void OnDeviceRemoved(string deviceId) { }
-    public void OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key) { }
-
-    public void Dispose()
-    {
-        try { _enumerator.UnregisterEndpointNotificationCallback(this); } catch { }
-        _enumerator.Dispose();
-    }
-}
