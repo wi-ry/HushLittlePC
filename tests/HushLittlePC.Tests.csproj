@@ -12,8 +12,8 @@
     <PackageReference Include="MSTest.TestFramework"   Version="4.5.2" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MuteTransition.cs" Link="MuteTransition.cs" />
-    <Compile Include="..\IdleMutePolicy.cs" Link="IdleMutePolicy.cs" />
-    <Compile Include="..\SettingsModel.cs" Link="SettingsModel.cs" />
+    <Compile Include="..\src\Core\MuteTransition.cs" Link="MuteTransition.cs" />
+    <Compile Include="..\src\Core\IdleMutePolicy.cs" Link="IdleMutePolicy.cs" />
+    <Compile Include="..\src\Core\SettingsModel.cs" Link="SettingsModel.cs" />
   </ItemGroup>
 </Project>

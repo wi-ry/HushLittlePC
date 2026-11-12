@@ -7,15 +7,18 @@ class TrayApp : ApplicationContext
 {
     readonly Settings _settings = SettingsStore.Load();
     readonly AudioController _audio = new();
+    readonly IdleMonitor _idleMonitor;
     readonly NotifyIcon _tray = new();
     readonly Control _ui = new();            // hidden control, used to hop back onto the UI thread
     DeviceWatcher? _watcher;
     readonly System.Windows.Forms.Timer _timer = new() { Interval = 1000 };
     SettingsForm? _form;
-    bool _mutedByUs;
 
     public TrayApp()
     {
+        _idleMonitor = new IdleMonitor(_settings, _audio);
+        _idleMonitor.NotificationRequested += (message, deviceId) => Notifier.Muted(message, deviceId);
+
         NativeMenu.FollowSystemTheme();
 
         _tray.MouseUp += (_, e) => { if (e.Button == MouseButtons.Right) ShowMenu(); };
@@ -78,42 +81,7 @@ class TrayApp : ApplicationContext
             Notifier.Muted($"Muted {d.Name} because the audio output changed.", deviceId);
     }
 
-    void Tick()
-    {
-        if (!_settings.Enabled) return;
-
-        var idle = IdleTime.Get();
-        var idleThreshold = TimeSpan.FromMinutes(_settings.IdleMinutes);
-        var idleReached = idle >= idleThreshold;
-        var deviceMuted = (idleReached || (_mutedByUs && _settings.UnmuteOnActivity)) && _audio.IsMuted;
-        var audioPlaying = idleReached && _settings.SkipWhileAudioPlaying && _audio.IsPlaying;
-        var decision = IdleMutePolicy.Evaluate(
-            _settings.Enabled,
-            idle,
-            idleThreshold,
-            _mutedByUs,
-            deviceMuted,
-            _settings.SkipWhileAudioPlaying,
-            audioPlaying,
-            _settings.UnmuteOnActivity);
-
-        if (decision.ClearMuteOwnership)
-            _mutedByUs = false;
-
-        switch (decision.Action)
-        {
-            case IdleAction.Mute:
-                var device = _audio.MuteDefault();
-                _mutedByUs = device is { WasMuted: false };
-                if (device is { WasMuted: false } d &&
-                    IdleMutePolicy.ShouldNotify(_settings.ShowNotification, d.WasMuted))
-                    Notifier.Muted($"Muted {d.Name} after {_settings.IdleMinutes} min of inactivity.", d.Id);
-                break;
-            case IdleAction.Unmute:
-                _audio.SetMute(false);
-                break;
-        }
-    }
+    void Tick() => _idleMonitor.Tick();
 
     void ShowSettings()
     {
