@@ -97,11 +97,9 @@ After testing, restore the original default audio device, mute state, startup co
 
 ## Test safety and reporting
 
-- Record the original default audio device, mute state, startup setting, and notification configuration before testing.
-- Restore the original audio and startup configuration during cleanup, including after a failed test.
-- Do not test against a user's normal startup configuration or disrupt an active audio session.
-- If the environment lacks suitable audio hardware, shell access, or an MSIX identity, mark the scenario **Not run**. A passing unit test or successful build is not a substitute.
-- For each scenario, record the steps, expected result, observed result, and pass/fail/not-run status.
+- Use a disposable Windows account or VM where practical; do not disrupt an active audio session or a user's normal startup configuration.
+- If the environment lacks suitable audio hardware, shell access, or an MSIX identity, mark the scenario **Not run**.
+- For each failure, record the steps, expected result, observed result, and relevant non-sensitive diagnostic evidence.
 
 ## Diagnostic log
 
