@@ -8,11 +8,9 @@ namespace HushLittlePC.WinUI;
 public partial class App : Microsoft.UI.Xaml.Application
 {
     private Mutex? _instanceMutex;
-    private DispatcherQueue? _dispatcherQueue;
     private DispatcherQueueTimer? _timer;
     private Settings? _settings;
     private AudioController? _audio;
-    private IdleMonitor? _idleMonitor;
     private DeviceWatcher? _deviceWatcher;
     private Forms.NotifyIcon? _tray;
     private MainWindow? _window;
@@ -53,10 +51,8 @@ public partial class App : Microsoft.UI.Xaml.Application
         var deviceWatcher = new DeviceWatcher();
         var timer = dispatcherQueue.CreateTimer();
 
-        _dispatcherQueue = dispatcherQueue;
         _settings = settings;
         _audio = audio;
-        _idleMonitor = idleMonitor;
         _tray = tray;
         _deviceWatcher = deviceWatcher;
         _timer = timer;
@@ -222,7 +218,6 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         _audio?.Dispose();
         _audio = null;
-        _idleMonitor = null;
 
         _instanceMutex?.Dispose();
         _instanceMutex = null;
