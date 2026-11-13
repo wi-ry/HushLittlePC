@@ -14,7 +14,6 @@ class SettingsForm : Form
     readonly Action _settingsChanged;
     readonly Action _exit;
     readonly Panel _content;
-    readonly Label _status;
     readonly Button _settingsNav;
     readonly Button _aboutNav;
 
@@ -63,9 +62,9 @@ class SettingsForm : Form
 
         var statusLine = new Panel { Dock = DockStyle.Bottom, Height = 42, BackColor = Color.Transparent };
         var statusDot = new Label { Text = "●", ForeColor = Color.FromArgb(34, 197, 94), AutoSize = true, Location = new Point(2, 11) };
-        _status = new Label { Text = "Monitoring audio devices", ForeColor = Color.FromArgb(30, 45, 68), AutoSize = true, Location = new Point(24, 10), Font = new Font("Segoe UI", 9.5F) };
+        var status = new Label { Text = "Monitoring audio devices", ForeColor = Color.FromArgb(30, 45, 68), AutoSize = true, Location = new Point(24, 10), Font = new Font("Segoe UI", 9.5F) };
         statusLine.Controls.Add(statusDot);
-        statusLine.Controls.Add(_status);
+        statusLine.Controls.Add(status);
         sidebar.Controls.Add(statusLine);
 
         var main = new Panel { Dock = DockStyle.Fill, BackColor = Page, Padding = new Padding(28, 24, 28, 20) };
@@ -73,6 +72,12 @@ class SettingsForm : Form
         _content = new Panel { Dock = DockStyle.Fill, BackColor = Page, AutoScroll = true };
         main.Controls.Add(_content);
 
+        ShowSettingsPage();
+    }
+
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
         ShowSettingsPage();
     }
 
@@ -91,7 +96,7 @@ class SettingsForm : Form
         page.Size = new Size(Math.Max(620, _content.ClientSize.Width - 24), 10);
         _content.Controls.Add(page);
 
-        page.Controls.Add(PageHeading("Settings", "Configure how Hush Little PC manages your audio."));
+        page.Controls.Add(PageHeading("Settings", "Configure how Hush Little PC manages your audio.", page.Width - 4));
 
         AddSwitchCard(page, "Enable Hush Little PC", "Automatically mute your audio when you're idle.", _settings.Enabled, value => { _settings.Enabled = value; Changed(); });
         AddIdleCard(page);
@@ -173,7 +178,7 @@ class SettingsForm : Form
         _content.Controls.Clear();
         var page = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false, BackColor = Page, Padding = new Padding(0) };
         _content.Controls.Add(page);
-        page.Controls.Add(PageHeading("About", "A quieter PC, without the extra effort."));
+        page.Controls.Add(PageHeading("About", "A quieter PC, without the extra effort.", Math.Max(620, _content.ClientSize.Width - 24)));
         var card = NewCard(Math.Max(620, _content.ClientSize.Width - 24), 190);
         var logo = IconBubble("◔");
         logo.Size = new Size(72, 72);
@@ -212,10 +217,10 @@ class SettingsForm : Form
         Cursor = Cursors.Hand
     };
 
-    static Control PageHeading(string title, string subtitle)
+    static Control PageHeading(string title, string subtitle, int width)
     {
         // A two-line heading is hosted by a fixed-height panel so the page can flow naturally.
-        var host = new Panel { Width = 760, Height = 88, BackColor = Page, Margin = new Padding(0, 0, 0, 12) };
+        var host = new Panel { Width = width, Height = 88, BackColor = Page, Margin = new Padding(0, 0, 0, 12) };
         host.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI Semibold", 25F), AutoSize = true, ForeColor = Color.FromArgb(12, 20, 38), Location = new Point(0, 0) });
         host.Controls.Add(new Label { Text = subtitle, Font = new Font("Segoe UI", 11F), AutoSize = true, ForeColor = Muted, Location = new Point(2, 48) });
         return host;
@@ -278,6 +283,7 @@ sealed class SwitchControl : CheckBox
         int x = Checked ? track.Right - diameter - 3 : track.Left + 3;
         using var thumb = new SolidBrush(Color.White);
         e.Graphics.FillEllipse(thumb, x, track.Top + 3, diameter, diameter);
+        if (Focused && ShowFocusCues) ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(track, -2, -2));
     }
 
     static GraphicsPath Rounded(Rectangle bounds, int radius)
