@@ -1,14 +1,16 @@
 # Windows integration testing
 
-The automated MSTest suite covers idle/mute policy, settings serialization, and settings file persistence. Persistence tests use isolated temporary directories and exercise directory creation, saving, overwriting, reloading, missing-file defaults, and malformed-file recovery. The Windows CI smoke test additionally launches the published portable application and checks process startup, single-instance enforcement, and restart after the first process exits. None of these tests emulates Windows audio endpoints, the notification system, the registry, the shell tray, or MSIX activation.
+The automated MSTest suite covers idle/mute policy, settings serialization, settings file persistence, default-output notification filtering, notification Unmute argument validation, and portable startup registry writes. The startup tests create a unique temporary subkey under the current user's registry hive and remove it during cleanup; they never write to the real Windows Run key. The Windows CI smoke test launches the published portable application and checks process startup, single-instance enforcement, and restart after the first process exits.
+
+These automated checks exercise policy and integration boundaries, not physical Windows audio endpoints or the interactive shell. They do not prove that a real audio endpoint changes mute state, that Windows displays or activates a toast, that the tray menu works, or that MSIX activation and StartupTask registration work.
 
 ## Automated Windows smoke test
 
-The `smoke-test` job in `.github/workflows/ci.yml` runs on a Windows GitHub Actions runner. It publishes the portable application and runs:
+The \`smoke-test\` job in \`.github/workflows/ci.yml\` runs on a Windows GitHub Actions runner. It publishes the portable application and runs:
 
-```powershell
+\`\`\`powershell
 ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/smoke/HushLittlePC.exe
-```
+\`\`\`
 
 The script verifies that:
 
@@ -17,45 +19,49 @@ The script verifies that:
 3. The first instance remains running after the second launch.
 4. A new instance can start after the original process has exited.
 
-The runner forcibly terminates each test process during cleanup. This is a process-level smoke test, not a test of the tray's Exit menu or graceful shutdown. It does not prove that audio muting, notifications, startup registration, settings UI, or MSIX activation work.
+The runner forcibly terminates each test process during cleanup. This is a process-level smoke test, not a test of the tray's Exit menu or graceful shutdown.
 
-## Settings persistence tests
+## Automated integration-boundary tests
 
-The MSTest suite links the production `SettingsStore` implementation and supplies a temporary file path and a test error callback. It verifies:
+Run the complete suite on Windows:
 
-- Loading a missing file returns default settings without reporting an error.
-- Saving creates the parent directory and writes settings that can be loaded again.
-- Saving over an existing settings file replaces the previous values.
-- Malformed JSON returns defaults and reports the parsing error through the supplied callback.
-
-These tests exercise the actual file I/O code without touching the user's real settings file or writing test errors to the user's application log.
-
-Run the core unit and persistence tests:
-
-```powershell
+\`\`\`powershell
 dotnet test tests/HushLittlePC.Tests.csproj -c Release
-```
+\`\`\`
+
+The additional tests cover:
+
+- Default-output callback filtering: only render/multimedia notifications with a device ID are accepted.
+- Duplicate suppression: repeated notifications for the same device within two seconds are ignored, while a different device or a notification at the two-second boundary is accepted.
+- Toast activation validation: only the \`unmute\` action with a non-empty device ID is dispatched.
+- Portable startup registry behavior: the exact quoted executable command is written as a string value and removed when startup is disabled or the executable path is unavailable. Tests use a unique temporary HKCU subkey and clean it up; they do not touch the production Run key.
+
+The output-change and toast tests exercise the same pure policy helpers used by the Windows callbacks. They do not emulate Core Audio COM notifications or activate a real Windows toast. Portable startup tests exercise the registry-writing helper with a real registry key, while leaving the production Run key untouched. Packaged StartupTask behavior is not covered.
+
+The settings persistence tests link the production \`SettingsStore\` implementation and use an isolated temporary file path and test error callback. They verify missing-file defaults, directory creation, save/reload, overwrite, and malformed-file recovery without touching the user's real settings file or application log.
 
 Build the Windows application:
 
-```powershell
+\`\`\`powershell
 dotnet build HushLittlePC.csproj -c Release
-```
+\`\`\`
+
+## Remaining manual scenarios
+
+These scenarios still require a real desktop session, physical or virtual audio endpoint, or MSIX package identity:
+
+| Area | Scenarios | Why manual |
+| --- | --- | --- |
+| Audio | Verify actual mute/unmute against manually muted and app-muted devices | Requires a real Core Audio endpoint and observable device state |
+| Idle behavior | Confirm activity and playback behavior end-to-end | Requires real system idle time and audio playback |
+| Output changes | Switch default output; disconnect/reconnect Bluetooth, USB, or HDMI | Requires Windows endpoint changes |
+| Notifications | Display a toast and click Unmute | Requires the Windows notification platform and interactive user session |
+| Startup | Verify startup after sign-in for portable and MSIX packages | Requires Windows logon and, for MSIX, package identity and StartupTask |
+| Tray UI | Left-click, right-click menu, settings window, themes, and Exit | Requires an interactive desktop and shell tray |
+| Graceful lifecycle | Exit through the tray while monitoring is active; verify resources are released | Current smoke test terminates processes forcibly |
+| Packaging | Install, launch, upgrade, and uninstall MSIX | Requires a valid package and signing/identity setup |
 
 For manual integration testing, use a disposable Windows account or VM where practical. Record the Windows version, app version/commit, package type (portable or MSIX), and relevant audio-device setup with the results.
-
-## Scenario checklist
-
-| Area | Scenarios | Notes |
-| --- | --- | --- |
-| Audio | Default playback device available and unavailable; manually muted and app-muted states | Confirm the app only unmutes devices it muted itself. |
-| Idle behavior | Threshold reached; activity resumes; audio-playing skip enabled/disabled | Use a short idle threshold in a test profile. |
-| Output changes | Change the default output; disconnect and reconnect a device | Verify the new default device is the one affected. |
-| Notifications | Notifications enabled/disabled; activate the Unmute action | Confirm the action unmutes the intended device. |
-| Startup | Enable and disable startup registration | Test the portable Run-key path and packaged StartupTask path separately. |
-| Tray UI | Left-click toggle; right-click menu; light and dark themes | Check icon state, menu actions, and clean exit. |
-| Process lifecycle | Launch a second instance; exit while monitoring is active | Confirm the second instance exits and resources are released. |
-| Packaging | Install, launch, upgrade, and uninstall MSIX; launch portable build | Verify settings behavior for each package type. |
 
 ## Manual validation record
 
@@ -103,4 +109,4 @@ After testing, restore the original default audio device, mute state, startup co
 
 ## Diagnostic log
 
-The app writes best-effort error diagnostics to `%LocalAppData%\\HushLittlePC\\app.log`. The log is capped at approximately 512 KiB; when the limit is reached, the next write starts a fresh log. Logging failures are intentionally ignored so diagnostics cannot crash or block the tray app.
+The app writes best-effort error diagnostics to \`%LocalAppData%\\HushLittlePC\\app.log\`. The log is capped at approximately 512 KiB; when the limit is reached, the next write starts a fresh log. Logging failures are intentionally ignored so diagnostics cannot crash or block the tray app.
