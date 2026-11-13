@@ -36,7 +36,7 @@ The portable and Microsoft Store distributions include the required .NET and Win
 
 ## Build
 
-Install the [.NET 8 SDK](https://dotnet.microsoft.com/download).
+Install the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 Restore and build the complete solution:
 
@@ -54,7 +54,7 @@ dotnet publish src/WinUI/HushLittlePC.WinUI.csproj -c Release -r win-x64 --self-
   -p:IncludeAllContentForSelfExtract=true -p:PublishSingleFile=true
 ```
 
-The portable executable is created under `src/WinUI/bin/Release/net8.0-windows10.0.19041.0/win-x64/publish/`.
+The portable executable is created under `src/WinUI/bin/Release/net10.0-windows10.0.19041.0/win-x64/publish/`.
 
 The Store MSIX package is assembled by `.github/scripts/package-msix.ps1`. The release workflow runs both packaging paths after CI succeeds on `main`.
 
