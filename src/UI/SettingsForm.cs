@@ -155,10 +155,11 @@ class SettingsForm : Form
         _content.Resize += (_, _) => ResizeCards();
         mainLayout.Controls.Add(_content, 0, 1);
 
-        var footer = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Page, Margin = Padding.Empty, Padding = new Padding(0, 8, 0, 0) };
+        var footer = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, BackColor = Page, Margin = Padding.Empty, Padding = new Padding(0, 8, 0, 0) };
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        var footerRule = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Border };
+        footer.RowStyles.Add(new RowStyle(SizeType.Absolute, 1));
+        footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        var footerRule = new Panel { Dock = DockStyle.Fill, BackColor = Border };
         var footerContent = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Page, Margin = new Padding(0, 1, 0, 0) };
         footerContent.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         footerContent.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -167,9 +168,7 @@ class SettingsForm : Form
         learn.LinkClicked += (_, _) => ShowAboutPage();
         footerContent.Controls.Add(learn, 1, 0);
         footer.Controls.Add(footerRule, 0, 0);
-        footer.SetColumnSpan(footerRule, 2);
-        footer.Controls.Add(footerContent, 0, 0);
-        footer.SetColumnSpan(footerContent, 2);
+        footer.Controls.Add(footerContent, 0, 1);
         mainLayout.Controls.Add(footer, 0, 2);
 
         BuildSettingsCards();
@@ -240,6 +239,8 @@ class SettingsForm : Form
 
     void BuildSettingsCards()
     {
+        if (_settingsCards.Parent != _content)
+            _content.Controls.Add(_settingsCards);
         _settingsCards.SuspendLayout();
         _settingsCards.Controls.Clear();
         AddSwitchCard("◖))", "Enable Hush Little PC", "Automatically mute your audio when you're idle.", _settings.Enabled, value => { _settings.Enabled = value; Changed(); });
