@@ -393,14 +393,10 @@ class SettingsForm : Form
 
     void AddIcon(Panel card, string glyph)
     {
-        var icon = new Label
+        var icon = new IconGlyph(glyph)
         {
-            Text = glyph,
             Dock = DockStyle.Fill,
-            TextAlign = ContentAlignment.MiddleCenter,
-            Font = new Font("Segoe UI Symbol", 21F),
             ForeColor = Accent,
-            BackColor = IconSurface,
             Margin = new Padding(0, 3, 12, 3)
         };
         card.Controls[0].Controls.Add(icon, 0, 0);
@@ -548,5 +544,31 @@ sealed class RoundedCard : Panel
         path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
         path.CloseFigure();
         e.Graphics.DrawPath(pen, path);
+    }
+}
+
+
+sealed class IconGlyph : Control
+{
+    readonly string _glyph;
+
+    public IconGlyph(string glyph)
+    {
+        _glyph = glyph;
+        Font = new Font("Segoe UI Symbol", 21F);
+        BackColor = Color.Transparent;
+        SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        int diameter = Math.Min(58, Math.Min(ClientSize.Width, ClientSize.Height) - 4);
+        if (diameter <= 0) return;
+        var bounds = new Rectangle((ClientSize.Width - diameter) / 2, (ClientSize.Height - diameter) / 2, diameter - 1, diameter - 1);
+        using var brush = new SolidBrush(IconSurface);
+        e.Graphics.FillEllipse(brush, bounds);
+        TextRenderer.DrawText(e.Graphics, _glyph, Font, bounds, ForeColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
     }
 }
