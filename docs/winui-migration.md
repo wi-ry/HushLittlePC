@@ -2,28 +2,33 @@
 
 ## Objective
 
-Move the Hush Little PC desktop interface to WinUI 3 while preserving its existing audio and Windows integration behaviour.
+Move Hush Little PC's primary desktop experience to WinUI 3 so the application uses native Windows UI controls and Fluent design while preserving the existing audio and Windows integration behaviour.
 
 ## Architecture decisions
 
-- Keep the existing WinForms application buildable during migration.
-- Introduce WinUI as a separate C# project under `src/WinUI`.
-- Retain .NET 8 for the initial migration.
-- Use the stable Windows App SDK 2.6.5 package, not preview or experimental builds.
-- Extract reusable logic into a UI-independent core before connecting audio, settings, notifications, startup, or tray behaviour.
-- Do not make WinUI the default launch target until functional parity and packaging are verified.
+- Keep the application in C# and retain .NET 8 for this migration.
+- Use the stable Windows App SDK 2.6.5 package.
+- Keep domain logic and settings persistence in the UI-independent `HushLittlePC.Core` project.
+- Keep audio, idle monitoring, device watching, notifications, startup, and tray hosting in `HushLittlePC.Windows`.
+- Use WinUI 3 for the Settings/About window and application lifecycle.
+- Retain the WinForms project as a buildable fallback until manual Windows acceptance is complete.
+- Publish the WinUI application for portable and Microsoft Store releases.
 
-## Pull request sequence
+## Migration PR sequence
 
-1. Foundation: WinUI project, native navigation shell, placeholder Settings/About pages, independent Windows CI.
-2. Core extraction: shared settings, persistence, idle-mute policy, and tests.
-3. Settings migration: native controls connected to shared settings.
-4. About and diagnostics migration.
-5. Application lifecycle: single-instance behaviour, tray, notifications, startup, graceful shutdown.
-6. Audio-device integration and regression testing.
-7. Portable and installer packaging, including Windows App Runtime deployment.
-8. Cutover after feature parity, accessibility, DPI, and packaging checks; remove WinForms UI separately.
+1. **#22 – Foundation:** WinUI 3 project, native navigation shell, placeholder pages, and Windows build.
+2. **#23 – Shared core:** move the existing settings model and policy logic into a reusable core project.
+3. **#24 – Shared persistence:** move settings storage and diagnostics into Core.
+4. **#25 – Settings page:** native WinUI controls backed by the shared settings model.
+5. **#26 – About and diagnostics:** version/runtime details and copyable diagnostics.
+6. **#27 – Windows services:** shared audio, idle, device, startup, notification, and tray services.
+7. **#28 – Application lifecycle:** connect WinUI to the shared services, tray actions, close-to-tray, and single-instance guard.
+8. **#29 – Distribution:** self-contained portable single-file output and MSIX packaging.
+9. **#30 – Fluent finishing:** Mica, adaptive navigation, native window sizing, and accessible control names.
+10. **#31 – Cutover and documentation:** solution/CI consolidation, release target, and updated user/developer documentation.
 
-## Current scope
+## Cutover state
 
-The foundation does not launch WinUI from the existing tray process and does not duplicate audio or settings behaviour. It is a buildable migration target, not yet a replacement application.
+The WinUI application is the intended release target. The legacy WinForms project remains in the solution and continues to build as a fallback, but the release workflow publishes the WinUI application.
+
+The migration is not considered fully accepted until manual Windows testing covers physical audio endpoints, tray interaction, close-to-tray and graceful exit, notifications, startup registration, MSIX activation, Mica/theme behavior, DPI scaling, keyboard navigation, and Narrator. Do not remove the legacy WinForms UI until those checks have been completed successfully.
