@@ -1,6 +1,3 @@
-using System.Drawing.Drawing2D;
-using System.Runtime.InteropServices;
-
 namespace HushLittlePC;
 
 class TrayApp : ApplicationContext
@@ -104,46 +101,11 @@ class TrayApp : ApplicationContext
     void RefreshUi()
     {
         var old = _tray.Icon;
-        _tray.Icon = MakeIcon(_settings.Enabled);
+        _tray.Icon = TrayIconFactory.MakeIcon(_settings.Enabled);
         old?.Dispose();
         _tray.Text = _settings.Enabled
             ? $"Hush Little PC: ON ({_settings.IdleMinutes} min)"
             : "Hush Little PC: OFF";
-    }
-
-    [DllImport("user32.dll")] static extern bool DestroyIcon(IntPtr handle);
-
-    internal static Icon MakeIcon(bool enabled)
-    {
-        using var bmp = new Bitmap(32, 32);
-        using (var g = Graphics.FromImage(bmp))
-        {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            var color = enabled ? Color.FromArgb(46, 160, 67) : Color.FromArgb(140, 140, 140);
-            using var brush = new SolidBrush(color);
-            using var pen = new Pen(color, 3f);
-
-            // speaker body
-            g.FillPolygon(brush, new[] {
-                new Point(3, 12), new Point(10, 12), new Point(18, 5),
-                new Point(18, 27), new Point(10, 20), new Point(3, 20) });
-
-            if (enabled)
-            {
-                g.DrawArc(pen, 14, 9, 10, 14, -60, 120);
-                g.DrawArc(pen, 12, 4, 18, 24, -60, 120);
-            }
-            else
-            {
-                using var red = new Pen(Color.FromArgb(200, 50, 50), 3.5f);
-                g.DrawLine(red, 22, 11, 30, 21);
-                g.DrawLine(red, 30, 11, 22, 21);
-            }
-        }
-        IntPtr h = bmp.GetHicon();
-        var icon = (Icon)Icon.FromHandle(h).Clone();
-        DestroyIcon(h);
-        return icon;
     }
 
     void ExitApp()

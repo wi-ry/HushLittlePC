@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -11,13 +11,18 @@
     <ApplicationIcon>packaging\app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.2.1" />
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="resources\ToastIcon.png" LogicalName="HushLittlePC.ToastIcon.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests\**\*.cs" />
+    <Compile Remove="src\WinUI\**\*.cs" />
+    <Compile Remove="src\Core\**\*.cs" />
+    <Compile Remove="src\Platform\Windows\**\*.cs" />
+    <Compile Remove="src\UI\Notifier.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="src\Core\HushLittlePC.Core.csproj" />
+    <ProjectReference Include="src\Platform\Windows\HushLittlePC.Windows.csproj" />
   </ItemGroup>
 </Project>

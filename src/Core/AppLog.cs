@@ -34,7 +34,7 @@ static class AppLog
         }
         catch
         {
-            // Diagnostics must never prevent the tray app from starting or continuing to run.
+            // Diagnostics must never prevent the application from starting or continuing to run.
         }
     }
 }

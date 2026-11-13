@@ -1,0 +1,139 @@
+<Page
+    x:Class="HushLittlePC.WinUI.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel
+            MaxWidth="820"
+            Spacing="20"
+            Padding="32,28,32,40"
+            HorizontalAlignment="Left">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold" />
+                <TextBlock
+                    Text="Choose when Hush Little PC mutes your audio and how it responds."
+                    FontSize="14"
+                    Opacity="0.72"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+            <InfoBar
+                IsOpen="True"
+                IsClosable="False"
+                Severity="Informational"
+                Title="WinUI preview"
+                Message="These controls save to the shared settings file. Audio monitoring and tray integration will be connected in a later migration stage." />
+
+            <TextBlock Text="Idle behaviour" FontSize="18" FontWeight="SemiBold" />
+            <Border
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20">
+                <StackPanel Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="Mute after inactivity" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock
+                                Text="Minutes without keyboard or mouse activity."
+                                FontSize="13"
+                                Opacity="0.72"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <NumberBox
+                            x:Name="IdleMinutesNumberBox"
+                            Grid.Column="1"
+                            Width="104"
+                            Minimum="1"
+                            Maximum="1440"
+                            Value="10"
+                            SmallChange="1"
+                            LargeChange="5"
+                            SpinButtonPlacementMode="Compact"
+                            AutomationProperties.Name="Idle timeout in minutes"
+                            AutomationProperties.HelpText="The number of minutes without keyboard or mouse activity before audio is muted."
+                            ValueChanged="IdleMinutesNumberBox_ValueChanged" />
+                    </Grid>
+                    <Slider
+                        x:Name="IdleMinutesSlider"
+                        Minimum="1"
+                        Maximum="1440"
+                        StepFrequency="1"
+                        Value="10"
+                        AutomationProperties.Name="Idle timeout in minutes"
+                        AutomationProperties.HelpText="Adjust the inactivity timeout from one minute to twenty-four hours."
+                        ValueChanged="IdleMinutesSlider_ValueChanged" />
+                    <Grid ColumnDefinitions="*,*">
+                        <TextBlock Text="1 minute" FontSize="12" Opacity="0.65" />
+                        <TextBlock Grid.Column="1" Text="24 hours" FontSize="12" Opacity="0.65" HorizontalAlignment="Right" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Behaviour" FontSize="18" FontWeight="SemiBold" />
+            <Border
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20">
+                <StackPanel Spacing="18">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="Enable Hush Little PC" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock Text="Allow automatic muting while you are away." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch AutomationProperties.Name="Enable Hush Little PC" AutomationProperties.HelpText="Allow automatic muting while you are away." x:Name="EnabledToggle" Grid.Column="1" Tag="Enabled" Toggled="Setting_Toggled" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="Unmute when I come back" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock Text="Only reverses a mute made by Hush Little PC." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch AutomationProperties.Name="Unmute when I come back" AutomationProperties.HelpText="Only reverses a mute made by Hush Little PC." x:Name="UnmuteOnActivityToggle" Grid.Column="1" Tag="UnmuteOnActivity" Toggled="Setting_Toggled" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="Stay unmuted while audio is playing" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock Text="Avoid muting while sound is being output." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch AutomationProperties.Name="Stay unmuted while audio is playing" AutomationProperties.HelpText="Avoid muting while sound is being output." x:Name="SkipWhileAudioPlayingToggle" Grid.Column="1" Tag="SkipWhileAudioPlaying" Toggled="Setting_Toggled" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="Mute when the output device changes" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock Text="Mute a newly selected playback device." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch AutomationProperties.Name="Mute when the output device changes" AutomationProperties.HelpText="Mute a newly selected playback device." x:Name="MuteOnDeviceChangeToggle" Grid.Column="1" Tag="MuteOnDeviceChange" Toggled="Setting_Toggled" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="General" FontSize="18" FontWeight="SemiBold" />
+            <Border
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20">
+                <StackPanel Spacing="18">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="Show mute notifications" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock Text="Show a Windows notification when audio is muted." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch AutomationProperties.Name="Show mute notifications" AutomationProperties.HelpText="Show a Windows notification when audio is muted." x:Name="ShowNotificationToggle" Grid.Column="1" Tag="ShowNotification" Toggled="Setting_Toggled" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="Run at startup" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock Text="Start Hush Little PC when you sign in to Windows." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch AutomationProperties.Name="Run at startup" AutomationProperties.HelpText="Start Hush Little PC when you sign in to Windows." x:Name="RunOnStartupToggle" Grid.Column="1" Tag="RunOnStartup" Toggled="Setting_Toggled" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

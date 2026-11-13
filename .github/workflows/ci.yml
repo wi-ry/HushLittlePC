@@ -25,7 +25,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Cache NuGet packages
         uses: actions/cache@v6
@@ -34,19 +34,14 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: ${{ runner.os }}-nuget-
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Restore tests
-        run: dotnet restore tests/HushLittlePC.Tests.csproj
+      - name: Restore solution
+        run: dotnet restore HushLittlePC.sln
 
       - name: Verify formatting
-        run: |
-          dotnet format HushLittlePC.csproj --verify-no-changes --no-restore
-          dotnet format tests/HushLittlePC.Tests.csproj --verify-no-changes --no-restore
+        run: dotnet format HushLittlePC.sln --verify-no-changes --no-restore
 
-      - name: Build
-        run: dotnet build HushLittlePC.csproj -c Release --no-restore -warnaserror
+      - name: Build solution
+        run: dotnet build HushLittlePC.sln -c Release --no-restore -warnaserror
 
       - name: Test
         run: dotnet test tests/HushLittlePC.Tests.csproj -c Release --no-restore -warnaserror --logger "trx;LogFileName=HushLittlePC.Tests.trx"
@@ -70,7 +65,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Publish portable application
         shell: pwsh
@@ -81,3 +76,19 @@ jobs:
       - name: Test startup and single-instance behavior
         shell: pwsh
         run: ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/smoke/HushLittlePC.exe
+
+      - name: Package WinUI MSIX
+        shell: pwsh
+        run: .github/scripts/package-msix.ps1 -Version "0.0.0" -Project "src/WinUI/HushLittlePC.WinUI.csproj" -OutputDir "artifacts/msix-ci"
+
+      - name: Publish WinUI portable executable
+        shell: pwsh
+        run: |
+          dotnet publish src/WinUI/HushLittlePC.WinUI.csproj -c Release -r win-x64 --self-contained true `
+            -p:WindowsAppSDKSelfContained=true -p:EnableMsixTooling=true `
+            -p:IncludeAllContentForSelfExtract=true -p:PublishSingleFile=true -o artifacts/winui
+          if ($LASTEXITCODE -ne 0) { throw "WinUI publish failed with exit code $LASTEXITCODE" }
+
+      - name: Test WinUI startup and single-instance behavior
+        shell: pwsh
+        run: ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/winui/HushLittlePC.WinUI.exe

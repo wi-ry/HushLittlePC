@@ -15,7 +15,7 @@
 #>
 param(
     [Parameter(Mandatory = $true)][string] $Version,
-    [string] $Project = 'HushLittlePC.csproj',
+    [string] $Project = 'src/WinUI/HushLittlePC.WinUI.csproj',
     [string] $OutputDir = 'artifacts/msix'
 )
 
@@ -44,7 +44,7 @@ Remove-Item $publishDir, $stageDir -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $stageDir, $outDir | Out-Null
 
 # 1. Self-contained publish (the Store package can't rely on a user-installed .NET runtime)
-dotnet publish $Project -c Release -r win-x64 --self-contained true "-p:Version=$core" -p:PublishSingleFile=false -o $publishDir
+dotnet publish $Project -c Release -r win-x64 --self-contained true "-p:Version=$core" -p:WindowsAppSDKSelfContained=true -p:PublishSingleFile=false -o $publishDir
 if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed.' }
 
 # 2. Lay out the package: app files + assets + rendered manifest

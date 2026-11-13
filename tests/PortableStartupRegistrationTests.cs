@@ -21,7 +21,7 @@ public class PortableStartupRegistrationTests
             PortableStartupRegistration.Set(runKey, enable: true, @"C:\Program Files\Hush Little PC\HushLittlePC.exe");
 
             Assert.AreEqual(
-                "\"C:\\Program Files\\Hush Little PC\\HushLittlePC.exe\"",
+                "\"C:\\Program Files\\Hush Little PC\\HushLittlePC.exe\" --background",
                 runKey.GetValue("HushLittlePC"));
             Assert.AreEqual(RegistryValueKind.String, runKey.GetValueKind("HushLittlePC"));
 
