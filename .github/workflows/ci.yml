@@ -81,3 +81,63 @@ jobs:
       - name: Test startup and single-instance behavior
         shell: pwsh
         run: ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/smoke/HushLittlePC.exe
+
+  test-builds:
+    # Temporary PR artifacts for hands-on testing. This job is intentionally
+    # independent of release publishing and never uploads to the Store.
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build self-contained portable executable
+        shell: pwsh
+        run: |
+          dotnet publish HushLittlePC.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/portable
+          if ($LASTEXITCODE -ne 0) { throw "Portable publish failed with exit code $LASTEXITCODE" }
+          Move-Item artifacts/portable/HushLittlePC.exe artifacts/HushLittlePC-portable.exe
+
+      - name: Package MSIX installer
+        shell: pwsh
+        run: |
+          .github/scripts/package-msix.ps1 -Version "0.0.0"
+          if ($LASTEXITCODE -ne 0) { throw "MSIX packaging failed with exit code $LASTEXITCODE" }
+
+      - name: Sign MSIX with temporary test certificate
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $cert = New-SelfSignedCertificate -Type Custom -Subject 'CN=HushLittlePC' -FriendlyName 'Hush Little PC PR test signing' -CertStoreLocation 'Cert:\CurrentUser\My' -KeyAlgorithm RSA -KeyLength 2048 -KeyUsage DigitalSignature -NotAfter (Get-Date).AddDays(30) -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3')
+          $certificatePath = Join-Path $PWD 'artifacts/HushLittlePC-test-certificate.cer'
+          Export-Certificate -Cert $cert -FilePath $certificatePath | Out-Null
+
+          $sdkBin = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits/10/bin'
+          $signtool = Get-ChildItem $sdkBin -Recurse -Filter signtool.exe |
+            Where-Object { $_.FullName -match '\\10\.\d+\.\d+\.\d+\\x64\\' } |
+            Sort-Object { [version]([regex]::Match($_.FullName, '10\.\d+\.\d+\.\d+').Value) } -Descending |
+            Select-Object -First 1
+          if (-not $signtool) { throw "signtool.exe not found under $sdkBin" }
+
+          $msix = Get-ChildItem artifacts/msix -Filter '*.msix' | Select-Object -First 1
+          if (-not $msix) { throw 'MSIX package was not created.' }
+          & $signtool.FullName sign /fd SHA256 /sha1 $cert.Thumbprint $msix.FullName
+          if ($LASTEXITCODE -ne 0) { throw "MSIX signing failed with exit code $LASTEXITCODE" }
+          Move-Item $msix.FullName artifacts/HushLittlePC-test-installer.msix
+
+      - name: Upload portable and installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: HushLittlePC-PR-test-builds
+          path: |
+            artifacts/HushLittlePC-portable.exe
+            artifacts/HushLittlePC-test-installer.msix
+            artifacts/HushLittlePC-test-certificate.cer
+          if-no-files-found: error
+          retention-days: 7
