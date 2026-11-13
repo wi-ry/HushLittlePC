@@ -23,7 +23,8 @@ public sealed partial class MainWindow : Window
 
         var windowHandle = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
-        _appWindow = AppWindow.GetFromWindowId(windowId);
+        _appWindow = AppWindow.GetFromWindowId(windowId)
+            ?? throw new InvalidOperationException("The WinUI window could not be resolved to an AppWindow.");
         _appWindow.Closing += AppWindow_Closing;
 
         Navigation.SelectedItem = Navigation.MenuItems[0];
