@@ -5,15 +5,24 @@ using System.Drawing.Drawing2D;
 
 class SettingsForm : Form
 {
-    static readonly Color Accent = Color.FromArgb(0, 103, 192);
-    static readonly Color Surface = Color.White;
-    static readonly Color Page = Color.FromArgb(245, 247, 251);
-    static readonly Color Muted = Color.FromArgb(75, 85, 105);
+    static bool _darkTheme = ReadSystemTheme();
+    static Color Accent => Color.FromArgb(0, 103, 192);
+    static Color Surface => _darkTheme ? Color.FromArgb(38, 38, 38) : Color.White;
+    static Color Page => _darkTheme ? Color.FromArgb(30, 30, 30) : Color.FromArgb(245, 247, 251);
+    static Color Muted => _darkTheme ? Color.FromArgb(190, 190, 190) : Color.FromArgb(75, 85, 105);
+    static Color PrimaryText => _darkTheme ? Color.FromArgb(245, 245, 245) : Color.FromArgb(20, 30, 48);
+    static Color SecondaryText => _darkTheme ? Color.FromArgb(205, 205, 205) : Color.FromArgb(50, 62, 86);
+    static Color Sidebar => _darkTheme ? Color.FromArgb(35, 35, 35) : Color.FromArgb(239, 244, 252);
+    static Color Border => _darkTheme ? Color.FromArgb(65, 65, 65) : Border;
+    static Color Selected => _darkTheme ? Color.FromArgb(55, 75, 100) : Selected;
+    static Color IconSurface => _darkTheme ? Color.FromArgb(48, 58, 70) : IconSurface;
+    static Color ToggleOff => _darkTheme ? Color.FromArgb(100, 100, 100) : ToggleOff;
 
     readonly Settings _settings;
     readonly Action _settingsChanged;
     readonly Action _exit;
     readonly Panel _content;
+    readonly Panel _sidebar;
     readonly Button _settingsNav;
     readonly Button _aboutNav;
 
@@ -37,10 +46,11 @@ class SettingsForm : Form
         shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         Controls.Add(shell);
 
-        var sidebar = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(239, 244, 252), Padding = new Padding(18, 24, 14, 18) };
+        _sidebar = new Panel { Dock = DockStyle.Fill, BackColor = Sidebar, Padding = new Padding(18, 24, 14, 18) };
+        var sidebar = _sidebar;
         shell.Controls.Add(sidebar, 0, 0);
 
-        var brand = new Label { Text = "◔  Hush Little PC", Font = new Font("Segoe UI Semibold", 15F), ForeColor = Color.FromArgb(20, 30, 48), AutoSize = true, Location = new Point(10, 8) };
+        var brand = new Label { Text = "◔  Hush Little PC", Font = new Font("Segoe UI Semibold", 15F), ForeColor = PrimaryText, AutoSize = true, Location = new Point(10, 8) };
         sidebar.Controls.Add(brand);
         var tagline = new Label { Text = "Keep the peace. Automatically.", Font = new Font("Segoe UI", 9.5F), ForeColor = Muted, AutoSize = true, Location = new Point(10, 48) };
         sidebar.Controls.Add(tagline);
@@ -62,7 +72,7 @@ class SettingsForm : Form
 
         var statusLine = new Panel { Dock = DockStyle.Bottom, Height = 42, BackColor = Color.Transparent };
         var statusDot = new Label { Text = "●", ForeColor = Color.FromArgb(34, 197, 94), AutoSize = true, Location = new Point(2, 11) };
-        var status = new Label { Text = "Monitoring audio devices", ForeColor = Color.FromArgb(30, 45, 68), AutoSize = true, Location = new Point(24, 10), Font = new Font("Segoe UI", 9.5F) };
+        var status = new Label { Text = "Monitoring audio devices", ForeColor = PrimaryText, AutoSize = true, Location = new Point(24, 10), Font = new Font("Segoe UI", 9.5F) };
         statusLine.Controls.Add(statusDot);
         statusLine.Controls.Add(status);
         sidebar.Controls.Add(statusLine);
@@ -79,6 +89,33 @@ class SettingsForm : Form
     {
         base.OnShown(e);
         ShowSettingsPage();
+    }
+
+    static bool ReadSystemTheme()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
+            return key?.GetValue("AppsUseLightTheme") is int value && value == 0;
+        }
+        catch (System.Security.SecurityException)
+        {
+            return false;
+        }
+    }
+
+    protected override void WndProc(ref Message message)
+    {
+        const int WmSettingChange = 0x001A;
+        base.WndProc(ref message);
+        if (message.Msg == WmSettingChange && ReadSystemTheme() != _darkTheme)
+        {
+            _darkTheme = ReadSystemTheme();
+            BackColor = Page;
+            _sidebar.BackColor = Sidebar;
+            _content.BackColor = Page;
+            ShowSettingsPage();
+        }
     }
 
     void ShowSettingsPage()
@@ -107,9 +144,9 @@ class SettingsForm : Form
         AddSwitchCard(page, "Run at startup", "Start Hush Little PC when you sign in to Windows.", _settings.RunOnStartup, value => { _settings.RunOnStartup = value; StartupManager.Set(value); Changed(); });
 
         var footer = new Panel { Width = page.Width - 4, Height = 54, BackColor = Page, Margin = new Padding(0, 4, 0, 0) };
-        var rule = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Color.FromArgb(218, 224, 234) };
+        var rule = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Border };
         footer.Controls.Add(rule);
-        var info = new Label { Text = "ⓘ   Changes are applied automatically.", AutoSize = true, ForeColor = Color.FromArgb(30, 40, 60), Location = new Point(10, 19) };
+        var info = new Label { Text = "ⓘ   Changes are applied automatically.", AutoSize = true, ForeColor = PrimaryText, Location = new Point(10, 19) };
         footer.Controls.Add(info);
         var learn = new LinkLabel { Text = "Learn more", AutoSize = true, LinkColor = Accent, Location = new Point(Math.Max(footer.Width - 100, 20), 19), Anchor = AnchorStyles.Top | AnchorStyles.Right };
         learn.LinkClicked += (_, _) => ShowAboutPage();
@@ -134,7 +171,7 @@ class SettingsForm : Form
             Font = new Font("Segoe UI", 11F), TextAlign = HorizontalAlignment.Center,
             Location = new Point(card.Width - 132, 20), Anchor = AnchorStyles.Top | AnchorStyles.Right
         };
-        var unit = new Label { Text = "min", AutoSize = true, ForeColor = Color.FromArgb(25, 35, 55), Location = new Point(card.Width - 56, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
+        var unit = new Label { Text = "min", AutoSize = true, ForeColor = PrimaryText, Location = new Point(card.Width - 56, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
         var slider = new TrackBar { Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes, TickStyle = TickStyle.None, Value = _settings.IdleMinutes, Width = 290, Height = 42, Location = new Point(card.Width - 430, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right };
         var range = new Label { Text = "1 – 1,440 minutes", AutoSize = true, ForeColor = Muted, Font = new Font("Segoe UI", 9F), Location = new Point(slider.Left, 59), Anchor = AnchorStyles.Top | AnchorStyles.Right };
         slider.Scroll += (_, _) => { minutes.Value = slider.Value; _settings.IdleMinutes = slider.Value; Changed(); };
@@ -164,7 +201,7 @@ class SettingsForm : Form
         card.Controls.Add(icon);
         AddCardText(card, title, description, 110, 20);
 
-        var toggle = new SwitchControl { Checked = initial, Location = new Point(card.Width - 112, 25), Anchor = AnchorStyles.Top | AnchorStyles.Right };
+        var toggle = new SwitchControl { Checked = initial, AccessibleName = title, Location = new Point(card.Width - 112, 25), Anchor = AnchorStyles.Top | AnchorStyles.Right };
         var state = new Label { Text = initial ? "On" : "Off", AutoSize = true, ForeColor = Color.FromArgb(25, 35, 55), Font = new Font("Segoe UI", 10F), Location = new Point(card.Width - 52, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
         toggle.CheckedChanged += (_, _) => { state.Text = toggle.Checked ? "On" : "Off"; changed(toggle.Checked); };
         card.Controls.Add(toggle);
@@ -185,7 +222,7 @@ class SettingsForm : Form
         logo.Font = new Font("Segoe UI", 30F, FontStyle.Bold);
         logo.Location = new Point(22, 24);
         card.Controls.Add(logo);
-        var name = new Label { Text = "Hush Little PC", Font = new Font("Segoe UI Semibold", 18F), AutoSize = true, Location = new Point(112, 28), ForeColor = Color.FromArgb(15, 25, 45) };
+        var name = new Label { Text = "Hush Little PC", Font = new Font("Segoe UI Semibold", 18F), AutoSize = true, Location = new Point(112, 28), ForeColor = PrimaryText };
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "Development";
         var details = new Label { Text = $"Version {version}\nAutomatically manages audio muting based on your activity.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(114, 64), ForeColor = Muted };
         var repo = new LinkLabel { Text = "View project on GitHub", AutoSize = true, Location = new Point(114, 128), LinkColor = Accent };
@@ -247,8 +284,8 @@ class SettingsForm : Form
 
     static void AddCardText(Control parent, string title, string description, int left, int top)
     {
-        parent.Controls.Add(new Label { Text = title, AutoSize = true, Font = new Font("Segoe UI Semibold", 11F), ForeColor = Color.FromArgb(15, 22, 36), Location = new Point(left, top) });
-        parent.Controls.Add(new Label { Text = description, AutoSize = true, Font = new Font("Segoe UI", 10F), ForeColor = Color.FromArgb(50, 62, 86), Location = new Point(left, top + 27) });
+        parent.Controls.Add(new Label { Text = title, AutoSize = true, Font = new Font("Segoe UI Semibold", 11F), ForeColor = PrimaryText, Location = new Point(left, top) });
+        parent.Controls.Add(new Label { Text = description, AutoSize = true, Font = new Font("Segoe UI", 10F), ForeColor = SecondaryText, Location = new Point(left, top + 27) });
     }
 
     protected override void Dispose(bool disposing)
@@ -281,7 +318,7 @@ sealed class SwitchControl : CheckBox
         e.Graphics.FillPath(trackBrush, path);
         int diameter = track.Height - 6;
         int x = Checked ? track.Right - diameter - 3 : track.Left + 3;
-        using var thumb = new SolidBrush(Color.White);
+        using var thumb = new SolidBrush(Color.FromArgb(250, 250, 250));
         e.Graphics.FillEllipse(thumb, x, track.Top + 3, diameter, diameter);
         if (Focused && ShowFocusCues) ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(track, -2, -2));
     }
