@@ -12,5 +12,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
     <ProjectReference Include="..\Core\HushLittlePC.Core.csproj" />
+    <ProjectReference Include="..\Platform\Windows\HushLittlePC.Windows.csproj" />
   </ItemGroup>
 </Project>
