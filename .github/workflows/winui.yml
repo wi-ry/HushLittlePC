@@ -6,6 +6,8 @@ on:
       - 'src/WinUI/**'
       - 'src/Core/**'
       - 'src/Platform/Windows/**'
+      - 'packaging/**'
+      - '.github/scripts/package-msix.ps1'
       - 'src/UI/NativeMenu.cs'
       - 'src/UI/Notifier.cs'
       - 'HushLittlePC.csproj'
