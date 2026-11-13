@@ -187,7 +187,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         menu.Items.Add(new MenuFlyoutItem
         {
             Text = "Exit",
-            Command = new RelayCommand(ExitApplication)
+            Command = new RelayCommand(() => ExitApplication())
         });
 
         return menu;
