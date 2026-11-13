@@ -1,11 +1,13 @@
 using System.Threading;
 using System.Windows.Input;
 using H.NotifyIcon;
+using H.NotifyIcon.Core;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Text;
 
 namespace HushLittlePC.WinUI;
 
@@ -60,7 +62,6 @@ public partial class App : Microsoft.UI.Xaml.Application
             NoLeftClickDelay = true,
             MenuActivation = PopupActivationMode.RightClick,
             ContextMenuMode = ContextMenuMode.PopupMenu,
-            ContextMenuThemeMode = PopupMenuThemeMode.System,
             ContextFlyout = CreateTrayMenu()
         };
 
