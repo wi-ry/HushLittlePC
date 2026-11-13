@@ -7,12 +7,15 @@ namespace HushLittlePC.WinUI;
 public sealed partial class SettingsPage : Page
 {
     readonly Settings _settings;
+    readonly Action _settingsChanged;
     bool _initializing = true;
 
-    public SettingsPage()
+    public SettingsPage(Settings settings, Action settingsChanged)
     {
+        _settings = settings;
+        _settingsChanged = settingsChanged;
+
         InitializeComponent();
-        _settings = SettingsStore.Load();
 
         IdleMinutesNumberBox.Value = _settings.IdleMinutes;
         IdleMinutesSlider.Value = _settings.IdleMinutes;
@@ -93,5 +96,6 @@ public sealed partial class SettingsPage : Page
     private void SaveSettings()
     {
         SettingsStore.Save(_settings);
+        _settingsChanged();
     }
 }
