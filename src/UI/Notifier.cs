@@ -75,9 +75,10 @@ static class Notifier
             try
             {
                 var args = ToastArguments.Parse(e.Argument);
-                if (args.TryGetValue("action", out var action) && action == "unmute" &&
-                    args.TryGetValue("deviceId", out var deviceId))
-                    unmute(deviceId);
+                args.TryGetValue("action", out var action);
+                args.TryGetValue("deviceId", out var deviceId);
+                if (ToastActivationPolicy.TryGetUnmuteDeviceId(action, deviceId, out var targetDeviceId))
+                    unmute(targetDeviceId);
             }
             catch { }
         };
