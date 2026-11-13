@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -31,11 +32,18 @@ public sealed partial class MainWindow : Window
         _appWindow = AppWindow.GetFromWindowId(windowId)
             ?? throw new InvalidOperationException("The WinUI window could not be resolved to an AppWindow.");
 
-        _appWindow.Resize(new SizeInt32 { Width = 1000, Height = 720 });
+        var dpi = GetDpiForWindow(windowHandle);
+        var scale = dpi == 0 ? 1.0 : dpi / 96.0;
+        _appWindow.Resize(new SizeInt32
+        {
+            Width = (int)Math.Round(1000 * scale),
+            Height = (int)Math.Round(720 * scale)
+        });
+
         if (_appWindow.Presenter is OverlappedPresenter presenter)
         {
-            presenter.PreferredMinimumWidth = 900;
-            presenter.PreferredMinimumHeight = 640;
+            presenter.PreferredMinimumWidth = 720;
+            presenter.PreferredMinimumHeight = 600;
         }
 
         _appWindow.Closing += AppWindow_Closing;
@@ -43,6 +51,9 @@ public sealed partial class MainWindow : Window
         Navigation.SelectedItem = Navigation.MenuItems[0];
         ContentFrame.Content = new SettingsPage(_settings, _settingsChanged);
     }
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(IntPtr windowHandle);
 
     private void Navigation_SelectionChanged(
         NavigationView sender,
