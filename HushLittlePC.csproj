@@ -11,8 +11,6 @@
     <ApplicationIcon>packaging\app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.2.1" />
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="resources\ToastIcon.png" LogicalName="HushLittlePC.ToastIcon.png" />
@@ -21,8 +19,12 @@
     <Compile Remove="tests\**\*.cs" />
     <Compile Remove="src\WinUI\**\*.cs" />
     <Compile Remove="src\Core\**\*.cs" />
+    <Compile Remove="src\Platform\Windows\**\*.cs" />
+    <Compile Remove="src\UI\NativeMenu.cs" />
+    <Compile Remove="src\UI\Notifier.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="src\Core\HushLittlePC.Core.csproj" />
+    <ProjectReference Include="src\Platform\Windows\HushLittlePC.Windows.csproj" />
   </ItemGroup>
 </Project>
