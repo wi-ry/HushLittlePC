@@ -1,4 +1,3 @@
-
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32;
@@ -9,7 +8,6 @@ namespace HushLittlePC;
 static class StartupManager
 {
     const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    const string ValueName = "HushLittlePC";
     const string StartupTaskId = "HushLittlePCStartup";   // must match AppxManifest.xml
     const int APPMODEL_ERROR_NO_PACKAGE = 15700;
 
@@ -28,10 +26,7 @@ static class StartupManager
 
         using var key = Registry.CurrentUser.OpenSubKey(RunKey, writable: true);
         if (key == null) return;
-        if (enable && Environment.ProcessPath is { } path)
-            key.SetValue(ValueName, $"\"{path}\"");
-        else
-            key.DeleteValue(ValueName, throwOnMissingValue: false);
+        PortableStartupRegistration.Set(key, enable, Environment.ProcessPath);
     }
 
     // Packaged apps can't use the HKCU Run key (writes are redirected); they use the manifest's StartupTask.
