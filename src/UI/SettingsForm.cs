@@ -13,16 +13,18 @@ class SettingsForm : Form
     static Color PrimaryText => _darkTheme ? Color.FromArgb(245, 245, 245) : Color.FromArgb(20, 30, 48);
     static Color SecondaryText => _darkTheme ? Color.FromArgb(205, 205, 205) : Color.FromArgb(50, 62, 86);
     static Color Sidebar => _darkTheme ? Color.FromArgb(35, 35, 35) : Color.FromArgb(239, 244, 252);
-    static Color Border => _darkTheme ? Color.FromArgb(65, 65, 65) : Border;
-    static Color Selected => _darkTheme ? Color.FromArgb(55, 75, 100) : Selected;
-    static Color IconSurface => _darkTheme ? Color.FromArgb(48, 58, 70) : IconSurface;
-    static Color ToggleOff => _darkTheme ? Color.FromArgb(100, 100, 100) : ToggleOff;
+    static Color Border => _darkTheme ? Color.FromArgb(65, 65, 65) : Color.FromArgb(224, 230, 240);
+    static Color Selected => _darkTheme ? Color.FromArgb(55, 75, 100) : Color.FromArgb(216, 231, 252);
+    static Color IconSurface => _darkTheme ? Color.FromArgb(48, 58, 70) : Color.FromArgb(234, 243, 253);
+    static Color ToggleOff => _darkTheme ? Color.FromArgb(100, 100, 100) : Color.FromArgb(190, 197, 207);
 
     readonly Settings _settings;
     readonly Action _settingsChanged;
     readonly Action _exit;
     readonly Panel _content;
     readonly Panel _sidebar;
+    readonly Panel _shell;
+    readonly Panel _main;
     readonly Button _settingsNav;
     readonly Button _aboutNav;
 
@@ -41,14 +43,14 @@ class SettingsForm : Form
         BackColor = Page;
         AutoScaleMode = AutoScaleMode.Dpi;
 
-        var shell = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Page, Padding = new Padding(0) };
-        shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 236));
+        _shell = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Page, Padding = new Padding(0) };
+        _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 236));
         shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        Controls.Add(shell);
+        Controls.Add(_shell);
 
         _sidebar = new Panel { Dock = DockStyle.Fill, BackColor = Sidebar, Padding = new Padding(18, 24, 14, 18) };
         var sidebar = _sidebar;
-        shell.Controls.Add(sidebar, 0, 0);
+        _shell.Controls.Add(sidebar, 0, 0);
 
         var brand = new Label { Text = "◔  Hush Little PC", Font = new Font("Segoe UI Semibold", 15F), ForeColor = PrimaryText, AutoSize = true, Location = new Point(10, 8) };
         sidebar.Controls.Add(brand);
@@ -77,8 +79,9 @@ class SettingsForm : Form
         statusLine.Controls.Add(status);
         sidebar.Controls.Add(statusLine);
 
-        var main = new Panel { Dock = DockStyle.Fill, BackColor = Page, Padding = new Padding(28, 24, 28, 20) };
-        shell.Controls.Add(main, 1, 0);
+        _main = new Panel { Dock = DockStyle.Fill, BackColor = Page, Padding = new Padding(28, 24, 28, 20) };
+        var main = _main;
+        _shell.Controls.Add(main, 1, 0);
         _content = new Panel { Dock = DockStyle.Fill, BackColor = Page, AutoScroll = true };
         main.Controls.Add(_content);
 
@@ -95,7 +98,7 @@ class SettingsForm : Form
     {
         try
         {
-            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
             return key?.GetValue("AppsUseLightTheme") is int value && value == 0;
         }
         catch (System.Security.SecurityException)
@@ -112,7 +115,9 @@ class SettingsForm : Form
         {
             _darkTheme = ReadSystemTheme();
             BackColor = Page;
+            _shell.BackColor = Page;
             _sidebar.BackColor = Sidebar;
+            _main.BackColor = Page;
             _content.BackColor = Page;
             ShowSettingsPage();
         }
@@ -202,7 +207,7 @@ class SettingsForm : Form
         AddCardText(card, title, description, 110, 20);
 
         var toggle = new SwitchControl { Checked = initial, AccessibleName = title, Location = new Point(card.Width - 112, 25), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        var state = new Label { Text = initial ? "On" : "Off", AutoSize = true, ForeColor = Color.FromArgb(25, 35, 55), Font = new Font("Segoe UI", 10F), Location = new Point(card.Width - 52, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
+        var state = new Label { Text = initial ? "On" : "Off", AutoSize = true, ForeColor = PrimaryText, Font = new Font("Segoe UI", 10F), Location = new Point(card.Width - 52, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
         toggle.CheckedChanged += (_, _) => { state.Text = toggle.Checked ? "On" : "Off"; changed(toggle.Checked); };
         card.Controls.Add(toggle);
         card.Controls.Add(state);
@@ -239,8 +244,10 @@ class SettingsForm : Form
 
     void SelectNavigation(bool settings)
     {
-        _settingsNav.BackColor = settings ? Color.FromArgb(216, 231, 252) : Color.Transparent;
-        _aboutNav.BackColor = settings ? Color.Transparent : Color.FromArgb(216, 231, 252);
+        _settingsNav.BackColor = settings ? Selected : Color.Transparent;
+        _aboutNav.BackColor = settings ? Color.Transparent : Selected;
+        _settingsNav.ForeColor = PrimaryText;
+        _aboutNav.ForeColor = PrimaryText;
         _settingsNav.Font = new Font("Segoe UI", 10F, settings ? FontStyle.Bold : FontStyle.Regular);
         _aboutNav.Font = new Font("Segoe UI", 10F, settings ? FontStyle.Regular : FontStyle.Bold);
     }
@@ -258,7 +265,7 @@ class SettingsForm : Form
     {
         // A two-line heading is hosted by a fixed-height panel so the page can flow naturally.
         var host = new Panel { Width = width, Height = 88, BackColor = Page, Margin = new Padding(0, 0, 0, 12) };
-        host.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI Semibold", 25F), AutoSize = true, ForeColor = Color.FromArgb(12, 20, 38), Location = new Point(0, 0) });
+        host.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI Semibold", 25F), AutoSize = true, ForeColor = PrimaryText, Location = new Point(0, 0) });
         host.Controls.Add(new Label { Text = subtitle, Font = new Font("Segoe UI", 11F), AutoSize = true, ForeColor = Muted, Location = new Point(2, 48) });
         return host;
     }
@@ -268,7 +275,7 @@ class SettingsForm : Form
         var card = new Panel { Width = width, Height = height, BackColor = Surface, Margin = new Padding(0, 0, 0, 8), Padding = new Padding(0) };
         card.Paint += (_, e) =>
         {
-            using var pen = new Pen(Color.FromArgb(224, 230, 240));
+            using var pen = new Pen(Border);
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.DrawRoundedRectangle(pen, new Rectangle(0, 0, card.Width - 1, card.Height - 1), 12);
         };
@@ -277,7 +284,7 @@ class SettingsForm : Form
 
     static Label IconBubble(string glyph)
     {
-        var label = new Label { Text = glyph, Size = new Size(58, 58), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI Symbol", 22F, FontStyle.Bold), ForeColor = Accent, BackColor = Color.FromArgb(234, 243, 253) };
+        var label = new Label { Text = glyph, Size = new Size(58, 58), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI Symbol", 22F, FontStyle.Bold), ForeColor = Accent, BackColor = IconSurface };
         label.Paint += (_, e) => { using var brush = new SolidBrush(label.BackColor); e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; e.Graphics.FillEllipse(brush, 0, 0, label.Width - 1, label.Height - 1); TextRenderer.DrawText(e.Graphics, label.Text, label.Font, label.ClientRectangle, label.ForeColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter); };
         return label;
     }
@@ -313,7 +320,7 @@ sealed class SwitchControl : CheckBox
     {
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         var track = new Rectangle(0, 2, Width - 1, Height - 5);
-        using var trackBrush = new SolidBrush(Checked ? Color.FromArgb(0, 103, 220) : Color.FromArgb(190, 197, 207));
+        using var trackBrush = new SolidBrush(Checked ? Color.FromArgb(0, 103, 220) : SettingsForm.ToggleOff);
         using var path = Rounded(track, track.Height / 2);
         e.Graphics.FillPath(trackBrush, path);
         int diameter = track.Height - 6;
