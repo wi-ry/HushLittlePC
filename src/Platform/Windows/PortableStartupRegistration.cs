@@ -1,8 +1,10 @@
+using System.Runtime.Versioning;
 using Microsoft.Win32;
 
 namespace HushLittlePC;
 
 /// <summary>Applies portable startup registration to a caller-supplied Run key.</summary>
+[SupportedOSPlatform("windows")]
 static class PortableStartupRegistration
 {
     const string ValueName = "HushLittlePC";
