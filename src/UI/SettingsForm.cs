@@ -45,7 +45,7 @@ class SettingsForm : Form
 
         _shell = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Page, Padding = new Padding(0) };
         _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 236));
-        shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         Controls.Add(_shell);
 
         _sidebar = new Panel { Dock = DockStyle.Fill, BackColor = Sidebar, Padding = new Padding(18, 24, 14, 18) };
@@ -169,18 +169,36 @@ class SettingsForm : Form
         card.Controls.Add(icon);
         AddCardText(card, "Idle time", "Mute after a period of inactivity.", 110, 24);
 
+        bool synchronizingIdleControls = false;
         var minutes = new NumericUpDown
         {
             Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes,
             Value = _settings.IdleMinutes, Width = 68, Height = 34,
+            AccessibleName = "Idle time in minutes",
             Font = new Font("Segoe UI", 11F), TextAlign = HorizontalAlignment.Center,
             Location = new Point(card.Width - 132, 20), Anchor = AnchorStyles.Top | AnchorStyles.Right
         };
         var unit = new Label { Text = "min", AutoSize = true, ForeColor = PrimaryText, Location = new Point(card.Width - 56, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        var slider = new TrackBar { Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes, TickStyle = TickStyle.None, Value = _settings.IdleMinutes, Width = 290, Height = 42, Location = new Point(card.Width - 430, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right };
+        var slider = new TrackBar { Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes, TickStyle = TickStyle.None, Value = _settings.IdleMinutes, Width = 290, Height = 42, Location = new Point(card.Width - 430, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right, AccessibleName = "Idle time slider" };
         var range = new Label { Text = "1 – 1,440 minutes", AutoSize = true, ForeColor = Muted, Font = new Font("Segoe UI", 9F), Location = new Point(slider.Left, 59), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        slider.Scroll += (_, _) => { minutes.Value = slider.Value; _settings.IdleMinutes = slider.Value; Changed(); };
-        minutes.ValueChanged += (_, _) => { slider.Value = (int)minutes.Value; _settings.IdleMinutes = (int)minutes.Value; Changed(); };
+        slider.Scroll += (_, _) =>
+        {
+            if (synchronizingIdleControls) return;
+            synchronizingIdleControls = true;
+            minutes.Value = slider.Value;
+            synchronizingIdleControls = false;
+            _settings.IdleMinutes = slider.Value;
+            Changed();
+        };
+        minutes.ValueChanged += (_, _) =>
+        {
+            if (synchronizingIdleControls) return;
+            synchronizingIdleControls = true;
+            slider.Value = (int)minutes.Value;
+            synchronizingIdleControls = false;
+            _settings.IdleMinutes = (int)minutes.Value;
+            Changed();
+        };
         card.Controls.Add(slider);
         card.Controls.Add(minutes);
         card.Controls.Add(unit);
@@ -246,6 +264,8 @@ class SettingsForm : Form
     {
         _settingsNav.BackColor = settings ? Selected : Color.Transparent;
         _aboutNav.BackColor = settings ? Color.Transparent : Selected;
+        _settingsNav.ForeColor = PrimaryText;
+        _aboutNav.ForeColor = PrimaryText;
         _settingsNav.ForeColor = PrimaryText;
         _aboutNav.ForeColor = PrimaryText;
         _settingsNav.Font = new Font("Segoe UI", 10F, settings ? FontStyle.Bold : FontStyle.Regular);
