@@ -47,6 +47,7 @@ jobs:
         run: |
           dotnet format HushLittlePC.csproj --verify-no-changes --no-restore
           dotnet format tests/HushLittlePC.Tests.csproj --verify-no-changes --no-restore
+          dotnet format src/WinUI/HushLittlePC.WinUI.csproj --verify-no-changes --no-restore
 
       - name: Build
         run: dotnet build HushLittlePC.csproj -c Release --no-restore -warnaserror
