@@ -13,7 +13,7 @@ Step away from your PC and Hush Little PC quietly mutes the sound. Click the tra
 
 ## Features
 
-- **Idle muting:** mutes your default playback device after 1 to 1440 minutes (24 hours) without keyboard or mouse input.
+- **Idle muting:** mutes your default playback device after 1 to 240 minutes (4 hours) without keyboard or mouse input.
 - **One-click toggle:** left-click the tray icon to enable or disable. The icon changes colour to show the current state.
 - **Native tray menu:** right-click for Enabled, Mute now, Settings and Exit. It uses the standard Windows menu, so it matches the Windows 11 look and follows light/dark mode.
 - **Unmute when I come back (optional):** only unmutes if Hush Little PC did the muting, so a mute you set yourself is never undone.
@@ -69,7 +69,7 @@ Run the test suite directly with `dotnet test tests/HushLittlePC.Tests.csproj -c
 
 | Setting | Description |
 | --- | --- |
-| Mute after *N* minutes | Idle time before muting. Slider goes up to 2 hours; type up to 24 hours. |
+| Mute after *N* minutes | Idle time before muting. Slider goes up to 4 hours. |
 | Enable Hush Little PC | Turns all muting on or off. Same as clicking the tray icon. |
 | Unmute when I come back | Unmutes on activity, only if Hush Little PC muted it. |
 | Stay unmuted while audio is playing | Skips muting while sound is being output. |
@@ -79,7 +79,7 @@ Run the test suite directly with `dotnet test tests/HushLittlePC.Tests.csproj -c
 
 Settings are saved with **Save changes**, which is enabled only after an option changes. Closing with unsaved edits asks for confirmation before discarding them.
 
-Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the file by hand, the idle time is kept within 1 to 1440 minutes. For the Store version Windows redirects this folder to the package's private storage, and it is removed when you uninstall.
+Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the file by hand, the idle time is kept within 1 to 240 minutes. For the Store version Windows redirects this folder to the package's private storage, and it is removed when you uninstall.
 
 ## How it works
 

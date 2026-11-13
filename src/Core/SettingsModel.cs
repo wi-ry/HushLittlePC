@@ -5,7 +5,7 @@ using System.Text.Json;
 public class Settings
 {
     public const int MinIdleMinutes = 1;
-    public const int MaxIdleMinutes = 1440;   // 24 hours
+    public const int MaxIdleMinutes = 240;   // 4 hours
 
     int _idleMinutes = 10;
 

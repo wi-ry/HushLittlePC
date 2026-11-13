@@ -38,7 +38,7 @@ public class SettingsTests
         var expected = new Settings
         {
             Enabled = false,
-            IdleMinutes = 1440,
+            IdleMinutes = 240,
             UnmuteOnActivity = true,
             SkipWhileAudioPlaying = true,
             MuteOnDeviceChange = true,
@@ -62,7 +62,7 @@ public class SettingsTests
     [DataRow(-5, Settings.MinIdleMinutes)]
     [DataRow(0, Settings.MinIdleMinutes)]
     [DataRow(1, 1)]
-    [DataRow(1440, 1440)]
+    [DataRow(240, 240)]
     [DataRow(100000, Settings.MaxIdleMinutes)]
     public void IdleMinutes_IsClampedToSupportedRange(int value, int expected)
     {
