@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'src/WinUI/**'
+      - 'src/Core/**'
       - 'HushLittlePC.csproj'
       - '.github/workflows/winui.yml'
   push:
