@@ -1,3 +1,4 @@
+using System.Runtime.Versioning;
 using HushLittlePC;
 using Microsoft.Win32;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,14 +6,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace HushLittlePC.Tests;
 
 [TestClass]
+[SupportedOSPlatform("windows")]
 public class PortableStartupRegistrationTests
 {
     [TestMethod]
     public void Set_EnablesAndDisablesRegistrationInAnIsolatedRunKey()
     {
-        if (!OperatingSystem.IsWindows())
-            Assert.Inconclusive("The Windows registry integration test runs on Windows only.");
-
         var subKeyPath = $@"Software\HushLittlePC.Tests\{Guid.NewGuid():N}";
         try
         {
@@ -22,7 +21,7 @@ public class PortableStartupRegistrationTests
             PortableStartupRegistration.Set(runKey, enable: true, @"C:\Program Files\Hush Little PC\HushLittlePC.exe");
 
             Assert.AreEqual(
-                "\\"C:\\Program Files\\Hush Little PC\\HushLittlePC.exe\\"",
+                "\"C:\\Program Files\\Hush Little PC\\HushLittlePC.exe\"",
                 runKey.GetValue("HushLittlePC"));
             Assert.AreEqual(RegistryValueKind.String, runKey.GetValueKind("HushLittlePC"));
 
@@ -39,9 +38,6 @@ public class PortableStartupRegistrationTests
     [TestMethod]
     public void Set_WhenExecutablePathIsUnavailable_RemovesExistingRegistration()
     {
-        if (!OperatingSystem.IsWindows())
-            Assert.Inconclusive("The Windows registry integration test runs on Windows only.");
-
         var subKeyPath = $@"Software\HushLittlePC.Tests\{Guid.NewGuid():N}";
         try
         {
