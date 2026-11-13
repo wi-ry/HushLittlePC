@@ -87,16 +87,14 @@ class TrayApp : ApplicationContext
     {
         if (_form is { IsDisposed: false }) { _form.Activate(); return; }
 
-        using (_form = new SettingsForm(_settings))
+        using (_form = new SettingsForm(
+            _settings,
+            () => RefreshUi(),
+            () => ExitApp()))
         {
-            // Modal, so OK/Cancel set DialogResult and close it. The 1-second idle
-            // timer keeps running while it's open.
-            if (_form.ShowDialog() == DialogResult.OK)
-            {
-                SettingsStore.Save(_settings);
-                StartupManager.Set(_settings.RunOnStartup);
-                RefreshUi();
-            }
+            // Settings are persisted as they change; the idle timer continues while the
+            // window is open so the utility remains responsive.
+            _form.ShowDialog();
         }
         _form = null;
     }
