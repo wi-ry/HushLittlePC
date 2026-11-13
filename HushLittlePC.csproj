@@ -20,5 +20,9 @@
   <ItemGroup>
     <Compile Remove="tests\**\*.cs" />
     <Compile Remove="src\WinUI\**\*.cs" />
+    <Compile Remove="src\Core\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="src\Core\HushLittlePC.Core.csproj" />
   </ItemGroup>
 </Project>
