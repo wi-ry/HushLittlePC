@@ -25,7 +25,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     {
         _instanceMutex = new Mutex(
             initiallyOwned: true,
-            name: "HushLittlePC_WinUI_SingleInstance",
+            name: "HushLittlePC_SingleInstance",
             createdNew: out bool createdNew);
 
         if (!createdNew)
