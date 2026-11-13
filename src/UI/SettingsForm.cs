@@ -23,7 +23,7 @@ class SettingsForm : Form
     readonly Action _exit;
     readonly Panel _content;
     readonly Panel _sidebar;
-    readonly Panel _shell;
+    readonly TableLayoutPanel _shell;
     readonly Panel _main;
     readonly Button _settingsNav;
     readonly Button _aboutNav;
