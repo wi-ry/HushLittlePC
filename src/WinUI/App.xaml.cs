@@ -1,6 +1,11 @@
 using System.Threading;
+using System.Windows.Input;
+using H.NotifyIcon;
+using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace HushLittlePC.WinUI;
 
@@ -11,7 +16,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     private Settings? _settings;
     private AudioController? _audio;
     private DeviceWatcher? _deviceWatcher;
-    private TrayIconHost? _tray;
+    private TaskbarIcon? _trayIcon;
     private MainWindow? _window;
     private bool _isExiting;
 
@@ -47,12 +52,28 @@ public partial class App : Microsoft.UI.Xaml.Application
         _audio = audio;
         _deviceWatcher = deviceWatcher;
 
-        var tray = new TrayIconHost(settings.Enabled, GetTrayText());
-        _tray = tray;
-        tray.ToggleRequested += ToggleEnabled;
-        tray.MuteNowRequested += () => audio.SetMute(true);
-        tray.SettingsRequested += () => _window?.ShowFromTray();
-        tray.ExitRequested += ExitApplication;
+        var trayIcon = new TaskbarIcon
+        {
+            ToolTipText = GetTrayText(),
+            IconSource = CreateTrayIcon(settings.Enabled),
+            LeftClickCommand = new RelayCommand(ToggleEnabled),
+            NoLeftClickDelay = true,
+            MenuActivation = PopupActivationMode.RightClick,
+            ContextMenuMode = ContextMenuMode.PopupMenu,
+            ContextMenuThemeMode = PopupMenuThemeMode.System,
+            ContextFlyout = CreateTrayMenu()
+        };
+
+        try
+        {
+            trayIcon.ForceCreate(enablesEfficiencyMode: false);
+            _trayIcon = trayIcon;
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Unable to create the Windows notification-area icon.", ex);
+            trayIcon.Dispose();
+        }
 
         idleMonitor.NotificationRequested += Notifier.Muted;
         deviceWatcher.DefaultOutputChanged += deviceId =>
@@ -67,7 +88,14 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         StartupManager.Set(settings.RunOnStartup);
 
-        _window = new MainWindow(settings, OnSettingsChanged);
+        _window = new MainWindow(settings, OnSettingsChanged, _trayIcon is not null);
+        _window.Closed += (_, _) =>
+        {
+            if (!_isExiting)
+            {
+                ExitApplication(closeWindow: false);
+            }
+        };
         _window.Activate();
     }
 
@@ -124,12 +152,60 @@ public partial class App : Microsoft.UI.Xaml.Application
         return $"Hush Little PC: ON ({_settings.IdleMinutes} min)";
     }
 
-    private void RefreshTray()
+    private static GeneratedIconSource CreateTrayIcon(bool enabled)
     {
-        _tray?.Update(_settings?.Enabled == true, GetTrayText());
+        return new GeneratedIconSource
+        {
+            Text = enabled ? "🔊" : "🔇",
+            Foreground = new SolidColorBrush(enabled ? Colors.LimeGreen : Colors.Gray),
+            FontFamily = new FontFamily("Segoe UI Emoji"),
+            FontSize = 34,
+            FontWeight = FontWeights.SemiBold
+        };
     }
 
-    private void ExitApplication()
+    private MenuFlyout CreateTrayMenu()
+    {
+        var menu = new MenuFlyout();
+        menu.Items.Add(new ToggleMenuFlyoutItem
+        {
+            Text = "Enabled",
+            IsChecked = _settings?.Enabled == true,
+            Command = new RelayCommand(ToggleEnabled)
+        });
+        menu.Items.Add(new MenuFlyoutItem
+        {
+            Text = "Mute now",
+            Command = new RelayCommand(() => _audio?.SetMute(true))
+        });
+        menu.Items.Add(new MenuFlyoutSeparator());
+        menu.Items.Add(new MenuFlyoutItem
+        {
+            Text = "Settings...",
+            Command = new RelayCommand(() => _window?.ShowFromTray())
+        });
+        menu.Items.Add(new MenuFlyoutItem
+        {
+            Text = "Exit",
+            Command = new RelayCommand(ExitApplication)
+        });
+
+        return menu;
+    }
+
+    private void RefreshTray()
+    {
+        if (_trayIcon is null)
+        {
+            return;
+        }
+
+        _trayIcon.IconSource = CreateTrayIcon(_settings?.Enabled == true);
+        _trayIcon.ToolTipText = GetTrayText();
+        _trayIcon.ContextFlyout = CreateTrayMenu();
+    }
+
+    private void ExitApplication(bool closeWindow = true)
     {
         if (_isExiting)
         {
@@ -145,8 +221,8 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         Notifier.ClearAll();
 
-        _tray?.Dispose();
-        _tray = null;
+        _trayIcon?.Dispose();
+        _trayIcon = null;
 
         _audio?.Dispose();
         _audio = null;
@@ -154,14 +230,36 @@ public partial class App : Microsoft.UI.Xaml.Application
         _instanceMutex?.Dispose();
         _instanceMutex = null;
 
-        if (_window is not null)
+        var window = _window;
+        _window = null;
+
+        if (closeWindow && window is not null)
         {
-            _window.ExitApplication();
-            _window = null;
+            window.ExitApplication();
         }
         else
         {
             Exit();
+        }
+    }
+
+    private sealed class RelayCommand : ICommand
+    {
+        private readonly Action _execute;
+
+        public RelayCommand(Action execute)
+        {
+            _execute = execute;
+        }
+
+        public bool CanExecute(object? parameter) => true;
+
+        public void Execute(object? parameter) => _execute();
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add { }
+            remove { }
         }
     }
 }
