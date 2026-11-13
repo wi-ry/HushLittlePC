@@ -52,7 +52,7 @@ Use a disposable Windows account or VM where practical. Record the Windows versi
 | Idle behavior | Threshold reached; activity resumes; audio-playing skip enabled/disabled | Use a short idle threshold in a test profile. |
 | Output changes | Change the default output; disconnect and reconnect a device | Verify the new default device is the one affected. |
 | Notifications | Notifications enabled/disabled; activate the Unmute action | Confirm the action unmutes the intended device. |
-| Startup | Enable and disable startup registration | Test portable Run-key and packaged StartupTask paths separately. |
+| Startup | Enable and disable startup registration; verify sign-in launch stays in the tray without opening the settings window | Test portable Run-key and packaged StartupTask paths separately. |
 | Tray UI | Left-click toggle; right-click menu; close-to-tray; Exit | Check icon state, menu actions, and graceful shutdown. |
 | Window and Fluent UI | Mica, light/dark mode, compact navigation, minimum window size, 100%/150%/200% scaling | Verify the window remains usable and content is not clipped. |
 | Accessibility | Keyboard-only navigation, focus visibility, Narrator names/states, high-contrast mode | Native controls should expose useful labels and values. |
