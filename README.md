@@ -103,7 +103,7 @@ Settings are saved automatically as you change them to `%AppData%\HushLittlePC\s
 - "Audio is playing" is detected from the device's master peak meter.
 - Notifications use the [Windows Community Toolkit notifications library](https://learn.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast).
 - Startup uses the per-user Run registry key for the portable executable and the manifest's StartupTask for the MSIX package.
-- The tray icon and native popup menu are hosted by the shared Windows integration layer.
+- The tray icon and menu use H.NotifyIcon.WinUI and a WinUI MenuFlyout; audio and Windows integration remain in the shared Windows services.
 
 ## Project layout
 
@@ -112,8 +112,8 @@ Settings are saved automatically as you change them to `%AppData%\HushLittlePC\s
 | `HushLittlePC.sln` | Solution containing the legacy app, shared libraries, WinUI app, and tests |
 | `src/WinUI/` | WinUI 3 application, Fluent Settings/About pages, and window lifecycle |
 | `src/Core/` | Shared settings model, persistence, logging, and platform-independent policy |
-| `src/Platform/Windows/` | Audio, idle monitoring, device watching, startup, notifications, and tray integration |
-| `src/UI/` | Legacy WinForms UI retained temporarily as a fallback |
+| `src/Platform/Windows/` | Audio, idle monitoring, device watching, startup, and notifications |
+| `src/UI/` | Legacy WinForms UI, tray icon drawing, and native popup menu retained temporarily as a fallback |
 | `HushLittlePC.csproj` | Legacy WinForms application project; still buildable but no longer used for releases |
 | `tests/` | MSTest coverage for policy, persistence, and Windows integration |
 | `packaging/` | MSIX manifest and Store assets |
