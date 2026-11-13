@@ -5,7 +5,6 @@
     <RootNamespace>HushLittlePC.WinUI</RootNamespace>
     <AssemblyName>HushLittlePC.WinUI</AssemblyName>
     <UseWinUI>true</UseWinUI>
-    <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <WindowsPackageType>None</WindowsPackageType>
