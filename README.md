@@ -56,7 +56,7 @@ pre-commit install
 
 Before each commit, the hooks check whitespace, final newlines, merge-conflict markers and YAML syntax, and the commit message is checked against [Conventional Commits](https://www.conventionalcommits.org/). Changes to C# files or the project file also trigger a Release build and the unit tests. Run all checks manually with `pre-commit run --all-files`.
 
-Run the core unit tests directly with `dotnet test tests/HushLittlePC.Tests.csproj -c Release`. They cover idle-threshold muting, manually muted and app-muted devices, return-from-idle unmuting, skipping active playback, output-change gating, notification eligibility, mute transitions, enabled-state toggling, and settings defaults, limits and JSON compatibility. These tests do not exercise Windows audio hardware or shell integration; see [Windows integration testing](docs/windows-integration-testing.md) for the manual test matrix and safe test procedure.
+Run the test suite directly with `dotnet test tests/HushLittlePC.Tests.csproj -c Release`. It covers idle/mute policy, settings persistence, default-output notification filtering, toast Unmute argument validation, and portable startup registry writes using an isolated temporary registry subkey. The Windows CI smoke test also checks portable-app startup, single-instance enforcement and restart. These tests do not exercise physical audio endpoints, real toast activation, tray interaction, graceful shutdown or MSIX activation; see [Windows integration testing](docs/windows-integration-testing.md) for the automated coverage and remaining manual scenarios.
 
 ## Usage
 
