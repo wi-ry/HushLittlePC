@@ -1,0 +1,32 @@
+name: WinUI 3
+
+on:
+  pull_request:
+    paths:
+      - 'src/WinUI/**'
+      - 'HushLittlePC.csproj'
+      - '.github/workflows/winui.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/WinUI/**'
+      - 'HushLittlePC.csproj'
+      - '.github/workflows/winui.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: winui-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore src/WinUI/HushLittlePC.WinUI.csproj
+      - run: dotnet build src/WinUI/HushLittlePC.WinUI.csproj -c Release --no-restore -warnaserror
