@@ -38,38 +38,47 @@ public partial class App : Microsoft.UI.Xaml.Application
             return;
         }
 
-        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        _settings = SettingsStore.Load();
-        _audio = new AudioController();
-        _idleMonitor = new IdleMonitor(_settings, _audio);
-        _idleMonitor.NotificationRequested += Notifier.Muted;
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        var settings = SettingsStore.Load();
+        var audio = new AudioController();
+        var idleMonitor = new IdleMonitor(settings, audio);
+        var tray = new Forms.NotifyIcon
+        {
+            Icon = TrayIconFactory.MakeIcon(settings.Enabled),
+            Text = settings.Enabled
+                ? $"Hush Little PC: ON ({settings.IdleMinutes} min)"
+                : "Hush Little PC: OFF",
+            Visible = true
+        };
+        var deviceWatcher = new DeviceWatcher();
+        var timer = dispatcherQueue.CreateTimer();
+
+        _dispatcherQueue = dispatcherQueue;
+        _settings = settings;
+        _audio = audio;
+        _idleMonitor = idleMonitor;
+        _tray = tray;
+        _deviceWatcher = deviceWatcher;
+        _timer = timer;
+
+        idleMonitor.NotificationRequested += Notifier.Muted;
+        deviceWatcher.DefaultOutputChanged += deviceId =>
+            dispatcherQueue.TryEnqueue(() => OnOutputChanged(deviceId));
+        Notifier.OnUnmuteClicked(deviceId =>
+            dispatcherQueue.TryEnqueue(() => audio.SetMuteById(deviceId, false)));
 
         NativeMenu.FollowSystemTheme();
 
-        _tray = new Forms.NotifyIcon
-        {
-            Icon = TrayIconFactory.MakeIcon(_settings.Enabled),
-            Text = GetTrayText(),
-            Visible = true
-        };
-        _tray.MouseClick += Tray_MouseClick;
-        _tray.MouseUp += Tray_MouseUp;
+        tray.MouseClick += Tray_MouseClick;
+        tray.MouseUp += Tray_MouseUp;
 
-        _deviceWatcher = new DeviceWatcher();
-        _deviceWatcher.DefaultOutputChanged += deviceId =>
-            _dispatcherQueue.TryEnqueue(() => OnOutputChanged(deviceId));
+        timer.Interval = TimeSpan.FromSeconds(1);
+        timer.Tick += (_, _) => idleMonitor.Tick();
+        timer.Start();
 
-        Notifier.OnUnmuteClicked(deviceId =>
-            _dispatcherQueue.TryEnqueue(() => _audio.SetMuteById(deviceId, false)));
+        StartupManager.Set(settings.RunOnStartup);
 
-        _timer = _dispatcherQueue.CreateTimer();
-        _timer.Interval = TimeSpan.FromSeconds(1);
-        _timer.Tick += (_, _) => _idleMonitor.Tick();
-        _timer.Start();
-
-        StartupManager.Set(_settings.RunOnStartup);
-
-        _window = new MainWindow(_settings, OnSettingsChanged);
+        _window = new MainWindow(settings, OnSettingsChanged);
         _window.Activate();
     }
 
