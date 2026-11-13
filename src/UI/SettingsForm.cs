@@ -93,7 +93,7 @@ class SettingsForm : Form
 
         page.Controls.Add(PageHeading("Settings", "Configure how Hush Little PC manages your audio."));
 
-        var enabled = AddSwitchCard(page, "Enable Hush Little PC", "Automatically mute your audio when you're idle.", _settings.Enabled, value => { _settings.Enabled = value; Changed(); });
+        AddSwitchCard(page, "Enable Hush Little PC", "Automatically mute your audio when you're idle.", _settings.Enabled, value => { _settings.Enabled = value; Changed(); });
         AddIdleCard(page);
         AddSwitchCard(page, "Unmute on activity", "Unmute when you use your keyboard or mouse.", _settings.UnmuteOnActivity, value => { _settings.UnmuteOnActivity = value; Changed(); });
         AddSwitchCard(page, "Stay unmuted while audio is playing", "Avoid muting while music, videos, or other audio are playing.", _settings.SkipWhileAudioPlaying, value => { _settings.SkipWhileAudioPlaying = value; Changed(); });
@@ -212,13 +212,13 @@ class SettingsForm : Form
         Cursor = Cursors.Hand
     };
 
-    static Label PageHeading(string title, string subtitle)
+    static Control PageHeading(string title, string subtitle)
     {
         // A two-line heading is hosted by a fixed-height panel so the page can flow naturally.
         var host = new Panel { Width = 760, Height = 88, BackColor = Page, Margin = new Padding(0, 0, 0, 12) };
         host.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI Semibold", 25F), AutoSize = true, ForeColor = Color.FromArgb(12, 20, 38), Location = new Point(0, 0) });
         host.Controls.Add(new Label { Text = subtitle, Font = new Font("Segoe UI", 11F), AutoSize = true, ForeColor = Muted, Location = new Point(2, 48) });
-        return new Label { Visible = false, Size = host.Size, Tag = host };
+        return host;
     }
 
     static Panel NewCard(int width, int height)
