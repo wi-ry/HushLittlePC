@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Text;
+using Microsoft.Windows.AppLifecycle;
 
 namespace HushLittlePC.WinUI;
 
@@ -29,6 +30,12 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+        var isStartupTask = activationArgs?.Kind == ExtendedActivationKind.StartupTask;
+        var isBackgroundLaunch = isStartupTask || Environment.GetCommandLineArgs().Any(argument =>
+            argument.Equals("--background", StringComparison.OrdinalIgnoreCase) ||
+            argument.Equals("-ToastActivated", StringComparison.OrdinalIgnoreCase));
+
         _instanceMutex = new Mutex(
             initiallyOwned: true,
             name: "HushLittlePC_SingleInstance",
@@ -97,7 +104,10 @@ public partial class App : Microsoft.UI.Xaml.Application
                 ExitApplication(closeWindow: false);
             }
         };
-        _window.Activate();
+        if (!isBackgroundLaunch)
+        {
+            _window.Activate();
+        }
     }
 
     private void ToggleEnabled()
