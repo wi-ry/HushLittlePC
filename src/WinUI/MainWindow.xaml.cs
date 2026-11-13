@@ -25,7 +25,12 @@ public sealed partial class MainWindow : Window
 
         InitializeComponent();
         Title = "Hush Little PC";
-        SystemBackdrop = new MicaBackdrop();
+
+        // Mica is supported on Windows 11. Keep the default window background on Windows 10.
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+        {
+            SystemBackdrop = new MicaBackdrop();
+        }
 
         var windowHandle = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
