@@ -12,13 +12,9 @@
     <PackageReference Include="MSTest.TestFramework"   Version="4.5.2" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\src\Core\MuteTransition.cs" Link="MuteTransition.cs" />
-    <Compile Include="..\src\Core\IdleMutePolicy.cs" Link="IdleMutePolicy.cs" />
-    <Compile Include="..\src\Core\SettingsModel.cs" Link="SettingsModel.cs" />
-    <Compile Include="..\src\Core\DefaultOutputChangeFilter.cs" Link="DefaultOutputChangeFilter.cs" />
-    <Compile Include="..\src\Core\ToastActivationPolicy.cs" Link="ToastActivationPolicy.cs" />
     <Compile Include="..\src\Platform\Windows\AppLog.cs" Link="AppLog.cs" />
     <Compile Include="..\src\Platform\Windows\SettingsStore.cs" Link="SettingsStore.cs" />
     <Compile Include="..\src\Platform\Windows\PortableStartupRegistration.cs" Link="PortableStartupRegistration.cs" />
+    <ProjectReference Include="..\src\Core\HushLittlePC.Core.csproj" />
   </ItemGroup>
 </Project>
