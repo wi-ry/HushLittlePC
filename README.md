@@ -1,62 +1,77 @@
 # Hush Little PC
 
-A tiny Windows tray app that automatically mutes your speakers after a configurable period of keyboard and mouse inactivity.
+A quiet Windows tray utility that automatically mutes your default playback device after a configurable period of keyboard and mouse inactivity.
 
 Step away from your PC and Hush Little PC quietly mutes the sound. Click the tray icon to turn it on or off.
 
-<a href="https://get.microsoft.com/installer/download/9pdnxtb6mg9l?referrer=appbadge" target="_self" >
-	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
+<a href="https://get.microsoft.com/installer/download/9pdnxtb6mg9l?referrer=appbadge" target="_self">
+  <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft" />
 </a>
 
-![Settings](docs/settings.png)
 ![Example notification](docs/notification.png)
 
 ## Features
 
 - **Idle muting:** mutes your default playback device after 1 to 1440 minutes (24 hours) without keyboard or mouse input.
-- **One-click toggle:** left-click the tray icon to enable or disable. The icon changes colour to show the current state.
-- **Native tray menu:** right-click for Enabled, Mute now, Settings and Exit. It uses the standard Windows menu, so it matches the Windows 11 look and follows light/dark mode.
-- **Unmute when I come back (optional):** only unmutes if Hush Little PC did the muting, so a mute you set yourself is never undone.
-- **Stay unmuted while audio is playing (optional):** handy for watching videos or listening to music without touching the PC.
-- **Mute on output change (optional):** mutes the new device when Windows switches the default playback device, for example when Bluetooth headphones connect or you switch to speakers.
-- **Notification with an Unmute button (optional):** a native Windows notification when Hush Little PC changes an unmuted device to muted, so you can undo it with one click. Already-muted devices do not trigger a notification.
-- **Start with Windows (optional):** per-user startup entry, no admin rights needed.
-- **Follows your output device:** switching to headphones, HDMI or Bluetooth just works.
+- **One-click toggle:** left-click the tray icon to enable or disable. The icon changes to show the current state.
+- **Native tray menu:** right-click for Enabled, Mute now, Settings, and Exit.
+- **Unmute when I come back (optional):** only unmutes if Hush Little PC muted the device itself.
+- **Stay unmuted while audio is playing (optional):** avoids muting while sound is being output.
+- **Mute on output change (optional):** mutes the new default device when Windows switches playback devices.
+- **Notification with an Unmute button (optional):** a native Windows notification when the app mutes an unmuted device.
+- **Start with Windows (optional):** per-user startup registration; no administrator rights required.
+- **Native Fluent settings:** WinUI 3 controls, Mica material, adaptive navigation, and system-aware styling.
 
 ## Requirements
 
-- Windows 10 or 11
-- [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) for the portable exe (not needed for the Microsoft Store version, which bundles its own runtime, or if you publish self-contained, see below)
+- Windows 10 version 2004 (build 19041) or later, or Windows 11.
+- x64 release builds.
+
+The portable and Microsoft Store distributions include the required .NET and Windows App SDK runtimes. You do not need to install either runtime separately.
 
 ## Install
 
-- **Microsoft Store:** install from [Hush Little PC on the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS). Updates are delivered by the Store.
-- **Portable:** download `HushLittlePC_<version>_x64-portable.exe` from the [Releases](../../releases) page (needs the .NET 8 Desktop Runtime).
+- **Microsoft Store:** install [Hush Little PC from the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS). Updates are delivered by the Store.
+- **Portable:** download `HushLittlePC_<version>_x64-portable.exe` from the [Releases](../../releases) page.
 
 ## Build
 
-You need the [.NET 8 SDK](https://dotnet.microsoft.com/download).
+Install the [.NET 8 SDK](https://dotnet.microsoft.com/download).
 
+Restore and build the complete solution:
+
+```powershell
+dotnet restore HushLittlePC.sln
+dotnet build HushLittlePC.sln -c Release
+dotnet test tests/HushLittlePC.Tests.csproj -c Release
 ```
-dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
+
+Publish the self-contained WinUI portable executable:
+
+```powershell
+dotnet publish src/WinUI/HushLittlePC.WinUI.csproj -c Release -r win-x64 --self-contained true `
+  -p:WindowsAppSDKSelfContained=true -p:EnableMsixTooling=true `
+  -p:IncludeAllContentForSelfExtract=true -p:PublishSingleFile=true
 ```
 
-The exe is created at `bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\HushLittlePC.exe`.
+The portable executable is created under `src/WinUI/bin/Release/net8.0-windows10.0.19041.0/win-x64/publish/`.
 
-To produce an exe that runs without the .NET runtime installed (larger file), use `--self-contained true` instead.
+The Store MSIX package is assembled by `.github/scripts/package-msix.ps1`. The release workflow runs both packaging paths after CI succeeds on `main`.
 
 ## Pre-commit checks
 
 Install [pre-commit](https://pre-commit.com/) and enable the hooks:
 
-```
+```powershell
 python -m pip install pre-commit
 pre-commit install
 ```
 
-Before each commit, the hooks check whitespace, final newlines, merge-conflict markers and YAML syntax, and the commit message is checked against [Conventional Commits](https://www.conventionalcommits.org/). Changes to C# files or the project file also trigger a Release build and the unit tests. Run all checks manually with `pre-commit run --all-files`.
+Before each commit, the hooks check whitespace, final newlines, merge-conflict markers, YAML syntax, and Conventional Commit messages. Run all checks manually with:
 
-Run the test suite directly with `dotnet test tests/HushLittlePC.Tests.csproj -c Release`. It covers idle/mute policy, settings persistence, default-output notification filtering, toast Unmute argument validation, and portable startup registry writes using an isolated temporary registry subkey. The Windows CI smoke test also checks portable-app startup, single-instance enforcement and restart. These tests do not exercise physical audio endpoints, real toast activation, tray interaction, graceful shutdown or MSIX activation; see [Windows integration testing](docs/windows-integration-testing.md) for the automated coverage and remaining manual scenarios.
+```powershell
+pre-commit run --all-files
+```
 
 ## Usage
 
@@ -69,78 +84,69 @@ Run the test suite directly with `dotnet test tests/HushLittlePC.Tests.csproj -c
 
 | Setting | Description |
 | --- | --- |
-| Mute after *N* minutes | Idle time before muting. Slider goes up to 2 hours; type up to 24 hours. |
-| Enable Hush Little PC | Turns all muting on or off. Same as clicking the tray icon. |
-| Unmute when I come back | Unmutes on activity, only if Hush Little PC muted it. |
+| Mute after *N* minutes | Idle time before muting. The slider and number box cover 1 minute to 24 hours. |
+| Enable Hush Little PC | Turns automatic muting on or off. |
+| Unmute when I come back | Unmutes on activity, only if Hush Little PC muted the device. |
 | Stay unmuted while audio is playing | Skips muting while sound is being output. |
-| Mute when the audio output changes | Mutes the new default playback device whenever Windows switches outputs. |
-| Show a notification when audio is muted | Windows notification with an Unmute button each time audio is muted. |
-| Start Hush Little PC with Windows | Portable exe: adds an entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. Store version: enables its startup task (manage it under **Settings > Apps > Startup**; if you turn it off there, Windows only lets you turn it back on there). |
+| Mute when the audio output changes | Mutes the new default playback device when Windows switches outputs. |
+| Show mute notifications | Shows a Windows notification with an Unmute action. |
+| Run at startup | Portable build: uses the per-user Run key. Store build: uses the package StartupTask (manage it under **Settings > Apps > Startup**). |
 
-Settings are saved with **Save changes**, which is enabled only after an option changes. Closing with unsaved edits asks for confirmation before discarding them.
-
-Settings are saved to `%AppData%\HushLittlePC\settings.json`. If you edit the file by hand, the idle time is kept within 1 to 1440 minutes. For the Store version Windows redirects this folder to the package's private storage, and it is removed when you uninstall.
+Settings are saved automatically as you change them to `%AppData%\HushLittlePC\settings.json`. For the Store version, Windows redirects this folder to the package's private storage and removes it when you uninstall.
 
 ## How it works
 
 - Idle time comes from the Win32 `GetLastInputInfo` API, checked once per second. Only keyboard and mouse input counts as activity.
-- Notifications use the [Windows Community Toolkit notifications library](https://learn.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast) (`Microsoft.Toolkit.Uwp.Notifications`).
-- Muting uses the Windows Core Audio API (through [NAudio](https://github.com/naudio/NAudio)) on the current default playback device, which is looked up again on every check so output switches are picked up.
-- Muting is tracked so the app only unmutes what it muted itself. The decision logic lives in `IdleMutePolicy` and is covered by unit tests.
-- Startup uses the per-user `Run` registry key for the portable exe and the manifest's `StartupTask` for the Store (MSIX) package, because packaged apps can't write to the `Run` key.
-- Output changes are detected through the Windows Core Audio device notifications (the default playback device changing).
+- Muting uses the Windows Core Audio API through [NAudio](https://github.com/naudio/NAudio).
+- Muting is tracked so the app only unmutes devices it muted itself. The decision logic lives in `HushLittlePC.Core` and is covered by unit tests.
+- Output changes are detected through Windows Core Audio device notifications.
 - "Audio is playing" is detected from the device's master peak meter.
-- The tray menu is a native Win32 popup menu. Light/dark theming uses undocumented `uxtheme.dll` calls; on versions of Windows that lack them, the menu simply stays light.
+- Notifications use the [Windows Community Toolkit notifications library](https://learn.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast).
+- Startup uses the per-user Run registry key for the portable executable and the manifest's StartupTask for the MSIX package.
+- The tray icon and native popup menu are hosted by the shared Windows integration layer.
 
 ## Project layout
 
 | Path | Purpose |
 | --- | --- |
-| `Program.cs` | Entry point, single-instance check, and top-level exception logging |
-| `src/UI/TrayApp.cs` | Tray icon, idle-check timer, mute orchestration |
-| `src/Core/IdleMutePolicy.cs` | Pure decision logic: when to mute, unmute or notify |
-| `src/Core/MuteTransition.cs` | Mutes a device only if needed and reports its prior state |
-| `src/UI/NativeMenu.cs` | Native Win32 tray menu |
-| `src/UI/Notifier.cs` | Native Windows notifications with an Unmute button |
-| `src/UI/SettingsForm.cs` | Settings window |
-| `src/Core/SettingsModel.cs` | `Settings` type and JSON serialization (no Windows dependencies, so it is unit-tested) |
-| `src/Platform/Windows/SettingsStore.cs` | Settings file storage |
-| `src/Platform/Windows/StartupManager.cs` | Portable registry and MSIX startup-task integration |
-| `src/Platform/Windows/IdleTime.cs` | Win32 idle-time helper |
-| `src/Platform/Windows/AudioController.cs` | Windows audio control |
-| `src/Platform/Windows/DeviceWatcher.cs` | Default playback-device change notifications |
-| `src/Platform/Windows/IdleMonitor.cs` | Periodic idle-policy execution |
-| `src/Platform/Windows/AppLog.cs` | Best-effort local diagnostic logging |
-| `tests/` | MSTest coverage for platform-independent logic |
+| `HushLittlePC.sln` | Solution containing the legacy app, shared libraries, WinUI app, and tests |
+| `src/WinUI/` | WinUI 3 application, Fluent Settings/About pages, and window lifecycle |
+| `src/Core/` | Shared settings model, persistence, logging, and platform-independent policy |
+| `src/Platform/Windows/` | Audio, idle monitoring, device watching, startup, notifications, and tray integration |
+| `src/UI/` | Legacy WinForms UI retained temporarily as a fallback |
+| `HushLittlePC.csproj` | Legacy WinForms application project; still buildable but no longer used for releases |
+| `tests/` | MSTest coverage for policy, persistence, and Windows integration |
 | `packaging/` | MSIX manifest and Store assets |
-| `store/`, `docs/`, `resources/` | Store listing art, README images, integration-testing guide, embedded notification icon |
-| `.github/` | CI, release and commit-lint workflows, Dependabot config, MSIX packaging script |
+| `store/`, `docs/`, `resources/` | Store listing art, documentation, test guidance, and notification assets |
+| `.github/` | CI, semantic-release, and MSIX packaging automation |
 
 ## Diagnostics
 
 Application errors are written to `%LocalAppData%\HushLittlePC\app.log`. The log is capped at approximately 512 KiB; when it reaches the limit, the next write starts a fresh log. Logging is best-effort and will never prevent the app from running.
 
+The About page shows the app/runtime version and can copy basic environment diagnostics to the clipboard.
+
 ## Contributing
 
-- Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/) (for example `fix: ...`, `feat: ...`), because the title becomes the commit message on `main` and drives versioning. CI lints the title on every pull request, and the check is required before merging. The pre-commit hook gives the same feedback locally for individual commits.
-- CI runs formatting, build and unit tests, plus a Windows portable-app smoke test for startup, single-instance enforcement and restart, on every pull request and push to `main`.
-- When CI succeeds on `main`, [semantic-release](https://semantic-release.gitbook.io/) creates the version tag and GitHub release, attaches the portable exe, and submits the MSIX package to the Microsoft Store.
-- Store publishing needs these repository settings: variables `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER` and `MSIX_PUBLISHER_DISPLAY_NAME`, and secrets `TENANT_ID`, `SELLER_ID`, `CLIENT_ID`, `SECRET_VALUE` and `STORE_ID`. The release workflow stops early with a clear message if the variables are missing.
-- Enable the [pre-commit checks](#pre-commit-checks) to catch problems before pushing.
+- Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/) because the title becomes the commit message on `main` and drives versioning.
+- CI formats and builds the full solution, runs unit tests, smoke-tests both the legacy fallback and WinUI portable app, and creates a test MSIX package.
+- When CI succeeds on `main`, [semantic-release](https://semantic-release.gitbook.io/) creates the version tag and GitHub release, attaches the portable executable, and submits the MSIX package to the Microsoft Store.
+- Store publishing requires repository variables `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER`, and `MSIX_PUBLISHER_DISPLAY_NAME`, plus secrets `TENANT_ID`, `SELLER_ID`, `CLIENT_ID`, `SECRET_VALUE`, and `STORE_ID`.
+- See [Windows integration testing](docs/windows-integration-testing.md) for automated coverage and the manual hardware/UI acceptance scenarios.
 
 ## Uninstall
 
-1. Untick **Start Hush Little PC with Windows** in Settings.
+1. Turn off **Run at startup** in Settings.
 2. Right-click the tray icon and choose **Exit**.
-3. Delete the exe and, if you like, the `%AppData%\HushLittlePC` and `%LocalAppData%\HushLittlePC` folders (the latter holds the diagnostic log and notification icon).
+3. Delete the portable executable and, if desired, the `%AppData%\HushLittlePC` and `%LocalAppData%\HushLittlePC` folders.
 
-For the Store version, uninstall it from **Settings > Apps > Installed apps** instead; that also removes its settings.
+For the Store version, uninstall it from **Settings > Apps > Installed apps**.
 
 ## Limitations
 
-- "Mute when the audio output changes" reacts to Windows changing the *default device* (Bluetooth, USB, HDMI, or picking another output). Plugging headphones into a wired 3.5 mm jack usually doesn't change the default device, so it won't trigger.
+- "Mute when the audio output changes" reacts to Windows changing the *default device*. Plugging headphones into a wired 3.5 mm jack usually does not change the default device, so it will not trigger.
 - Only the default playback device is muted, not every audio device.
-- Idle detection is system-wide input only. Playing media without touching the keyboard or mouse counts as idle unless "Stay unmuted while audio is playing" is on.
+- Idle detection is system-wide input only. Playing media without touching the keyboard or mouse counts as idle unless "Stay unmuted while audio is playing" is enabled.
 
 ## License
 
