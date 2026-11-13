@@ -12,7 +12,7 @@ static class PortableStartupRegistration
     public static void Set(RegistryKey runKey, bool enable, string? processPath)
     {
         if (enable && !string.IsNullOrWhiteSpace(processPath))
-            runKey.SetValue(ValueName, $"\\"{processPath}\\"", RegistryValueKind.String);
+            runKey.SetValue(ValueName, $"\"{processPath}\"", RegistryValueKind.String);
         else
             runKey.DeleteValue(ValueName, throwOnMissingValue: false);
     }
