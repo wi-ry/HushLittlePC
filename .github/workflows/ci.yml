@@ -34,26 +34,14 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: ${{ runner.os }}-nuget-
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Restore tests
-        run: dotnet restore tests/HushLittlePC.Tests.csproj
-
-      - name: Restore WinUI app
-        run: dotnet restore src/WinUI/HushLittlePC.WinUI.csproj
+      - name: Restore solution
+        run: dotnet restore HushLittlePC.sln
 
       - name: Verify formatting
-        run: |
-          dotnet format HushLittlePC.csproj --verify-no-changes --no-restore
-          dotnet format tests/HushLittlePC.Tests.csproj --verify-no-changes --no-restore
-          dotnet format src/WinUI/HushLittlePC.WinUI.csproj --verify-no-changes --no-restore
+        run: dotnet format HushLittlePC.sln --verify-no-changes --no-restore
 
-      - name: Build
-        run: dotnet build HushLittlePC.csproj -c Release --no-restore -warnaserror
-
-      - name: Build WinUI app
-        run: dotnet build src/WinUI/HushLittlePC.WinUI.csproj -c Release --no-restore -warnaserror
+      - name: Build solution
+        run: dotnet build HushLittlePC.sln -c Release --no-restore -warnaserror
 
       - name: Test
         run: dotnet test tests/HushLittlePC.Tests.csproj -c Release --no-restore -warnaserror --logger "trx;LogFileName=HushLittlePC.Tests.trx"
