@@ -1,0 +1,29 @@
+<Page
+    x:Class="HushLittlePC.WinUI.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel
+            MaxWidth="760"
+            Spacing="24"
+            Padding="32,28,32,40"
+            HorizontalAlignment="Left">
+            <StackPanel Spacing="4">
+                <TextBlock
+                    Text="Settings"
+                    Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock
+                    Text="Hush Little PC settings will move here during the WinUI migration."
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Opacity="0.72"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+            <InfoBar
+                IsOpen="True"
+                IsClosable="False"
+                Severity="Informational"
+                Title="WinUI 3 foundation"
+                Message="This is the new native settings shell. Existing audio and tray behaviour remains in the current application while each feature is migrated and tested." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
