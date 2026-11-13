@@ -36,7 +36,8 @@ public partial class App : Microsoft.UI.Xaml.Application
             return;
         }
 
-        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread()
+            ?? throw new InvalidOperationException("The WinUI dispatcher queue is unavailable.");
         var settings = SettingsStore.Load();
         var audio = new AudioController();
         var idleMonitor = new IdleMonitor(settings, audio);
