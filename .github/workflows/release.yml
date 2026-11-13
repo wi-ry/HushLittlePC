@@ -95,10 +95,12 @@ jobs:
       - name: Build portable executable
         shell: pwsh
         run: |
-          dotnet publish HushLittlePC.csproj -c Release -r win-x64 --self-contained false `
-            -p:PublishSingleFile=true "-p:Version=${{ needs.release.outputs.version }}" -o artifacts/portable
+          dotnet publish src/WinUI/HushLittlePC.WinUI.csproj -c Release -r win-x64 --self-contained true `
+            -p:WindowsAppSDKSelfContained=true -p:EnableMsixTooling=true `
+            -p:IncludeAllContentForSelfExtract=true -p:PublishSingleFile=true `
+            "-p:Version=${{ needs.release.outputs.version }}" -o artifacts/portable
           Move-Item `
-            "artifacts/portable/HushLittlePC.exe" `
+            "artifacts/portable/HushLittlePC.WinUI.exe" `
             "artifacts/HushLittlePC_${{ needs.release.outputs.version }}_x64-portable.exe"
 
       - name: Upload artifact to release
