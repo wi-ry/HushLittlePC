@@ -51,6 +51,8 @@
                             SmallChange="1"
                             LargeChange="5"
                             SpinButtonPlacementMode="Compact"
+                            AutomationProperties.Name="Idle timeout in minutes"
+                            AutomationProperties.HelpText="The number of minutes without keyboard or mouse activity before audio is muted."
                             ValueChanged="IdleMinutesNumberBox_ValueChanged" />
                     </Grid>
                     <Slider
@@ -59,6 +61,8 @@
                         Maximum="1440"
                         StepFrequency="1"
                         Value="10"
+                        AutomationProperties.Name="Idle timeout in minutes"
+                        AutomationProperties.HelpText="Adjust the inactivity timeout from one minute to twenty-four hours."
                         ValueChanged="IdleMinutesSlider_ValueChanged" />
                     <Grid ColumnDefinitions="*,*">
                         <TextBlock Text="1 minute" FontSize="12" Opacity="0.65" />
@@ -80,28 +84,28 @@
                             <TextBlock Text="Enable Hush Little PC" FontSize="15" FontWeight="SemiBold" />
                             <TextBlock Text="Allow automatic muting while you are away." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="EnabledToggle" Grid.Column="1" Tag="Enabled" Toggled="Setting_Toggled" />
+                        <ToggleSwitch AutomationProperties.Name="Enable Hush Little PC" AutomationProperties.HelpText="Allow automatic muting while you are away." x:Name="EnabledToggle" Grid.Column="1" Tag="Enabled" Toggled="Setting_Toggled" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Spacing="3">
                             <TextBlock Text="Unmute when I come back" FontSize="15" FontWeight="SemiBold" />
                             <TextBlock Text="Only reverses a mute made by Hush Little PC." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="UnmuteOnActivityToggle" Grid.Column="1" Tag="UnmuteOnActivity" Toggled="Setting_Toggled" />
+                        <ToggleSwitch AutomationProperties.Name="Unmute when I come back" AutomationProperties.HelpText="Only reverses a mute made by Hush Little PC." x:Name="UnmuteOnActivityToggle" Grid.Column="1" Tag="UnmuteOnActivity" Toggled="Setting_Toggled" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Spacing="3">
                             <TextBlock Text="Stay unmuted while audio is playing" FontSize="15" FontWeight="SemiBold" />
                             <TextBlock Text="Avoid muting while sound is being output." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="SkipWhileAudioPlayingToggle" Grid.Column="1" Tag="SkipWhileAudioPlaying" Toggled="Setting_Toggled" />
+                        <ToggleSwitch AutomationProperties.Name="Stay unmuted while audio is playing" AutomationProperties.HelpText="Avoid muting while sound is being output." x:Name="SkipWhileAudioPlayingToggle" Grid.Column="1" Tag="SkipWhileAudioPlaying" Toggled="Setting_Toggled" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Spacing="3">
                             <TextBlock Text="Mute when the output device changes" FontSize="15" FontWeight="SemiBold" />
                             <TextBlock Text="Mute a newly selected playback device." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="MuteOnDeviceChangeToggle" Grid.Column="1" Tag="MuteOnDeviceChange" Toggled="Setting_Toggled" />
+                        <ToggleSwitch AutomationProperties.Name="Mute when the output device changes" AutomationProperties.HelpText="Mute a newly selected playback device." x:Name="MuteOnDeviceChangeToggle" Grid.Column="1" Tag="MuteOnDeviceChange" Toggled="Setting_Toggled" />
                     </Grid>
                 </StackPanel>
             </Border>
@@ -119,14 +123,14 @@
                             <TextBlock Text="Show mute notifications" FontSize="15" FontWeight="SemiBold" />
                             <TextBlock Text="Show a Windows notification when audio is muted." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="ShowNotificationToggle" Grid.Column="1" Tag="ShowNotification" Toggled="Setting_Toggled" />
+                        <ToggleSwitch AutomationProperties.Name="Show mute notifications" AutomationProperties.HelpText="Show a Windows notification when audio is muted." x:Name="ShowNotificationToggle" Grid.Column="1" Tag="ShowNotification" Toggled="Setting_Toggled" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Spacing="3">
                             <TextBlock Text="Run at startup" FontSize="15" FontWeight="SemiBold" />
                             <TextBlock Text="Start Hush Little PC when you sign in to Windows." FontSize="13" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="RunOnStartupToggle" Grid.Column="1" Tag="RunOnStartup" Toggled="Setting_Toggled" />
+                        <ToggleSwitch AutomationProperties.Name="Run at startup" AutomationProperties.HelpText="Start Hush Little PC when you sign in to Windows." x:Name="RunOnStartupToggle" Grid.Column="1" Tag="RunOnStartup" Toggled="Setting_Toggled" />
                     </Grid>
                 </StackPanel>
             </Border>
