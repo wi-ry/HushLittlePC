@@ -157,10 +157,10 @@ public partial class App : Microsoft.UI.Xaml.Application
     {
         return new GeneratedIconSource
         {
-            Text = enabled ? "🔊" : "🔇",
+            Text = enabled ? "\uE767" : "\uE74F",
             Foreground = new SolidColorBrush(enabled ? Colors.LimeGreen : Colors.Gray),
-            FontFamily = new FontFamily("Segoe UI Emoji"),
-            FontSize = 34,
+            FontFamily = new FontFamily("Segoe MDL2 Assets"),
+            FontSize = 32,
             FontWeight = FontWeights.SemiBold
         };
     }
