@@ -111,16 +111,24 @@ class SettingsForm : Form
     {
         const int WmSettingChange = 0x001A;
         base.WndProc(ref message);
-        if (message.Msg == WmSettingChange && ReadSystemTheme() != _darkTheme)
+        bool darkTheme = ReadSystemTheme();
+        if (message.Msg == WmSettingChange && darkTheme != _darkTheme)
         {
             bool settingsPage = _aboutNav.BackColor == Color.Transparent;
-            _darkTheme = ReadSystemTheme();
+            _darkTheme = darkTheme;
             BackColor = Page;
             _shell.BackColor = Page;
             _sidebar.BackColor = Sidebar;
             _main.BackColor = Page;
             _content.BackColor = Page;
-            ShowSettingsPage();
+            foreach (Control control in _sidebar.Controls)
+            {
+                if (control is Label label && label.Text != "●")
+                    label.ForeColor = label.Font.Size < 10 ? Muted : PrimaryText;
+                if (control is Button button)
+                    button.ForeColor = PrimaryText;
+            }
+            if (settingsPage) ShowSettingsPage(); else ShowAboutPage();
         }
     }
 
@@ -265,8 +273,6 @@ class SettingsForm : Form
     {
         _settingsNav.BackColor = settings ? Selected : Color.Transparent;
         _aboutNav.BackColor = settings ? Color.Transparent : Selected;
-        _settingsNav.ForeColor = PrimaryText;
-        _aboutNav.ForeColor = PrimaryText;
         _settingsNav.ForeColor = PrimaryText;
         _aboutNav.ForeColor = PrimaryText;
         _settingsNav.Font = new Font("Segoe UI", 10F, settings ? FontStyle.Bold : FontStyle.Regular);
