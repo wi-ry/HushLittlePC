@@ -16,7 +16,7 @@ class SettingsForm : Form
     static Color Border => _darkTheme ? Color.FromArgb(65, 65, 65) : Color.FromArgb(224, 230, 240);
     static Color Selected => _darkTheme ? Color.FromArgb(55, 75, 100) : Color.FromArgb(216, 231, 252);
     static Color IconSurface => _darkTheme ? Color.FromArgb(48, 58, 70) : Color.FromArgb(234, 243, 253);
-    static Color ToggleOff => _darkTheme ? Color.FromArgb(100, 100, 100) : Color.FromArgb(190, 197, 207);
+    internal static Color ToggleOff => _darkTheme ? Color.FromArgb(100, 100, 100) : Color.FromArgb(190, 197, 207);
 
     readonly Settings _settings;
     readonly Action _settingsChanged;
