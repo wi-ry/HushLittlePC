@@ -1,32 +1,36 @@
 namespace HushLittlePC;
 
-using System.Reflection;
 using System.Drawing.Drawing2D;
+using System.Reflection;
 
 class SettingsForm : Form
 {
     static bool _darkTheme = ReadSystemTheme();
-    static Color Accent => Color.FromArgb(0, 103, 192);
-    static Color Surface => _darkTheme ? Color.FromArgb(38, 38, 38) : Color.White;
-    static Color Page => _darkTheme ? Color.FromArgb(30, 30, 30) : Color.FromArgb(245, 247, 251);
-    static Color Muted => _darkTheme ? Color.FromArgb(190, 190, 190) : Color.FromArgb(75, 85, 105);
+
+    static Color Page => _darkTheme ? Color.FromArgb(32, 32, 32) : Color.FromArgb(246, 248, 252);
+    static Color Surface => _darkTheme ? Color.FromArgb(43, 43, 43) : Color.White;
+    static Color Sidebar => _darkTheme ? Color.FromArgb(37, 37, 37) : Color.FromArgb(239, 244, 252);
     static Color PrimaryText => _darkTheme ? Color.FromArgb(245, 245, 245) : Color.FromArgb(20, 30, 48);
     static Color SecondaryText => _darkTheme ? Color.FromArgb(205, 205, 205) : Color.FromArgb(50, 62, 86);
-    static Color Sidebar => _darkTheme ? Color.FromArgb(35, 35, 35) : Color.FromArgb(239, 244, 252);
-    static Color Border => _darkTheme ? Color.FromArgb(65, 65, 65) : Color.FromArgb(224, 230, 240);
-    static Color Selected => _darkTheme ? Color.FromArgb(55, 75, 100) : Color.FromArgb(216, 231, 252);
-    static Color IconSurface => _darkTheme ? Color.FromArgb(48, 58, 70) : Color.FromArgb(234, 243, 253);
+    static Color Muted => _darkTheme ? Color.FromArgb(165, 165, 165) : Color.FromArgb(100, 110, 128);
+    static Color Border => _darkTheme ? Color.FromArgb(66, 66, 66) : Color.FromArgb(224, 230, 240);
+    static Color Selected => _darkTheme ? Color.FromArgb(57, 76, 101) : Color.FromArgb(216, 231, 252);
+    static Color Accent => Color.FromArgb(0, 103, 220);
     internal static Color ToggleOff => _darkTheme ? Color.FromArgb(100, 100, 100) : Color.FromArgb(190, 197, 207);
+    static Color IconSurface => _darkTheme ? Color.FromArgb(51, 65, 82) : Color.FromArgb(234, 243, 253);
 
     readonly Settings _settings;
     readonly Action _settingsChanged;
     readonly Action _exit;
-    readonly Panel _content;
     readonly Panel _sidebar;
-    readonly TableLayoutPanel _shell;
     readonly Panel _main;
+    readonly Panel _content;
+    readonly FlowLayoutPanel _settingsCards;
     readonly Button _settingsNav;
     readonly Button _aboutNav;
+    readonly Label _brand;
+    readonly Label _tagline;
+    readonly Label _status;
 
     public SettingsForm(Settings settings, Action settingsChanged, Action exit)
     {
@@ -37,62 +41,138 @@ class SettingsForm : Form
         Text = "Hush Little PC";
         Icon = TrayApp.MakeIcon(true);
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(820, 620);
-        Size = new Size(1120, 760);
+        MinimumSize = new Size(900, 680);
+        Size = new Size(1180, 820);
         Font = new Font("Segoe UI", 10F);
         BackColor = Page;
         AutoScaleMode = AutoScaleMode.Dpi;
 
-        _shell = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Page, Padding = new Padding(0) };
-        _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 236));
-        _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        Controls.Add(_shell);
+        var shell = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+            BackColor = Page
+        };
+        shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 224));
+        shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        Controls.Add(shell);
 
-        _sidebar = new Panel { Dock = DockStyle.Fill, BackColor = Sidebar, Padding = new Padding(18, 24, 14, 18) };
-        var sidebar = _sidebar;
-        _shell.Controls.Add(sidebar, 0, 0);
+        _sidebar = new Panel { Dock = DockStyle.Fill, BackColor = Sidebar, Padding = new Padding(18, 24, 18, 18) };
+        shell.Controls.Add(_sidebar, 0, 0);
 
-        var brand = new Label { Text = "◔  Hush Little PC", Font = new Font("Segoe UI Semibold", 13F), ForeColor = PrimaryText, AutoEllipsis = true, Size = new Size(190, 28), Location = new Point(10, 8) };
-        sidebar.Controls.Add(brand);
-        var tagline = new Label { Text = "Keep the peace. Automatically.", Font = new Font("Segoe UI", 9F), ForeColor = Muted, AutoEllipsis = true, Size = new Size(190, 22), Location = new Point(10, 40) };
-        sidebar.Controls.Add(tagline);
+        var sidebarLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 4,
+            BackColor = Sidebar,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        sidebarLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        sidebarLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78));
+        sidebarLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156));
+        sidebarLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        sidebarLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+        _sidebar.Controls.Add(sidebarLayout);
 
-        _settingsNav = NavButton("⚙   Settings", true);
-        _settingsNav.Location = new Point(0, 118);
+        var identity = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, BackColor = Sidebar, Margin = Padding.Empty };
+        identity.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+        identity.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+        _brand = new Label { Text = "◔  Hush Little PC", Dock = DockStyle.Fill, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI Semibold", 14F), ForeColor = PrimaryText, Margin = Padding.Empty };
+        _tagline = new Label { Text = "Keep the peace. Automatically.", Dock = DockStyle.Fill, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI", 9F), ForeColor = SecondaryText, Margin = Padding.Empty };
+        identity.Controls.Add(_brand, 0, 0);
+        identity.Controls.Add(_tagline, 0, 1);
+        sidebarLayout.Controls.Add(identity, 0, 0);
+
+        var navigation = new TableLayoutPanel { Dock = DockStyle.Top, ColumnCount = 1, RowCount = 3, BackColor = Sidebar, Margin = new Padding(0, 10, 0, 0), Padding = Padding.Empty };
+        for (int i = 0; i < 3; i++) navigation.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        _settingsNav = CreateNavButton("⚙   Settings", true);
+        _aboutNav = CreateNavButton("ⓘ   About", false);
+        var exitNav = CreateNavButton("⏻   Exit", false);
         _settingsNav.Click += (_, _) => ShowSettingsPage();
-        sidebar.Controls.Add(_settingsNav);
-
-        _aboutNav = NavButton("ⓘ   About", false);
-        _aboutNav.Location = new Point(0, 166);
         _aboutNav.Click += (_, _) => ShowAboutPage();
-        sidebar.Controls.Add(_aboutNav);
+        exitNav.Click += (_, _) => _exit();
+        navigation.Controls.Add(_settingsNav, 0, 0);
+        navigation.Controls.Add(_aboutNav, 0, 1);
+        navigation.Controls.Add(exitNav, 0, 2);
+        sidebarLayout.Controls.Add(navigation, 0, 1);
 
-        var exitButton = NavButton("⏻   Exit", false);
-        exitButton.Location = new Point(0, 214);
-        exitButton.Click += (_, _) => _exit();
-        sidebar.Controls.Add(exitButton);
+        var spacer = new Panel { Dock = DockStyle.Fill, BackColor = Sidebar };
+        sidebarLayout.Controls.Add(spacer, 0, 2);
 
-        var statusLine = new Panel { Dock = DockStyle.Bottom, Height = 42, BackColor = Color.Transparent };
-        var statusDot = new Label { Text = "●", ForeColor = Color.FromArgb(34, 197, 94), AutoSize = true, Location = new Point(2, 11) };
-        var status = new Label { Text = "Monitoring audio devices", ForeColor = PrimaryText, AutoEllipsis = true, Size = new Size(174, 22), Location = new Point(24, 10), Font = new Font("Segoe UI", 9F) };
-        statusLine.Controls.Add(statusDot);
-        statusLine.Controls.Add(status);
-        sidebar.Controls.Add(statusLine);
+        var statusPanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Sidebar, Margin = Padding.Empty };
+        statusPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20));
+        statusPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        var dot = new Label { Text = "●", Dock = DockStyle.Fill, ForeColor = Color.FromArgb(34, 197, 94), TextAlign = ContentAlignment.MiddleLeft, Margin = Padding.Empty };
+        _status = new Label { Text = "Monitoring audio devices", Dock = DockStyle.Fill, AutoEllipsis = true, ForeColor = PrimaryText, Font = new Font("Segoe UI", 9F), TextAlign = ContentAlignment.MiddleLeft, Margin = Padding.Empty };
+        statusPanel.Controls.Add(dot, 0, 0);
+        statusPanel.Controls.Add(_status, 1, 0);
+        sidebarLayout.Controls.Add(statusPanel, 0, 3);
 
         _main = new Panel { Dock = DockStyle.Fill, BackColor = Page, Padding = new Padding(28, 24, 28, 20) };
-        var main = _main;
-        _shell.Controls.Add(main, 1, 0);
-        _content = new Panel { Dock = DockStyle.Fill, BackColor = Page, AutoScroll = true };
-        _content.Resize += (_, _) => ResizeCurrentPage();
-        main.Controls.Add(_content);
+        shell.Controls.Add(_main, 1, 0);
 
-        ShowSettingsPage();
-    }
+        var mainLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+            BackColor = Page,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88));
+        mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+        _main.Controls.Add(mainLayout);
 
-    protected override void OnShown(EventArgs e)
-    {
-        base.OnShown(e);
-        ShowSettingsPage();
+        var heading = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, BackColor = Page, Margin = Padding.Empty };
+        heading.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+        heading.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        heading.Controls.Add(new Label { Text = "Settings", Dock = DockStyle.Fill, Font = new Font("Segoe UI Semibold", 26F), ForeColor = PrimaryText, TextAlign = ContentAlignment.MiddleLeft, Margin = Padding.Empty }, 0, 0);
+        heading.Controls.Add(new Label { Text = "Configure how Hush Little PC manages your audio.", Dock = DockStyle.Fill, Font = new Font("Segoe UI", 11F), ForeColor = SecondaryText, TextAlign = ContentAlignment.MiddleLeft, Margin = Padding.Empty }, 0, 1);
+        mainLayout.Controls.Add(heading, 0, 0);
+
+        _content = new Panel { Dock = DockStyle.Fill, BackColor = Page, AutoScroll = true, Margin = Padding.Empty };
+        _settingsCards = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            BackColor = Page,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        _content.Controls.Add(_settingsCards);
+        _content.Resize += (_, _) => ResizeCards();
+        mainLayout.Controls.Add(_content, 0, 1);
+
+        var footer = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Page, Margin = Padding.Empty, Padding = new Padding(0, 8, 0, 0) };
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        var footerRule = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Border };
+        var footerContent = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Page, Margin = new Padding(0, 1, 0, 0) };
+        footerContent.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        footerContent.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        footerContent.Controls.Add(new Label { Text = "ⓘ   Changes are applied automatically.", Dock = DockStyle.Fill, ForeColor = PrimaryText, TextAlign = ContentAlignment.MiddleLeft, Margin = Padding.Empty }, 0, 0);
+        var learn = new LinkLabel { Text = "Learn more", AutoSize = true, LinkColor = Accent, Anchor = AnchorStyles.Right, TextAlign = ContentAlignment.MiddleRight, Margin = new Padding(12, 0, 4, 0) };
+        learn.LinkClicked += (_, _) => ShowAboutPage();
+        footerContent.Controls.Add(learn, 1, 0);
+        footer.Controls.Add(footerRule, 0, 0);
+        footer.SetColumnSpan(footerRule, 2);
+        footer.Controls.Add(footerContent, 0, 0);
+        footer.SetColumnSpan(footerContent, 2);
+        mainLayout.Controls.Add(footer, 0, 2);
+
+        BuildSettingsCards();
     }
 
     static bool ReadSystemTheme()
@@ -112,180 +192,268 @@ class SettingsForm : Form
     {
         const int WmSettingChange = 0x001A;
         base.WndProc(ref message);
-        bool darkTheme = ReadSystemTheme();
-        if (message.Msg == WmSettingChange && darkTheme != _darkTheme)
+        if (message.Msg == WmSettingChange && ReadSystemTheme() != _darkTheme)
         {
-            bool settingsPage = _aboutNav.BackColor == Color.Transparent;
-            _darkTheme = darkTheme;
-            BackColor = Page;
-            _shell.BackColor = Page;
-            _sidebar.BackColor = Sidebar;
-            _main.BackColor = Page;
-            _content.BackColor = Page;
-            foreach (Control control in _sidebar.Controls)
-            {
-                if (control is Label label && label.Text != "●")
-                    label.ForeColor = label.Font.Size < 10 ? Muted : PrimaryText;
-                if (control is Button button)
-                    button.ForeColor = PrimaryText;
-            }
-            if (settingsPage) ShowSettingsPage(); else ShowAboutPage();
+            _darkTheme = ReadSystemTheme();
+            ApplyTheme();
         }
     }
 
-    void ResizeCurrentPage()
+    void ApplyTheme()
     {
-        if (_content.Controls.Count == 0 || _content.Controls[0] is not FlowLayoutPanel page) return;
-        int width = Math.Max(480, _content.ClientSize.Width - 24);
-        if (page.Width == width) return;
-        page.Width = width;
-        foreach (Control control in page.Controls)
+        BackColor = Page;
+        _sidebar.BackColor = Sidebar;
+        _main.BackColor = Page;
+        foreach (Control control in ControlsRecursive(this))
         {
-            if (control is not Panel panel) continue;
-            panel.Width = width - 4;
+            if (control is TableLayoutPanel or Panel or FlowLayoutPanel)
+                control.BackColor = control.Parent == _sidebar || IsInsideSidebar(control) ? Sidebar : Page;
+            if (control is Label label && label != _status)
+                label.ForeColor = label.ForeColor == Muted ? Muted : PrimaryText;
+            if (control is Button button)
+                button.ForeColor = PrimaryText;
+            if (control is SwitchControl toggle)
+                toggle.Invalidate();
+        }
+        _status.ForeColor = PrimaryText;
+        _settingsNav.BackColor = Selected;
+        _aboutNav.BackColor = Sidebar;
+        ShowSettingsPage();
+    }
+
+    bool IsInsideSidebar(Control control)
+    {
+        for (Control? parent = control.Parent; parent is not null; parent = parent.Parent)
+            if (parent == _sidebar) return true;
+        return false;
+    }
+
+    static IEnumerable<Control> ControlsRecursive(Control parent)
+    {
+        foreach (Control child in parent.Controls)
+        {
+            yield return child;
+            foreach (Control descendant in ControlsRecursive(child))
+                yield return descendant;
         }
     }
 
-    void ShowSettingsPage()
+    void BuildSettingsCards()
     {
-        SelectNavigation(true);
-        _content.SuspendLayout();
-        _content.Controls.Clear();
+        _settingsCards.SuspendLayout();
+        _settingsCards.Controls.Clear();
+        AddSwitchCard("◖))", "Enable Hush Little PC", "Automatically mute your audio when you're idle.", _settings.Enabled, value => { _settings.Enabled = value; Changed(); });
+        AddIdleCard();
+        AddSwitchCard("↗", "Unmute on activity", "Unmute when you use your keyboard or mouse.", _settings.UnmuteOnActivity, value => { _settings.UnmuteOnActivity = value; Changed(); });
+        AddSwitchCard("♫", "Stay unmuted while audio is playing", "Avoid muting while music, videos, or other audio are playing.", _settings.SkipWhileAudioPlaying, value => { _settings.SkipWhileAudioPlaying = value; Changed(); });
+        AddSwitchCard("↻", "Mute on output change", "Mute when the default audio device changes.", _settings.MuteOnDeviceChange, value => { _settings.MuteOnDeviceChange = value; Changed(); });
+        AddSwitchCard("♧", "Notifications", "Show a notification when audio is muted.", _settings.ShowNotification, value => { _settings.ShowNotification = value; Changed(); });
+        AddSwitchCard("⊞", "Run at startup", "Start Hush Little PC when you sign in to Windows.", _settings.RunOnStartup, value => { _settings.RunOnStartup = value; StartupManager.Set(value); Changed(); });
+        _settingsCards.ResumeLayout(true);
+        ResizeCards();
+    }
 
-        var page = new FlowLayoutPanel
+    void ResizeCards()
+    {
+        if (_content.ClientSize.Width <= 0) return;
+        int width = Math.Max(480, _content.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 8);
+        _settingsCards.Width = width;
+        foreach (Control control in _settingsCards.Controls)
+            control.Width = width;
+    }
+
+    void AddSwitchCard(string glyph, string title, string description, bool initial, Action<bool> changed)
+    {
+        var card = CreateCard(92);
+        AddIcon(card, glyph);
+        AddText(card, title, description);
+
+        var actionPanel = new FlowLayoutPanel
         {
-            Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            FlowDirection = FlowDirection.TopDown, WrapContents = false, BackColor = Page,
-            Padding = new Padding(0, 0, 0, 8), Margin = new Padding(0)
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            AutoSize = false,
+            BackColor = Surface,
+            Anchor = AnchorStyles.Right,
+            Margin = new Padding(4),
+            Padding = new Padding(0),
+            RightToLeft = RightToLeft.No
         };
-        page.Size = new Size(Math.Max(620, _content.ClientSize.Width - 24), 10);
-        _content.Controls.Add(page);
-
-        page.Controls.Add(PageHeading("Settings", "Configure how Hush Little PC manages your audio.", page.Width - 4));
-
-        AddSwitchCard(page, "Enable Hush Little PC", "Automatically mute your audio when you're idle.", _settings.Enabled, value => { _settings.Enabled = value; Changed(); });
-        AddIdleCard(page);
-        AddSwitchCard(page, "Unmute on activity", "Unmute when you use your keyboard or mouse.", _settings.UnmuteOnActivity, value => { _settings.UnmuteOnActivity = value; Changed(); });
-        AddSwitchCard(page, "Stay unmuted while audio is playing", "Avoid muting while music, videos, or other audio are playing.", _settings.SkipWhileAudioPlaying, value => { _settings.SkipWhileAudioPlaying = value; Changed(); });
-        AddSwitchCard(page, "Mute on output change", "Mute when the default audio device changes.", _settings.MuteOnDeviceChange, value => { _settings.MuteOnDeviceChange = value; Changed(); });
-        AddSwitchCard(page, "Notifications", "Show a notification when audio is muted.", _settings.ShowNotification, value => { _settings.ShowNotification = value; Changed(); });
-        AddSwitchCard(page, "Run at startup", "Start Hush Little PC when you sign in to Windows.", _settings.RunOnStartup, value => { _settings.RunOnStartup = value; StartupManager.Set(value); Changed(); });
-
-        var footer = new Panel { Width = page.Width - 4, Height = 54, BackColor = Page, Margin = new Padding(0, 4, 0, 0) };
-        var rule = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Border };
-        footer.Controls.Add(rule);
-        var info = new Label { Text = "ⓘ   Changes are applied automatically.", AutoSize = true, ForeColor = PrimaryText, Location = new Point(10, 19) };
-        footer.Controls.Add(info);
-        var learn = new LinkLabel { Text = "Learn more", AutoSize = true, LinkColor = Accent, Location = new Point(Math.Max(footer.Width - 100, 20), 19), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        learn.LinkClicked += (_, _) => ShowAboutPage();
-        footer.Controls.Add(learn);
-        page.Controls.Add(footer);
-
-        _content.ResumeLayout(true);
+        var toggle = new SwitchControl { Checked = initial, AccessibleName = title, Margin = new Padding(0, 2, 10, 0) };
+        var state = new Label { Text = initial ? "On" : "Off", AutoSize = true, ForeColor = PrimaryText, Font = new Font("Segoe UI", 10F), TextAlign = ContentAlignment.MiddleLeft, Margin = new Padding(0, 6, 0, 0) };
+        toggle.CheckedChanged += (_, _) => { state.Text = toggle.Checked ? "On" : "Off"; changed(toggle.Checked); };
+        actionPanel.Controls.Add(toggle);
+        actionPanel.Controls.Add(state);
+        card.Controls.Add(actionPanel, 2, 0);
+        _settingsCards.Controls.Add(card);
     }
 
-    void AddIdleCard(FlowLayoutPanel page)
+    void AddIdleCard()
     {
-        var card = NewCard(page.Width - 4, 104);
-        var icon = IconBubble("◷");
-        icon.Location = new Point(16, 22);
-        card.Controls.Add(icon);
-        AddCardText(card, "Idle time", "Mute after a period of inactivity.", 110, 24);
+        var card = CreateCard(108);
+        AddIcon(card, "◷");
+        AddText(card, "Idle time", "Mute after a period of inactivity.");
 
-        bool synchronizingIdleControls = false;
+        var controls = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 3,
+            RowCount = 2,
+            BackColor = Surface,
+            Margin = new Padding(4, 4, 8, 4),
+            Padding = Padding.Empty
+        };
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 76));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 38));
+        controls.RowStyles.Add(new RowStyle(SizeType.Percent, 65));
+        controls.RowStyles.Add(new RowStyle(SizeType.Percent, 35));
+
+        var slider = new TrackBar
+        {
+            Minimum = Settings.MinIdleMinutes,
+            Maximum = Settings.MaxIdleMinutes,
+            TickStyle = TickStyle.None,
+            Value = _settings.IdleMinutes,
+            Dock = DockStyle.Fill,
+            AccessibleName = "Idle time slider",
+            Margin = new Padding(0, 0, 8, 0)
+        };
         var minutes = new NumericUpDown
         {
-            Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes,
-            Value = _settings.IdleMinutes, Width = 68, Height = 34,
+            Minimum = Settings.MinIdleMinutes,
+            Maximum = Settings.MaxIdleMinutes,
+            Value = _settings.IdleMinutes,
+            Dock = DockStyle.Fill,
+            Font = new Font("Segoe UI", 10F),
+            TextAlign = HorizontalAlignment.Center,
             AccessibleName = "Idle time in minutes",
-            Font = new Font("Segoe UI", 11F), TextAlign = HorizontalAlignment.Center,
-            Location = new Point(card.Width - 132, 20), Anchor = AnchorStyles.Top | AnchorStyles.Right
+            Margin = new Padding(0, 4, 0, 0)
         };
-        var unit = new Label { Text = "min", AutoSize = true, ForeColor = PrimaryText, Location = new Point(card.Width - 56, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        var slider = new TrackBar { Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes, TickStyle = TickStyle.None, Value = _settings.IdleMinutes, Width = 150, Height = 42, Location = new Point(220, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right, AccessibleName = "Idle time slider" };
-        var range = new Label { Text = "1 – 1,440 minutes", AutoSize = true, ForeColor = Muted, Font = new Font("Segoe UI", 9F), Location = new Point(slider.Left, 59), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        void LayoutIdleControls()
-        {
-            int controlLeft = Math.Max(190, card.ClientSize.Width - 430);
-            slider.Left = controlLeft;
-            slider.Width = Math.Max(100, card.ClientSize.Width - controlLeft - 210);
-            range.Left = slider.Left;
-            minutes.Left = card.ClientSize.Width - 132;
-            unit.Left = card.ClientSize.Width - 56;
-        }
-        card.Resize += (_, _) => LayoutIdleControls();
-        LayoutIdleControls();
+        var unit = new Label { Text = "min", Dock = DockStyle.Fill, ForeColor = PrimaryText, TextAlign = ContentAlignment.MiddleLeft, Margin = new Padding(6, 0, 0, 0) };
+        var range = new Label { Text = "1 – 1,440 minutes", Dock = DockStyle.Fill, ForeColor = Muted, Font = new Font("Segoe UI", 8.5F), TextAlign = ContentAlignment.MiddleLeft, Margin = Padding.Empty };
+
+        bool synchronizing = false;
         slider.Scroll += (_, _) =>
         {
-            if (synchronizingIdleControls) return;
-            synchronizingIdleControls = true;
+            if (synchronizing) return;
+            synchronizing = true;
             minutes.Value = slider.Value;
-            synchronizingIdleControls = false;
+            synchronizing = false;
             _settings.IdleMinutes = slider.Value;
             Changed();
         };
         minutes.ValueChanged += (_, _) =>
         {
-            if (synchronizingIdleControls) return;
-            synchronizingIdleControls = true;
+            if (synchronizing) return;
+            synchronizing = true;
             slider.Value = (int)minutes.Value;
-            synchronizingIdleControls = false;
+            synchronizing = false;
             _settings.IdleMinutes = (int)minutes.Value;
             Changed();
         };
-        card.Controls.Add(slider);
-        card.Controls.Add(minutes);
-        card.Controls.Add(unit);
-        card.Controls.Add(range);
-        page.Controls.Add(card);
+
+        controls.Controls.Add(slider, 0, 0);
+        controls.Controls.Add(minutes, 1, 0);
+        controls.Controls.Add(unit, 2, 0);
+        controls.Controls.Add(range, 0, 1);
+        controls.SetColumnSpan(range, 3);
+        card.Controls.Add(controls, 2, 0);
+        _settingsCards.Controls.Add(card);
     }
 
-    void AddSwitchCard(FlowLayoutPanel page, string title, string description, bool initial, Action<bool> changed)
+    Panel CreateCard(int height)
     {
-        var card = NewCard(page.Width - 4, 90);
-        var iconText = title switch
+        var card = new RoundedCard
         {
-            "Enable Hush Little PC" => "◖))",
-            "Unmute on activity" => "↗",
-            "Stay unmuted while audio is playing" => "♫",
-            "Mute on output change" => "↻",
-            "Notifications" => "♧",
-            "Run at startup" => "⊞",
-            _ => "•"
+            Width = 700,
+            Height = height,
+            BackColor = Surface,
+            Margin = new Padding(0, 0, 0, 8),
+            Padding = new Padding(14, 10, 14, 10)
         };
-        var icon = IconBubble(iconText);
-        icon.Location = new Point(16, 15);
-        card.Controls.Add(icon);
-        AddCardText(card, title, description, 110, 20);
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 3,
+            RowCount = 1,
+            BackColor = Surface,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 300));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        card.Controls.Add(layout);
+        return card;
+    }
 
-        var toggle = new SwitchControl { Checked = initial, AccessibleName = title, Location = new Point(card.Width - 112, 25), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        var state = new Label { Text = initial ? "On" : "Off", AutoSize = true, ForeColor = PrimaryText, Font = new Font("Segoe UI", 10F), Location = new Point(card.Width - 52, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        toggle.CheckedChanged += (_, _) => { state.Text = toggle.Checked ? "On" : "Off"; changed(toggle.Checked); };
-        card.Controls.Add(toggle);
-        card.Controls.Add(state);
-        page.Controls.Add(card);
+    void AddIcon(Panel card, string glyph)
+    {
+        var icon = new Label
+        {
+            Text = glyph,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleCenter,
+            Font = new Font("Segoe UI Symbol", 21F),
+            ForeColor = Accent,
+            BackColor = IconSurface,
+            Margin = new Padding(0, 3, 12, 3)
+        };
+        card.Controls[0].Controls.Add(icon, 0, 0);
+    }
+
+    void AddText(Panel card, string title, string description)
+    {
+        var text = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            BackColor = Surface,
+            Margin = new Padding(4, 0, 8, 0),
+            Padding = Padding.Empty
+        };
+        text.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        text.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        text.Controls.Add(new Label { Text = title, Dock = DockStyle.Fill, AutoEllipsis = true, Font = new Font("Segoe UI Semibold", 11F), ForeColor = PrimaryText, TextAlign = ContentAlignment.BottomLeft, Margin = Padding.Empty }, 0, 0);
+        text.Controls.Add(new Label { Text = description, Dock = DockStyle.Fill, AutoEllipsis = true, Font = new Font("Segoe UI", 9.5F), ForeColor = SecondaryText, TextAlign = ContentAlignment.TopLeft, Margin = Padding.Empty }, 0, 1);
+        card.Controls[0].Controls.Add(text, 1, 0);
+    }
+
+    void ShowSettingsPage()
+    {
+        SelectNavigation(true);
+        _content.Controls.Clear();
+        BuildSettingsCards();
     }
 
     void ShowAboutPage()
     {
         SelectNavigation(false);
         _content.Controls.Clear();
-        var page = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false, BackColor = Page, Padding = new Padding(0) };
-        _content.Controls.Add(page);
-        page.Controls.Add(PageHeading("About", "A quieter PC, without the extra effort.", Math.Max(620, _content.ClientSize.Width - 24)));
-        var card = NewCard(Math.Max(620, _content.ClientSize.Width - 24), 190);
-        var logo = IconBubble("◔");
-        logo.Size = new Size(72, 72);
-        logo.Font = new Font("Segoe UI", 30F, FontStyle.Bold);
-        logo.Location = new Point(22, 24);
-        card.Controls.Add(logo);
-        var name = new Label { Text = "Hush Little PC", Font = new Font("Segoe UI Semibold", 18F), AutoSize = true, Location = new Point(112, 28), ForeColor = PrimaryText };
+        var page = new TableLayoutPanel { Dock = DockStyle.Top, ColumnCount = 1, RowCount = 2, BackColor = Page, AutoSize = true, Margin = Padding.Empty };
+        page.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        page.RowStyles.Add(new RowStyle(SizeType.Absolute, 88));
+        page.RowStyles.Add(new RowStyle(SizeType.Absolute, 190));
+        page.Controls.Add(new Label { Text = "About", Dock = DockStyle.Fill, Font = new Font("Segoe UI Semibold", 26F), ForeColor = PrimaryText, TextAlign = ContentAlignment.MiddleLeft, Margin = Padding.Empty }, 0, 0);
+
+        var card = new RoundedCard { Dock = DockStyle.Fill, BackColor = Surface, Padding = new Padding(24), Margin = new Padding(0, 0, 0, 8) };
+        var aboutLayout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3, BackColor = Surface, Margin = Padding.Empty };
+        aboutLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
+        aboutLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        aboutLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "Development";
-        var details = new Label { Text = $"Version {version}\nAutomatically manages audio muting based on your activity.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(114, 64), ForeColor = Muted };
-        var repo = new LinkLabel { Text = "View project on GitHub", AutoSize = true, Location = new Point(114, 128), LinkColor = Accent };
+        aboutLayout.Controls.Add(new Label { Text = "Hush Little PC", Dock = DockStyle.Fill, Font = new Font("Segoe UI Semibold", 18F), ForeColor = PrimaryText, Margin = Padding.Empty }, 0, 0);
+        aboutLayout.Controls.Add(new Label { Text = $"Version {version}\nAutomatically manages audio muting based on your activity.", Dock = DockStyle.Fill, ForeColor = SecondaryText, Margin = Padding.Empty }, 0, 1);
+        var repo = new LinkLabel { Text = "View project on GitHub", AutoSize = true, LinkColor = Accent, Anchor = AnchorStyles.Left };
         repo.LinkClicked += (_, _) => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/wi-ry/HushLittlePC") { UseShellExecute = true });
-        card.Controls.Add(name); card.Controls.Add(details); card.Controls.Add(repo);
-        page.Controls.Add(card);
+        aboutLayout.Controls.Add(repo, 0, 2);
+        card.Controls.Add(aboutLayout);
+        page.Controls.Add(card, 0, 1);
+        _content.Controls.Add(page);
     }
 
     void Changed()
@@ -296,61 +464,26 @@ class SettingsForm : Form
 
     void SelectNavigation(bool settings)
     {
-        _settingsNav.BackColor = settings ? Selected : Color.Transparent;
-        _aboutNav.BackColor = settings ? Color.Transparent : Selected;
-        _settingsNav.ForeColor = PrimaryText;
-        _aboutNav.ForeColor = PrimaryText;
+        _settingsNav.BackColor = settings ? Selected : Sidebar;
+        _aboutNav.BackColor = settings ? Sidebar : Selected;
         _settingsNav.Font = new Font("Segoe UI", 10F, settings ? FontStyle.Bold : FontStyle.Regular);
         _aboutNav.Font = new Font("Segoe UI", 10F, settings ? FontStyle.Regular : FontStyle.Bold);
     }
 
-    static Button NavButton(string text, bool selected) => new()
+    static Button CreateNavButton(string text, bool selected) => new()
     {
-        Text = text, Size = new Size(190, 42), FlatStyle = FlatStyle.Flat,
-        FlatAppearance = { BorderSize = 0 }, TextAlign = ContentAlignment.MiddleLeft,
-        Padding = new Padding(12, 0, 0, 0), Font = new Font("Segoe UI", 10F),
-        ForeColor = PrimaryText, BackColor = selected ? Selected : Color.Transparent,
-        Cursor = Cursors.Hand
+        Text = text,
+        Dock = DockStyle.Fill,
+        FlatStyle = FlatStyle.Flat,
+        FlatAppearance = { BorderSize = 0 },
+        TextAlign = ContentAlignment.MiddleLeft,
+        Padding = new Padding(12, 0, 0, 0),
+        Font = new Font("Segoe UI", 10F, selected ? FontStyle.Bold : FontStyle.Regular),
+        ForeColor = PrimaryText,
+        BackColor = selected ? Selected : Sidebar,
+        Cursor = Cursors.Hand,
+        Margin = new Padding(0, 2, 0, 2)
     };
-
-    static Control PageHeading(string title, string subtitle, int width)
-    {
-        // A two-line heading is hosted by a fixed-height panel so the page can flow naturally.
-        var host = new Panel { Width = width, Height = 108, BackColor = Page, Margin = new Padding(0, 0, 0, 12) };
-        host.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI Semibold", 25F), AutoSize = true, ForeColor = PrimaryText, Location = new Point(0, 0) });
-        host.Controls.Add(new Label { Text = subtitle, Font = new Font("Segoe UI", 11F), AutoSize = true, ForeColor = Muted, Location = new Point(2, 58) });
-        return host;
-    }
-
-    static Panel NewCard(int width, int height)
-    {
-        var card = new Panel { Width = width, Height = height, BackColor = Surface, Margin = new Padding(0, 0, 0, 8), Padding = new Padding(0) };
-        card.Paint += (_, e) =>
-        {
-            using var pen = new Pen(Border);
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.DrawRoundedRectangle(pen, new Rectangle(0, 0, card.Width - 1, card.Height - 1), 12);
-        };
-        return card;
-    }
-
-    static Label IconBubble(string glyph)
-    {
-        var label = new Label { Text = glyph, Size = new Size(58, 58), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI Symbol", 22F, FontStyle.Bold), ForeColor = Accent, BackColor = Color.Transparent };
-        label.Paint += (_, e) => { using var brush = new SolidBrush(IconSurface); e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; e.Graphics.FillEllipse(brush, 0, 0, label.Width - 1, label.Height - 1); TextRenderer.DrawText(e.Graphics, label.Text, label.Font, label.ClientRectangle, label.ForeColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter); };
-        return label;
-    }
-
-    static void AddCardText(Control parent, string title, string description, int left, int top)
-    {
-        parent.Controls.Add(new Label { Text = title, AutoSize = true, Font = new Font("Segoe UI Semibold", 11F), ForeColor = PrimaryText, Location = new Point(left, top) });
-        parent.Controls.Add(new Label { Text = description, AutoSize = true, Font = new Font("Segoe UI", 10F), ForeColor = SecondaryText, Location = new Point(left, top + 27) });
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-    }
 }
 
 sealed class SwitchControl : CheckBox
@@ -366,6 +499,7 @@ sealed class SwitchControl : CheckBox
         Cursor = Cursors.Hand;
         AccessibleRole = AccessibleRole.CheckButton;
         AccessibleName = "Toggle setting";
+        Margin = Padding.Empty;
     }
 
     protected override void OnPaint(PaintEventArgs e)
@@ -377,9 +511,10 @@ sealed class SwitchControl : CheckBox
         e.Graphics.FillPath(trackBrush, path);
         int diameter = track.Height - 6;
         int x = Checked ? track.Right - diameter - 3 : track.Left + 3;
-        using var thumb = new SolidBrush(Color.FromArgb(250, 250, 250));
+        using var thumb = new SolidBrush(Color.White);
         e.Graphics.FillEllipse(thumb, x, track.Top + 3, diameter, diameter);
-        if (Focused && ShowFocusCues) ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(track, -2, -2));
+        if (Focused && ShowFocusCues)
+            ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(track, -2, -2));
     }
 
     static GraphicsPath Rounded(Rectangle bounds, int radius)
@@ -395,17 +530,22 @@ sealed class SwitchControl : CheckBox
     }
 }
 
-static class GraphicsExtensions
+sealed class RoundedCard : Panel
 {
-    public static void DrawRoundedRectangle(this Graphics graphics, Pen pen, Rectangle bounds, int radius)
+    protected override void OnPaint(PaintEventArgs e)
     {
+        base.OnPaint(e);
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        using var pen = new Pen(Color.FromArgb(90, 128, 145, 170));
         using var path = new GraphicsPath();
+        int radius = 12;
         int d = radius * 2;
+        var bounds = new Rectangle(0, 0, Width - 1, Height - 1);
         path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
         path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
         path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
         path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
         path.CloseFigure();
-        graphics.DrawPath(pen, path);
+        e.Graphics.DrawPath(pen, path);
     }
 }
