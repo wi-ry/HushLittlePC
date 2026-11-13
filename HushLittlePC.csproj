@@ -19,7 +19,6 @@
     <Compile Remove="src\WinUI\**\*.cs" />
     <Compile Remove="src\Core\**\*.cs" />
     <Compile Remove="src\Platform\Windows\**\*.cs" />
-    <Compile Remove="src\UI\NativeMenu.cs" />
     <Compile Remove="src\UI\Notifier.cs" />
   </ItemGroup>
   <ItemGroup>
