@@ -106,7 +106,8 @@ public partial class App : Microsoft.UI.Xaml.Application
                 ExitApplication(closeWindow: false);
             }
         };
-        if (!isBackgroundLaunch)
+        // Never leave the user with an invisible process if tray-icon creation failed.
+        if (!isBackgroundLaunch || _trayIcon is null)
         {
             _window.Activate();
         }
