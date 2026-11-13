@@ -11,7 +11,7 @@
             PaneDisplayMode="Auto"
             OpenPaneLength="240"
             CompactModeThresholdWidth="680"
-            ExpandedModeThresholdWidth="1040"
+            ExpandedModeThresholdWidth="960"
             SelectionChanged="Navigation_SelectionChanged">
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Settings" Tag="settings">
