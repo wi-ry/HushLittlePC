@@ -113,6 +113,7 @@ class SettingsForm : Form
         base.WndProc(ref message);
         if (message.Msg == WmSettingChange && ReadSystemTheme() != _darkTheme)
         {
+            bool settingsPage = _aboutNav.BackColor == Color.Transparent;
             _darkTheme = ReadSystemTheme();
             BackColor = Page;
             _shell.BackColor = Page;
@@ -277,7 +278,7 @@ class SettingsForm : Form
         Text = text, Size = new Size(190, 42), FlatStyle = FlatStyle.Flat,
         FlatAppearance = { BorderSize = 0 }, TextAlign = ContentAlignment.MiddleLeft,
         Padding = new Padding(12, 0, 0, 0), Font = new Font("Segoe UI", 10F),
-        ForeColor = Color.FromArgb(20, 35, 58), BackColor = selected ? Color.FromArgb(216, 231, 252) : Color.Transparent,
+        ForeColor = PrimaryText, BackColor = selected ? Selected : Color.Transparent,
         Cursor = Cursors.Hand
     };
 
