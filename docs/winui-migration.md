@@ -6,7 +6,7 @@ Move Hush Little PC's primary desktop experience to WinUI 3 so the application u
 
 ## Architecture decisions
 
-- Keep the application in C# and retain .NET 8 for this migration.
+- Keep the application in C# and target supported .NET 10 LTS for this migration.
 - Use the stable Windows App SDK 2.6.5 package.
 - Keep domain logic and settings persistence in the UI-independent `HushLittlePC.Core` project.
 - Keep audio, idle monitoring, device watching, notifications, startup, and tray hosting in `HushLittlePC.Windows`.
