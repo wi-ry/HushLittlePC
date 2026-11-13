@@ -37,7 +37,7 @@ class SettingsForm : Form
         Text = "Hush Little PC";
         Icon = TrayApp.MakeIcon(true);
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(900, 650);
+        MinimumSize = new Size(820, 620);
         Size = new Size(1120, 760);
         Font = new Font("Segoe UI", 10F);
         BackColor = Page;
@@ -52,9 +52,9 @@ class SettingsForm : Form
         var sidebar = _sidebar;
         _shell.Controls.Add(sidebar, 0, 0);
 
-        var brand = new Label { Text = "◔  Hush Little PC", Font = new Font("Segoe UI Semibold", 15F), ForeColor = PrimaryText, AutoSize = true, Location = new Point(10, 8) };
+        var brand = new Label { Text = "◔  Hush Little PC", Font = new Font("Segoe UI Semibold", 13F), ForeColor = PrimaryText, AutoEllipsis = true, Size = new Size(190, 28), Location = new Point(10, 8) };
         sidebar.Controls.Add(brand);
-        var tagline = new Label { Text = "Keep the peace. Automatically.", Font = new Font("Segoe UI", 9.5F), ForeColor = Muted, AutoSize = true, Location = new Point(10, 48) };
+        var tagline = new Label { Text = "Keep the peace. Automatically.", Font = new Font("Segoe UI", 9F), ForeColor = Muted, AutoEllipsis = true, Size = new Size(190, 22), Location = new Point(10, 40) };
         sidebar.Controls.Add(tagline);
 
         _settingsNav = NavButton("⚙   Settings", true);
@@ -74,7 +74,7 @@ class SettingsForm : Form
 
         var statusLine = new Panel { Dock = DockStyle.Bottom, Height = 42, BackColor = Color.Transparent };
         var statusDot = new Label { Text = "●", ForeColor = Color.FromArgb(34, 197, 94), AutoSize = true, Location = new Point(2, 11) };
-        var status = new Label { Text = "Monitoring audio devices", ForeColor = PrimaryText, AutoSize = true, Location = new Point(24, 10), Font = new Font("Segoe UI", 9.5F) };
+        var status = new Label { Text = "Monitoring audio devices", ForeColor = PrimaryText, AutoEllipsis = true, Size = new Size(174, 22), Location = new Point(24, 10), Font = new Font("Segoe UI", 9F) };
         statusLine.Controls.Add(statusDot);
         statusLine.Controls.Add(status);
         sidebar.Controls.Add(statusLine);
@@ -83,6 +83,7 @@ class SettingsForm : Form
         var main = _main;
         _shell.Controls.Add(main, 1, 0);
         _content = new Panel { Dock = DockStyle.Fill, BackColor = Page, AutoScroll = true };
+        _content.Resize += (_, _) => ResizeCurrentPage();
         main.Controls.Add(_content);
 
         ShowSettingsPage();
@@ -129,6 +130,19 @@ class SettingsForm : Form
                     button.ForeColor = PrimaryText;
             }
             if (settingsPage) ShowSettingsPage(); else ShowAboutPage();
+        }
+    }
+
+    void ResizeCurrentPage()
+    {
+        if (_content.Controls.Count == 0 || _content.Controls[0] is not FlowLayoutPanel page) return;
+        int width = Math.Max(480, _content.ClientSize.Width - 24);
+        if (page.Width == width) return;
+        page.Width = width;
+        foreach (Control control in page.Controls)
+        {
+            if (control is not Panel panel) continue;
+            panel.Width = width - 4;
         }
     }
 
@@ -188,8 +202,19 @@ class SettingsForm : Form
             Location = new Point(card.Width - 132, 20), Anchor = AnchorStyles.Top | AnchorStyles.Right
         };
         var unit = new Label { Text = "min", AutoSize = true, ForeColor = PrimaryText, Location = new Point(card.Width - 56, 27), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-        var slider = new TrackBar { Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes, TickStyle = TickStyle.None, Value = _settings.IdleMinutes, Width = 290, Height = 42, Location = new Point(card.Width - 430, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right, AccessibleName = "Idle time slider" };
+        var slider = new TrackBar { Minimum = Settings.MinIdleMinutes, Maximum = Settings.MaxIdleMinutes, TickStyle = TickStyle.None, Value = _settings.IdleMinutes, Width = 150, Height = 42, Location = new Point(220, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right, AccessibleName = "Idle time slider" };
         var range = new Label { Text = "1 – 1,440 minutes", AutoSize = true, ForeColor = Muted, Font = new Font("Segoe UI", 9F), Location = new Point(slider.Left, 59), Anchor = AnchorStyles.Top | AnchorStyles.Right };
+        void LayoutIdleControls()
+        {
+            int controlLeft = Math.Max(190, card.ClientSize.Width - 430);
+            slider.Left = controlLeft;
+            slider.Width = Math.Max(100, card.ClientSize.Width - controlLeft - 210);
+            range.Left = slider.Left;
+            minutes.Left = card.ClientSize.Width - 132;
+            unit.Left = card.ClientSize.Width - 56;
+        }
+        card.Resize += (_, _) => LayoutIdleControls();
+        LayoutIdleControls();
         slider.Scroll += (_, _) =>
         {
             if (synchronizingIdleControls) return;
@@ -217,10 +242,10 @@ class SettingsForm : Form
 
     void AddSwitchCard(FlowLayoutPanel page, string title, string description, bool initial, Action<bool> changed)
     {
-        var card = NewCard(page.Width - 4, 82);
+        var card = NewCard(page.Width - 4, 90);
         var iconText = title switch
         {
-            "Enable Hush Little PC" => "◖",
+            "Enable Hush Little PC" => "◖))",
             "Unmute on activity" => "↗",
             "Stay unmuted while audio is playing" => "♫",
             "Mute on output change" => "↻",
@@ -291,9 +316,9 @@ class SettingsForm : Form
     static Control PageHeading(string title, string subtitle, int width)
     {
         // A two-line heading is hosted by a fixed-height panel so the page can flow naturally.
-        var host = new Panel { Width = width, Height = 88, BackColor = Page, Margin = new Padding(0, 0, 0, 12) };
+        var host = new Panel { Width = width, Height = 108, BackColor = Page, Margin = new Padding(0, 0, 0, 12) };
         host.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI Semibold", 25F), AutoSize = true, ForeColor = PrimaryText, Location = new Point(0, 0) });
-        host.Controls.Add(new Label { Text = subtitle, Font = new Font("Segoe UI", 11F), AutoSize = true, ForeColor = Muted, Location = new Point(2, 48) });
+        host.Controls.Add(new Label { Text = subtitle, Font = new Font("Segoe UI", 11F), AutoSize = true, ForeColor = Muted, Location = new Point(2, 58) });
         return host;
     }
 
@@ -311,8 +336,8 @@ class SettingsForm : Form
 
     static Label IconBubble(string glyph)
     {
-        var label = new Label { Text = glyph, Size = new Size(58, 58), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI Symbol", 22F, FontStyle.Bold), ForeColor = Accent, BackColor = IconSurface };
-        label.Paint += (_, e) => { using var brush = new SolidBrush(label.BackColor); e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; e.Graphics.FillEllipse(brush, 0, 0, label.Width - 1, label.Height - 1); TextRenderer.DrawText(e.Graphics, label.Text, label.Font, label.ClientRectangle, label.ForeColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter); };
+        var label = new Label { Text = glyph, Size = new Size(58, 58), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI Symbol", 22F, FontStyle.Bold), ForeColor = Accent, BackColor = Color.Transparent };
+        label.Paint += (_, e) => { using var brush = new SolidBrush(IconSurface); e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; e.Graphics.FillEllipse(brush, 0, 0, label.Width - 1, label.Height - 1); TextRenderer.DrawText(e.Graphics, label.Text, label.Font, label.ClientRectangle, label.ForeColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter); };
         return label;
     }
 
