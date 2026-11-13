@@ -16,6 +16,10 @@ on:
     branches: [main]
     paths:
       - 'src/WinUI/**'
+      - 'src/Core/**'
+      - 'src/Platform/Windows/**'
+      - 'packaging/**'
+      - '.github/scripts/package-msix.ps1'
       - 'HushLittlePC.csproj'
       - '.github/workflows/winui.yml'
 
