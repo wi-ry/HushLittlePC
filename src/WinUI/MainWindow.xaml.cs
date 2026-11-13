@@ -11,12 +11,14 @@ public sealed partial class MainWindow : Window
     private readonly Settings _settings;
     private readonly Action _settingsChanged;
     private readonly AppWindow _appWindow;
+    private readonly bool _closeToTrayEnabled;
     private bool _allowClose;
 
-    public MainWindow(Settings settings, Action settingsChanged)
+    public MainWindow(Settings settings, Action settingsChanged, bool closeToTrayEnabled)
     {
         _settings = settings;
         _settingsChanged = settingsChanged;
+        _closeToTrayEnabled = closeToTrayEnabled;
 
         InitializeComponent();
         Title = "Hush Little PC";
@@ -50,7 +52,7 @@ public sealed partial class MainWindow : Window
 
     private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
     {
-        if (_allowClose)
+        if (_allowClose || !_closeToTrayEnabled)
         {
             return;
         }
