@@ -61,6 +61,11 @@ public partial class App : Microsoft.UI.Xaml.Application
         _audio = audio;
         _deviceWatcher = deviceWatcher;
 
+        // Register notification activation before tray/window initialization so background
+        // Unmute actions are not missed while the application is starting.
+        Notifier.OnUnmuteClicked(deviceId =>
+            dispatcherQueue.TryEnqueue(() => audio.SetMuteById(deviceId, false)));
+
         var trayIcon = new TaskbarIcon
         {
             ToolTipText = GetTrayText(),
@@ -86,9 +91,6 @@ public partial class App : Microsoft.UI.Xaml.Application
         idleMonitor.NotificationRequested += Notifier.Muted;
         deviceWatcher.DefaultOutputChanged += deviceId =>
             dispatcherQueue.TryEnqueue(() => OnOutputChanged(deviceId));
-        Notifier.OnUnmuteClicked(deviceId =>
-            dispatcherQueue.TryEnqueue(() => audio.SetMuteById(deviceId, false)));
-
         timer.Interval = TimeSpan.FromSeconds(1);
         timer.Tick += (_, _) => idleMonitor.Tick();
         timer.Start();
