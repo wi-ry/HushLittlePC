@@ -51,8 +51,13 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread()
             ?? throw new InvalidOperationException("The WinUI dispatcher queue is unavailable.");
-        var settings = SettingsStore.Load();
         var audio = new AudioController();
+
+        // Subscribe as early as possible: toast activation is delivered shortly after process launch.
+        Notifier.OnUnmuteClicked(deviceId =>
+            dispatcherQueue.TryEnqueue(() => audio.SetMuteById(deviceId, false)));
+
+        var settings = SettingsStore.Load();
         var idleMonitor = new IdleMonitor(settings, audio);
         var deviceWatcher = new DeviceWatcher();
         var timer = dispatcherQueue.CreateTimer();
@@ -60,11 +65,6 @@ public partial class App : Microsoft.UI.Xaml.Application
         _settings = settings;
         _audio = audio;
         _deviceWatcher = deviceWatcher;
-
-        // Register notification activation before tray/window initialization so background
-        // Unmute actions are not missed while the application is starting.
-        Notifier.OnUnmuteClicked(deviceId =>
-            dispatcherQueue.TryEnqueue(() => audio.SetMuteById(deviceId, false)));
 
         var trayIcon = new TaskbarIcon
         {
