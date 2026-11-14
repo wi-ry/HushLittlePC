@@ -37,6 +37,12 @@ public sealed partial class MainWindow : Window
         _appWindow = AppWindow.GetFromWindowId(windowId)
             ?? throw new InvalidOperationException("The WinUI window could not be resolved to an AppWindow.");
 
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        if (File.Exists(iconPath))
+        {
+            _appWindow.SetIcon(iconPath);
+        }
+
         var dpi = GetDpiForWindow(windowHandle);
         var scale = dpi == 0 ? 1.0 : dpi / 96.0;
         _appWindow.Resize(new SizeInt32
