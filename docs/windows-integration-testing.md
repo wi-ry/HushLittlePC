@@ -15,6 +15,8 @@ The `smoke-test` job runs on a Windows GitHub Actions runner and performs the fo
 3. Publish the WinUI app as a self-contained single-file executable.
 4. Launch the WinUI executable and verify startup, single-instance enforcement, and restart.
 
+Successful or partially completed pull-request smoke-test runs upload a `winui-preview-<run-id>-<attempt>` artifact for 14 days. It contains the self-contained WinUI portable publish output under `artifacts/winui` and the unsigned test MSIX under `artifacts/msix-ci`. Use the portable executable for manual preview testing; the CI MSIX is unsigned and is intended for package validation, not direct installation.
+
 The shared smoke-test script is:
 
 ```powershell
