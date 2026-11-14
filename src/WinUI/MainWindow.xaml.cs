@@ -88,6 +88,14 @@ public sealed partial class MainWindow : Window
         sender.Hide();
     }
 
+    public void RefreshSettings()
+    {
+        if (ContentFrame.Content is SettingsPage)
+        {
+            ContentFrame.Content = new SettingsPage(_settings, _settingsChanged);
+        }
+    }
+
     public void ShowFromTray()
     {
         // The tray menu can change Enabled while this window is hidden. Recreate the
