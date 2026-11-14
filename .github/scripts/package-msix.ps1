@@ -49,7 +49,23 @@ if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed.' }
 
 # 2. Lay out the package: app files + assets + rendered manifest
 Copy-Item (Join-Path $publishDir '*') $stageDir -Recurse -Exclude '*.pdb'
-Copy-Item (Join-Path $repoRoot 'packaging/Assets') (Join-Path $stageDir 'Assets') -Recurse
+$sourceAssets = Join-Path $repoRoot 'packaging/Assets'
+$packageAssets = Join-Path $stageDir 'Assets'
+if (-not (Test-Path -LiteralPath $sourceAssets -PathType Container)) {
+    throw "MSIX source assets directory not found: $sourceAssets"
+}
+New-Item -ItemType Directory -Force -Path $packageAssets | Out-Null
+Get-ChildItem -LiteralPath $sourceAssets -Force | ForEach-Object {
+    Copy-Item -LiteralPath $_.FullName -Destination $packageAssets -Recurse -Force
+}
+
+$requiredAssets = @('StoreLogo.png', 'Square150x150Logo.png', 'Square44x44Logo.png')
+foreach ($asset in $requiredAssets) {
+    $assetPath = Join-Path $packageAssets $asset
+    if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
+        throw "Required MSIX asset was not staged: $assetPath"
+    }
+}
 
 $esc = { param($s) [System.Security.SecurityElement]::Escape($s) }
 $manifest = Get-Content (Join-Path $repoRoot 'packaging/AppxManifest.xml') -Raw
