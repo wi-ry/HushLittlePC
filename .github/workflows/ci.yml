@@ -92,3 +92,14 @@ jobs:
       - name: Test WinUI startup and single-instance behavior
         shell: pwsh
         run: ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/winui/HushLittlePC.WinUI.exe
+
+      - name: Upload WinUI preview artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: winui-preview-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/winui/
+            artifacts/msix-ci/
+          if-no-files-found: ignore
+          retention-days: 14
