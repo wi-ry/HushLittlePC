@@ -123,6 +123,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         _settings.ToggleEnabled();
         SettingsStore.Save(_settings);
         RefreshTray();
+        _window?.RefreshSettings();
     }
 
     private void OnSettingsChanged()
