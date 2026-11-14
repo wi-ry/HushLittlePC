@@ -17,13 +17,6 @@
                     TextWrapping="Wrap" />
             </StackPanel>
 
-            <InfoBar
-                IsOpen="True"
-                IsClosable="False"
-                Severity="Informational"
-                Title="WinUI preview"
-                Message="These controls save to the shared settings file. Audio monitoring and tray integration will be connected in a later migration stage." />
-
             <TextBlock Text="Idle behaviour" FontSize="18" FontWeight="SemiBold" />
             <Border
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
