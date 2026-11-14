@@ -90,6 +90,11 @@ public sealed partial class MainWindow : Window
 
     public void ShowFromTray()
     {
+        // The tray menu can change Enabled while this window is hidden. Recreate the
+        // settings page so its controls reflect the current shared settings instance.
+        Navigation.SelectedItem = Navigation.MenuItems[0];
+        ContentFrame.Content = new SettingsPage(_settings, _settingsChanged);
+
         _appWindow.Show();
         Activate();
     }
