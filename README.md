@@ -20,7 +20,7 @@ Step away from your PC and Hush Little PC quietly mutes the sound. Click the tra
 - **Mute on output change (optional):** mutes the new default device when Windows switches playback devices.
 - **Notification with an Unmute button (optional):** a native Windows notification when the app mutes an unmuted device.
 - **Start with Windows (optional):** per-user startup registration; no administrator rights required.
-- **Native Fluent settings:** WinUI 3 controls, Mica material, adaptive navigation, and system-aware styling.
+- **Native Fluent settings:** WinUI 3 controls, Mica material on Windows 11, adaptive navigation, and system-aware styling.
 
 ## Requirements
 
