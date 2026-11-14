@@ -10,7 +10,7 @@
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="..\\..\\packaging\\app.ico" Link="Assets\\app.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\packaging\app.ico" Link="Assets\app.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
