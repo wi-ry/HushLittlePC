@@ -46,6 +46,18 @@ dotnet build HushLittlePC.sln -c Release
 dotnet test tests/HushLittlePC.Tests.csproj -c Release
 ```
 
+### Run the WinUI 3 application locally
+
+The repository root project, `HushLittlePC.csproj`, is the retained WinForms fallback. Running `dotnet run` from the repository root launches that legacy UI.
+
+To run the new WinUI 3 application from source, explicitly select its project:
+
+```powershell
+dotnet run --project src/WinUI/HushLittlePC.WinUI.csproj
+```
+
+In Visual Studio, set **HushLittlePC.WinUI** as the startup project. Do not select **HushLittlePC.Legacy** when testing the Fluent UI.
+
 Publish the self-contained WinUI portable executable:
 
 ```powershell
