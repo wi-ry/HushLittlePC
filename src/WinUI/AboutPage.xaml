@@ -37,7 +37,7 @@
                             Opacity="0.72" />
                     </StackPanel>
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
-                    <Grid ColumnDefinitions="120,*" ColumnSpacing="16" RowSpacing="12">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="24" RowSpacing="12">
                         <TextBlock Text="Version" Opacity="0.72" />
                         <TextBlock x:Name="VersionText" Grid.Column="1" />
                         <TextBlock Text=".NET runtime" Grid.Row="1" Opacity="0.72" />
