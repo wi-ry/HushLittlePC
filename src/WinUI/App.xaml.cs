@@ -174,7 +174,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             Text = enabled ? "\uE767" : "\uE74F",
             Foreground = new SolidColorBrush(enabled ? Colors.LimeGreen : Colors.Gray),
             FontFamily = new FontFamily("Segoe MDL2 Assets"),
-            FontSize = 32,
+            FontSize = 46,
             FontWeight = FontWeights.SemiBold
         };
     }
