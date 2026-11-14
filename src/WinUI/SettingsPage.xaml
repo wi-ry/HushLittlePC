@@ -47,7 +47,7 @@
                             Value="10"
                             SmallChange="1"
                             LargeChange="5"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Hidden"
                             AutomationProperties.Name="Idle timeout in minutes"
                             AutomationProperties.HelpText="The number of minutes without keyboard or mouse activity before audio is muted."
                             ValueChanged="IdleMinutesNumberBox_ValueChanged" />
