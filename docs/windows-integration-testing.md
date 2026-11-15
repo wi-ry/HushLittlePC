@@ -57,12 +57,12 @@ Use a disposable Windows account or VM where practical. Record the Windows versi
 | Notifications | Notifications enabled/disabled; activate the Unmute action | Confirm the action unmutes the intended device. |
 | First run and launch window | With no settings file, launch once (window opens) and again (tray only); turn on **Open settings on startup** and relaunch (window opens) | Back up and restore `settings.json` from the app's data folder (see the next row) around the test. |
 | Data folder | Launch the standalone executable from a writable folder and from a protected folder; upgrade with files in the former adjacent `Data` folder and `%AppData%\HushLittlePC\settings.json` | Confirm settings and logs always use `%LocalAppData%\HushLittlePC`, existing files are copied rather than moved, current settings are not overwritten, and an upgrading user does not get the first-run window. The MSIX package uses the same logical location, redirected to package-private storage. |
-| Startup | Enable and disable startup registration; verify sign-in launch stays in the tray unless **Open settings on startup** is on | Test portable Run-key and packaged StartupTask paths separately. |
+| Startup | Enable and disable startup registration; verify sign-in launch stays in the tray unless **Open settings on startup** is on | Test standalone Run-key and packaged StartupTask paths separately. |
 | Tray UI | Left-click toggle; right-click menu; close-to-tray; Exit | Check icon state, menu actions, and graceful shutdown. |
 | Window and Fluent UI | Mica, light/dark mode, compact navigation, minimum window size, 100%/150%/200% scaling | Verify the window remains usable and content is not clipped. |
 | Accessibility | Keyboard-only navigation, focus visibility, Narrator names/states, high-contrast mode | Native controls should expose useful labels and values. |
 | Process lifecycle | Launch a second instance; exit while monitoring is active | Confirm the second instance exits and resources are released. |
-| Packaging | Install, launch, upgrade, and uninstall MSIX; launch the portable build under its release file name | Verify settings and startup behavior for each package type, and that the window opens without a XAML error. |
+| Packaging | Install, launch, upgrade, and uninstall MSIX; launch the standalone build under its release file name | Verify settings and startup behavior for each package type, and that the window opens without a XAML error. |
 
 ## Test safety and reporting
 
