@@ -60,17 +60,6 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private void OnLaunchedCore(LaunchActivatedEventArgs args)
     {
-        var commandLineArguments = Environment.GetCommandLineArgs();
-        if (commandLineArguments.Skip(1).Any(argument =>
-                argument.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)))
-        {
-            AppLog.Info("Uninstall requested. Removing portable startup registration.");
-            StartupManager.Uninstall();
-            AppLog.Info("Portable startup registration removed.");
-            Exit();
-            return;
-        }
-
         AppLog.Info("Resolving activation arguments.");
         // Notification buttons (e.g. Unmute) launch the app with -ToastActivated when it isn't running.
         var isNotificationActivation = Environment.GetCommandLineArgs().Any(argument =>
