@@ -92,23 +92,23 @@ jobs:
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
         run: .github/scripts/package-msix.ps1 -Version "${{ needs.release.outputs.version }}"
 
-      - name: Build portable executable
+      - name: Build standalone executable
         shell: pwsh
         run: |
           dotnet publish src/WinUI/HushLittlePC.WinUI.csproj -c Release -r win-x64 --self-contained true `
             -p:WindowsAppSDKSelfContained=true -p:EnableMsixTooling=true `
             -p:IncludeAllContentForSelfExtract=true -p:PublishSingleFile=true `
-            "-p:Version=${{ needs.release.outputs.version }}" -o artifacts/portable
+            "-p:Version=${{ needs.release.outputs.version }}" -o artifacts/standalone
           Move-Item `
             "artifacts/portable/HushLittlePC.WinUI.exe" `
-            "artifacts/HushLittlePC_${{ needs.release.outputs.version }}_x64-portable.exe"
+            "artifacts/HushLittlePC_${{ needs.release.outputs.version }}_x64.exe"
 
       - name: Upload artifact to release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.release.outputs.tag }}
           files: |
-            artifacts/HushLittlePC_${{ needs.release.outputs.version }}_x64-portable.exe
+            artifacts/HushLittlePC_${{ needs.release.outputs.version }}_x64.exe
 
       - name: Setup MSStore CLI
         uses: microsoft/setup-msstore-cli@v1
