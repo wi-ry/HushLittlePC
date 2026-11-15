@@ -32,12 +32,12 @@ Step away from your PC and Hush Little PC quietly mutes the sound. It runs in th
 - Windows 10 version 2004 (build 19041) or later, or Windows 11.
 - x64 release builds.
 
-The portable and Microsoft Store distributions include the required .NET and Windows App SDK runtimes. You do not need to install either runtime separately.
+The standalone executable and Microsoft Store distributions include the required .NET and Windows App SDK runtimes. You do not need to install either runtime separately.
 
 ## Install
 
 - **Microsoft Store:** install [Hush Little PC from the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS). Updates are delivered by the Store.
-- **Portable:** download `HushLittlePC_<version>_x64-portable.exe` from the [Releases](../../releases) page.
+- **Standalone executable:** download `HushLittlePC_<version>_x64.exe` from the [Releases](../../releases) page.
 
 ## Usage
 
@@ -60,15 +60,14 @@ Closing the settings window keeps Hush Little PC running in the notification are
 | Stay unmuted while audio is playing | Off | Skips muting while sound is being output. |
 | Mute when the output device changes | Off | Mutes the new default playback device when Windows switches outputs. |
 | Show mute notifications | On | Shows a Windows notification with an Unmute action. |
-| Run at startup | Off | Starts Hush Little PC when you sign in. Portable build: uses the per-user Run key. Store build: uses the package StartupTask (manage it under **Settings > Apps > Startup**). |
+| Run at startup | Off | Starts Hush Little PC when you sign in. Standalone build: uses the per-user Run key. Store build: uses the package StartupTask (manage it under **Settings > Apps > Startup**). |
 | Open settings on startup | Off | Opens the settings window each time the app starts. When off, the app starts in the notification area; the window still opens on the first run. |
 
 Settings are saved automatically as you change them, to `settings.json` in the app's data folder:
 
-- **Portable:** a `Data` folder next to the executable. If that location isn't writable (for example, under `Program Files`), it uses `%LocalAppData%\HushLittlePC` instead.
-- **Microsoft Store:** `%LocalAppData%\HushLittlePC`. Windows redirects this folder to the package's private storage and removes it when you uninstall.
+- **All installations:** `%LocalAppData%\HushLittlePC`. The standalone executable and Microsoft Store version use the same location. For the Store version, Windows redirects this path to the package's private storage.
 
-The first time this version runs, settings and logs from older versions (`%AppData%\HushLittlePC\settings.json` and `%LocalAppData%\HushLittlePC`) are copied into the data folder if it doesn't have them yet.
+When upgrading from an older standalone release, files in the previous `Data` folder beside the executable are copied into `%LocalAppData%\HushLittlePC` if they aren't already there. Legacy settings in `%AppData%\HushLittlePC\settings.json` are also copied when needed. Original files are left in place.
 
 ## Limitations
 
@@ -91,7 +90,7 @@ The About page shows the app/runtime version and can copy basic environment diag
 
 1. Turn off **Run at startup** in Settings.
 2. Right-click the tray icon and choose **Exit**.
-3. Delete the portable executable and the `Data` folder next to it. If you also want to remove leftovers, delete `%LocalAppData%\HushLittlePC` (the notification icon, plus settings and logs if the app couldn't write next to the executable) and the `%AppData%\HushLittlePC` folder from older versions.
+3. Delete the standalone executable. To remove its settings and logs as well, delete `%LocalAppData%\HushLittlePC`. If you upgraded from an older version, you can also delete the legacy `%AppData%\HushLittlePC` folder after confirming your settings have migrated.
 
 For the Store version, uninstall it from **Settings > Apps > Installed apps**.
 
