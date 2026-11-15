@@ -1,6 +1,8 @@
 # Capturing WinUI crash dumps
 
-The WinUI application already logs managed unhandled exceptions. A process termination with exception code `0xC000027B` can be a fail-fast stowed exception, in which case those managed handlers may not receive a useful exception before the process terminates.
+Check `%LocalAppData%\HushLittlePC\winui-app.log` first. The WinUI application logs each startup step and managed unhandled exceptions there; for example, a missing XAML resource shows up as a `XamlParseException` in `MainWindow.InitializeComponent`.
+
+A process termination with exception code `0xC000027B` can be a fail-fast stowed exception, in which case those managed handlers may not receive a useful exception before the process terminates.
 
 Use Windows Error Reporting LocalDumps to capture the underlying exception data.
 
