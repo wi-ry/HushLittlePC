@@ -199,39 +199,64 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private static BitmapImage CreateTrayIcon(bool enabled)
     {
-        var fileName = enabled ? "enabled.png" : "disabled.png";
-        var sourcePath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Assets",
-            "Tray",
-            fileName + ".base64");
+        var appIconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        if (enabled)
+        {
+            return new BitmapImage
+            {
+                UriSource = new Uri(appIconPath, UriKind.Absolute)
+            };
+        }
+
         var appVersion = typeof(App).Assembly.GetName().Version?.ToString() ?? "1";
         var iconDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "HushLittlePC",
             "TrayIcons",
             appVersion);
-        var iconPath = Path.Combine(iconDirectory, fileName);
+        var disabledIconPath = Path.Combine(iconDirectory, "speaker-disabled.png");
 
         try
         {
             Directory.CreateDirectory(iconDirectory);
-            if (!File.Exists(iconPath))
+            if (!File.Exists(disabledIconPath))
             {
-                var encodedIcon = File.ReadAllText(sourcePath).Trim();
-                var iconBytes = Convert.FromBase64String(encodedIcon);
-                File.WriteAllBytes(iconPath, iconBytes);
+                using var sourceIcon = new System.Drawing.Icon(appIconPath, 48, 48);
+                using var sourceBitmap = sourceIcon.ToBitmap();
+                using var bitmap = new System.Drawing.Bitmap(
+                    sourceBitmap.Width,
+                    sourceBitmap.Height,
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using var graphics = System.Drawing.Graphics.FromImage(bitmap);
+
+                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                graphics.DrawImage(sourceBitmap, 0, 0, sourceBitmap.Width, sourceBitmap.Height);
+
+                var lineWidth = Math.Max(3f, sourceBitmap.Width * 0.12f);
+                using var pen = new System.Drawing.Pen(System.Drawing.Color.Red, lineWidth)
+                {
+                    StartCap = System.Drawing.Drawing2D.LineCap.Round,
+                    EndCap = System.Drawing.Drawing2D.LineCap.Round
+                };
+                graphics.DrawLine(
+                    pen,
+                    sourceBitmap.Width * 0.16f,
+                    sourceBitmap.Height * 0.84f,
+                    sourceBitmap.Width * 0.84f,
+                    sourceBitmap.Height * 0.16f);
+
+                bitmap.Save(disabledIconPath, System.Drawing.Imaging.ImageFormat.Png);
             }
         }
         catch (Exception exception)
         {
-            AppLog.Error($"Unable to prepare the {fileName} tray icon. Falling back to the application icon.", exception);
-            iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+            AppLog.Error("Unable to create the disabled speaker tray icon. Falling back to the original speaker icon.", exception);
+            disabledIconPath = appIconPath;
         }
 
         return new BitmapImage
         {
-            UriSource = new Uri(iconPath, UriKind.Absolute)
+            UriSource = new Uri(disabledIconPath, UriKind.Absolute)
         };
     }
 
