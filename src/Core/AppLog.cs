@@ -4,9 +4,7 @@ namespace HushLittlePC;
 static class AppLog
 {
     static readonly object Sync = new();
-    static readonly string FilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "HushLittlePC", "app.log");
+    static string FilePath => AppDataPaths.CoreLogFilePath;
 
     public static void Error(string message, Exception exception)
     {
