@@ -69,7 +69,6 @@ public class AppDataPathsTests
         Assert.IsTrue(Directory.Exists(result));
     }
 
-
     [TestMethod]
     public void ResolveDataDirectory_MigratesLegacyRoamingSettingsWhenNoPreviousDataExists()
     {
