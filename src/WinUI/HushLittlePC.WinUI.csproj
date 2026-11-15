@@ -9,6 +9,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <WindowsPackageType>None</WindowsPackageType>
+    <!-- Unpackaged toasts register their app group name and icon from the exe metadata. -->
+    <ApplicationIcon>..\..\packaging\app.ico</ApplicationIcon>
+    <Product>Hush Little PC</Product>
+    <AssemblyTitle>Hush Little PC</AssemblyTitle>
   </PropertyGroup>
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
