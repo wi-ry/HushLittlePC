@@ -100,7 +100,7 @@ jobs:
             -p:IncludeAllContentForSelfExtract=true -p:PublishSingleFile=true `
             "-p:Version=${{ needs.release.outputs.version }}" -o artifacts/standalone
           Move-Item `
-            "artifacts/portable/HushLittlePC.WinUI.exe" `
+            "artifacts/standalone/HushLittlePC.WinUI.exe" `
             "artifacts/HushLittlePC_${{ needs.release.outputs.version }}_x64.exe"
 
       - name: Upload artifact to release
@@ -198,6 +198,6 @@ jobs:
           $toolPath = Join-Path $env:RUNNER_TEMP 'wingetcreate.exe'
           Invoke-WebRequest 'https://aka.ms/wingetcreate/latest' -OutFile $toolPath
 
-          $installerUrl = "https://github.com/${{ github.repository }}/releases/download/${{ needs.release.outputs.tag }}/HushLittlePC_${{ needs.release.outputs.version }}_x64-portable.exe"
+          $installerUrl = "https://github.com/${{ github.repository }}/releases/download/${{ needs.release.outputs.tag }}/HushLittlePC_${{ needs.release.outputs.version }}_x64.exe"
           & $toolPath update WillRyan.HushLittlePC --urls $installerUrl --version "${{ needs.release.outputs.version }}" --submit --no-open
           if ($LASTEXITCODE -ne 0) { throw "wingetcreate update failed (exit code $LASTEXITCODE)" }
