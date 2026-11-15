@@ -6,7 +6,6 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.UI.ViewManagement;
 using Microsoft.Windows.AppLifecycle;
 
 namespace HushLittlePC.WinUI;
@@ -21,8 +20,6 @@ public partial class App : Microsoft.UI.Xaml.Application
     private TaskbarIcon? _trayIcon;
     private MainWindow? _window;
     private bool _isExiting;
-    private DispatcherQueue? _dispatcherQueue;
-    private UISettings? _uiSettings;
 
     public App()
     {
@@ -84,10 +81,6 @@ public partial class App : Microsoft.UI.Xaml.Application
         AppLog.Info("Initializing UI dispatcher and theme tracking.");
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread()
             ?? throw new InvalidOperationException("The WinUI dispatcher queue is unavailable.");
-        _dispatcherQueue = dispatcherQueue;
-        _uiSettings = new UISettings();
-        _uiSettings.ColorValuesChanged += OnColorValuesChanged;
-
         AppLog.Info("Initializing audio controller.");
         var audio = new AudioController();
 
@@ -206,41 +199,21 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private string GetTrayText()
     {
-        if (_settings?.Enabled != true)
+        if (_settings is null || !_settings.Enabled)
         {
-            return "Hush Little PC — Disabled";
+            return "Hush Little PC: OFF";
         }
 
-        return $"Hush Little PC — Enabled ({_settings.IdleMinutes} min)";
+        return $"Hush Little PC: ON ({_settings.IdleMinutes} min)";
     }
 
-    private BitmapImage CreateTrayIcon()
+    private static BitmapImage CreateTrayIcon()
     {
-        var theme = IsLightTaskbarTheme() ? "light" : "dark";
-        var state = _settings?.Enabled == true ? "enabled" : "disabled";
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Tray", $"{theme}-{state}.png");
-        if (!File.Exists(iconPath))
-        {
-            throw new FileNotFoundException("The Hush Little PC tray icon asset was not found.", iconPath);
-        }
-
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
         return new BitmapImage
         {
             UriSource = new Uri(iconPath, UriKind.Absolute)
         };
-    }
-
-    private bool IsLightTaskbarTheme()
-    {
-        var background = _uiSettings?.GetColorValue(UIColorType.Background)
-            ?? Windows.UI.Color.FromArgb(255, 32, 32, 32);
-        var brightness = (0.2126 * background.R) + (0.7152 * background.G) + (0.0722 * background.B);
-        return brightness >= 128;
-    }
-
-    private void OnColorValuesChanged(UISettings sender, object args)
-    {
-        _dispatcherQueue?.TryEnqueue(() => RefreshTray());
     }
 
     private MenuFlyout CreateTrayMenu()
@@ -298,12 +271,6 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         _deviceWatcher?.Dispose();
         _deviceWatcher = null;
-
-        if (_uiSettings is not null)
-        {
-            _uiSettings.ColorValuesChanged -= OnColorValuesChanged;
-            _uiSettings = null;
-        }
 
         Notifier.ClearAll();
 
