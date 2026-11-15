@@ -5,9 +5,11 @@
     <ScrollViewer
         HorizontalScrollBarVisibility="Disabled"
         HorizontalScrollMode="Disabled"
-        VerticalScrollBarVisibility="Auto"
+        VerticalScrollBarVisibility="Visible"
         VerticalScrollMode="Enabled"
-        ZoomMode="Disabled">
+        ZoomMode="Disabled"
+        IsTabStop="True"
+        VerticalAlignment="Stretch">
         <StackPanel
             Spacing="20"
             Padding="32,28,32,40"
@@ -47,7 +49,7 @@
                             Value="10"
                             SmallChange="1"
                             LargeChange="5"
-                            SpinButtonPlacementMode="Hidden"
+                            SpinButtonPlacementMode="Inline"
                             AutomationProperties.Name="Idle timeout in minutes"
                             AutomationProperties.HelpText="The number of minutes without keyboard or mouse activity before audio is muted."
                             ValueChanged="IdleMinutesNumberBox_ValueChanged" />
