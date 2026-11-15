@@ -7,12 +7,20 @@ updates:
     schedule:
       interval: weekly
     groups:
-      nuget-dependencies:
+      nuget-major:
         patterns:
           - "*"
         update-types:
           - "major"
+      nuget-minor:
+        patterns:
+          - "*"
+        update-types:
           - "minor"
+      nuget-patch:
+        patterns:
+          - "*"
+        update-types:
           - "patch"
     commit-message:
       prefix: "chore(deps)"
@@ -22,12 +30,20 @@ updates:
     schedule:
       interval: weekly
     groups:
-      github-actions:
+      github-actions-major:
         patterns:
           - "*"
         update-types:
           - "major"
+      github-actions-minor:
+        patterns:
+          - "*"
+        update-types:
           - "minor"
+      github-actions-patch:
+        patterns:
+          - "*"
+        update-types:
           - "patch"
     commit-message:
       prefix: "chore(deps)"
