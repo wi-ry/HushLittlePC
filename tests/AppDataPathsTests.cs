@@ -69,6 +69,27 @@ public class AppDataPathsTests
         Assert.IsTrue(Directory.Exists(result));
     }
 
+
+    [TestMethod]
+    public void ResolveDataDirectory_MigratesLegacyRoamingSettingsWhenNoPreviousDataExists()
+    {
+        using var directory = new TemporaryDirectory();
+        var executablePath = Path.Combine(directory.Root, "HushLittlePC.exe");
+        var roamingAppData = Path.Combine(directory.Root, "Roaming");
+        var localAppData = Path.Combine(directory.Root, "Local");
+        var oldSettings = Path.Combine(roamingAppData, "HushLittlePC", "settings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(oldSettings)!);
+        File.WriteAllText(oldSettings, """{"IdleMinutes":15}""");
+
+        var result = AppDataPaths.ResolveDataDirectory(executablePath, roamingAppData, localAppData);
+
+        Assert.AreEqual(
+            """{"IdleMinutes":15}""",
+            File.ReadAllText(Path.Combine(result, "settings.json")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(directory.Root, "Data")));
+        Assert.IsTrue(File.Exists(oldSettings), "Migration should preserve the legacy settings file.");
+    }
+
     sealed class TemporaryDirectory : IDisposable
     {
         public string Root { get; } = Path.Combine(
