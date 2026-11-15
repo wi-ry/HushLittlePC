@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.UI.ViewManagement;
+using Windows.UI.ViewManagement;
 using Microsoft.Windows.AppLifecycle;
 
 namespace HushLittlePC.WinUI;
@@ -172,21 +173,19 @@ public partial class App : Microsoft.UI.Xaml.Application
         return $"Hush Little PC — Enabled ({_settings.IdleMinutes} min)";
     }
 
-    private SvgImageSource CreateTrayIcon()
+    private BitmapImage CreateTrayIcon()
     {
         var theme = IsLightTaskbarTheme() ? "light" : "dark";
         var state = _settings?.Enabled == true ? "enabled" : "disabled";
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Tray", $"{theme}-{state}.svg");
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Tray", $"{theme}-{state}.png");
         if (!File.Exists(iconPath))
         {
             throw new FileNotFoundException("The Hush Little PC tray icon asset was not found.", iconPath);
         }
 
-        return new SvgImageSource
+        return new BitmapImage
         {
-            UriSource = new Uri(iconPath, UriKind.Absolute),
-            RasterizePixelWidth = 32,
-            RasterizePixelHeight = 32
+            UriSource = new Uri(iconPath, UriKind.Absolute)
         };
     }
 
