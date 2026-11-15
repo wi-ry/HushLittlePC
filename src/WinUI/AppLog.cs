@@ -20,16 +20,14 @@ internal static class AppLog
         {
             lock (Sync)
             {
-                var directory = Path.GetDirectoryName(LogPath)!;
-                Directory.CreateDirectory(directory);
-
                 var entry = $"[{DateTimeOffset.UtcNow:O}] {level} {message}";
                 if (exception is not null)
                 {
                     entry += Environment.NewLine + exception;
                 }
 
-                File.AppendAllText(LogPath, entry + Environment.NewLine + Environment.NewLine);
+                // Capped like app.log: at 512 KiB the log moves to winui-app.old.log and a new one starts.
+                CappedLogFile.Append(LogPath, entry + Environment.NewLine + Environment.NewLine);
             }
         }
         catch

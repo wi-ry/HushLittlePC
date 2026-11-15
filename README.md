@@ -142,7 +142,9 @@ Settings are saved automatically as you change them to `%AppData%\HushLittlePC\s
 Hush Little PC writes two best-effort logs to `%LocalAppData%\HushLittlePC\`. Logging never prevents the app from running.
 
 - `winui-app.log`: app startup steps and any startup or unhandled WinUI exceptions. Check this first if the app closes or fails to open.
-- `app.log`: errors from settings, audio, and Windows services. Capped at approximately 512 KiB; when it reaches the limit, the next write starts a fresh log.
+- `app.log`: errors from settings, audio, and Windows services.
+
+Each log is capped at 512 KiB. When a log reaches the cap it is renamed to `winui-app.old.log` or `app.old.log` (replacing the previous one) and a fresh log starts, so the entries just before the rollover are kept.
 
 If the app crashes without a useful log entry, see [Capturing WinUI crash dumps](docs/winui-crash-dumps.md).
 

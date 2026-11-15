@@ -77,6 +77,8 @@ Use a disposable Windows account or VM where practical. Record the Windows versi
 The app writes two best-effort logs to `%LocalAppData%\HushLittlePC\`. Logging failures are intentionally ignored so diagnostics cannot crash or block the tray app.
 
 - `winui-app.log` records each startup step and any startup or unhandled WinUI exceptions, such as a `XamlParseException`. Check it first when the app exits or fails to open.
-- `app.log` records errors from settings, audio, and Windows services. It is capped at approximately 512 KiB; when the limit is reached, the next write starts a fresh log.
+- `app.log` records errors from settings, audio, and Windows services.
+
+Both logs are capped at 512 KiB by `CappedLogFile`. At the cap, the log is renamed to `<name>.old.log` (replacing any previous one) and a fresh log starts, so at most about 1 MiB is kept per log and the entries before a rollover are still available.
 
 For native fail-fast crashes (`0xC000027B`) that leave no useful log entry, see [Capturing WinUI crash dumps](winui-crash-dumps.md).
