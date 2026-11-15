@@ -2,12 +2,10 @@ using System.Threading;
 using System.Windows.Input;
 using H.NotifyIcon;
 using H.NotifyIcon.Core;
-using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Text;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.AppLifecycle;
 
 namespace HushLittlePC.WinUI;
@@ -69,7 +67,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         var trayIcon = new TaskbarIcon
         {
             ToolTipText = GetTrayText(),
-            IconSource = CreateTrayIcon(settings.Enabled),
+            IconSource = CreateTrayIcon(),
             LeftClickCommand = new RelayCommand(ToggleEnabled),
             NoLeftClickDelay = true,
             MenuActivation = PopupActivationMode.RightClick,
@@ -167,15 +165,17 @@ public partial class App : Microsoft.UI.Xaml.Application
         return $"Hush Little PC: ON ({_settings.IdleMinutes} min)";
     }
 
-    private static GeneratedIconSource CreateTrayIcon(bool enabled)
+    private static BitmapImage CreateTrayIcon()
     {
-        return new GeneratedIconSource
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        if (!File.Exists(iconPath))
         {
-            Text = enabled ? "\uE767" : "\uE74F",
-            Foreground = new SolidColorBrush(enabled ? Colors.LimeGreen : Colors.Gray),
-            FontFamily = new FontFamily("Segoe MDL2 Assets"),
-            FontSize = 46,
-            FontWeight = FontWeights.SemiBold
+            throw new FileNotFoundException("The Hush Little PC tray icon asset was not found.", iconPath);
+        }
+
+        return new BitmapImage
+        {
+            UriSource = new Uri(iconPath, UriKind.Absolute)
         };
     }
 
@@ -215,7 +215,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             return;
         }
 
-        _trayIcon.IconSource = CreateTrayIcon(_settings?.Enabled == true);
+        _trayIcon.IconSource = CreateTrayIcon();
         _trayIcon.ToolTipText = GetTrayText();
         _trayIcon.ContextFlyout = CreateTrayMenu();
     }

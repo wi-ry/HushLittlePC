@@ -3,6 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>HushLittlePC.WinUI</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>HushLittlePC.WinUI</AssemblyName>
     <UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
@@ -10,6 +11,7 @@
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
   <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
     <Content Include="..\..\packaging\app.ico" Link="Assets\app.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
