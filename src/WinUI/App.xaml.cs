@@ -78,7 +78,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             return;
         }
 
-        AppLog.Info("Initializing UI dispatcher and theme tracking.");
+        AppLog.Info("Initializing UI dispatcher.");
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread()
             ?? throw new InvalidOperationException("The WinUI dispatcher queue is unavailable.");
         AppLog.Info("Initializing audio controller.");
@@ -102,7 +102,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         var trayIcon = new TaskbarIcon
         {
             ToolTipText = GetTrayText(),
-            IconSource = CreateTrayIcon(),
+            IconSource = CreateTrayIcon(settings.Enabled),
             LeftClickCommand = new RelayCommand(ToggleEnabled),
             NoLeftClickDelay = true,
             MenuActivation = PopupActivationMode.RightClick,
@@ -134,22 +134,12 @@ public partial class App : Microsoft.UI.Xaml.Application
         StartupManager.Set(settings.RunOnStartup);
         AppLog.Info("Startup registration configured.");
 
-        AppLog.Info("Creating main window.");
-        _window = new MainWindow(settings, OnSettingsChanged, _trayIcon is not null);
-        _window.Closed += (_, _) =>
-        {
-            AppLog.Info("Main window Closed event raised.");
-            if (!_isExiting)
-            {
-                ExitApplication(closeWindow: false);
-            }
-        };
-        // Never leave the user with an invisible process if tray-icon creation failed.
+        // Background launches stay in the notification area. Create the settings window
+        // only when the user explicitly opens it from the tray menu.
         if (!isBackgroundLaunch || _trayIcon is null)
         {
-            AppLog.Info("Activating main window.");
-            _window.Activate();
-            AppLog.Info("Main window Activate() returned.");
+            AppLog.Info("Showing settings window for an interactive launch or tray fallback.");
+            ShowSettingsFromTray();
         }
     }
 
@@ -207,13 +197,61 @@ public partial class App : Microsoft.UI.Xaml.Application
         return $"Hush Little PC: ON ({_settings.IdleMinutes} min)";
     }
 
-    private static BitmapImage CreateTrayIcon()
+    private static BitmapImage CreateTrayIcon(bool enabled)
     {
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        var fileName = enabled ? "enabled.png" : "disabled.png";
+        var sourcePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Assets",
+            "Tray",
+            fileName + ".base64");
+        var iconDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "HushLittlePC",
+            "TrayIcons");
+        var iconPath = Path.Combine(iconDirectory, fileName);
+
+        try
+        {
+            Directory.CreateDirectory(iconDirectory);
+            var encodedIcon = File.ReadAllText(sourcePath).Trim();
+            var iconBytes = Convert.FromBase64String(encodedIcon);
+            File.WriteAllBytes(iconPath, iconBytes);
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error($"Unable to prepare the {fileName} tray icon. Falling back to the application icon.", exception);
+            iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        }
+
         return new BitmapImage
         {
             UriSource = new Uri(iconPath, UriKind.Absolute)
         };
+    }
+
+    private void ShowSettingsFromTray()
+    {
+        if (_settings is null)
+        {
+            return;
+        }
+
+        if (_window is null)
+        {
+            AppLog.Info("Creating settings window on demand.");
+            _window = new MainWindow(_settings, OnSettingsChanged, _trayIcon is not null);
+            _window.Closed += (_, _) =>
+            {
+                AppLog.Info("Main window Closed event raised.");
+                if (!_isExiting)
+                {
+                    ExitApplication(closeWindow: false);
+                }
+            };
+        }
+
+        _window.ShowFromTray();
     }
 
     private MenuFlyout CreateTrayMenu()
@@ -234,7 +272,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         menu.Items.Add(new MenuFlyoutItem
         {
             Text = "Settings...",
-            Command = new RelayCommand(() => _window?.ShowFromTray())
+            Command = new RelayCommand(ShowSettingsFromTray)
         });
         menu.Items.Add(new MenuFlyoutItem
         {
@@ -247,12 +285,12 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private void RefreshTray()
     {
-        if (_trayIcon is null)
+        if (_trayIcon is null || _settings is null)
         {
             return;
         }
 
-        _trayIcon.IconSource = CreateTrayIcon();
+        _trayIcon.IconSource = CreateTrayIcon(_settings.Enabled);
         _trayIcon.ToolTipText = GetTrayText();
         _trayIcon.ContextFlyout = CreateTrayMenu();
     }
