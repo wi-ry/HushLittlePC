@@ -96,7 +96,7 @@ pre-commit run --all-files
 
 | Setting | Description |
 | --- | --- |
-| Mute after *N* minutes | Idle time before muting. The slider and number box cover 1 minute to 24 hours. |
+| Mute after *N* minutes | Idle time before muting. The slider steps from 1 minute to 24 hours, finer at short timeouts. |
 | Enable Hush Little PC | Turns automatic muting on or off. |
 | Unmute when I come back | Unmutes on activity, only if Hush Little PC muted the device. |
 | Stay unmuted while audio is playing | Skips muting while sound is being output. |

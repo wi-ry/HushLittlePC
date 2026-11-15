@@ -9,6 +9,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <WindowsPackageType>None</WindowsPackageType>
+    <!-- Unpackaged toasts register their app group name and icon from the exe metadata. -->
+    <ApplicationIcon>..\..\packaging\app.ico</ApplicationIcon>
+    <Product>Hush Little PC</Product>
+    <AssemblyTitle>Hush Little PC</AssemblyTitle>
   </PropertyGroup>
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
@@ -18,6 +22,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.4.1" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <ProjectReference Include="..\Core\HushLittlePC.Core.csproj" />
     <ProjectReference Include="..\Platform\Windows\HushLittlePC.Windows.csproj" />
   </ItemGroup>
