@@ -137,12 +137,15 @@ public partial class App : Microsoft.UI.Xaml.Application
         timer.Start();
         _timer = timer;
 
+        AppLog.Info("Configuring startup registration.");
         StartupManager.Set(settings.RunOnStartup);
+        AppLog.Info("Startup registration configured.");
 
         AppLog.Info("Creating main window.");
         _window = new MainWindow(settings, OnSettingsChanged, _trayIcon is not null);
         _window.Closed += (_, _) =>
         {
+            AppLog.Info("Main window Closed event raised.");
             if (!_isExiting)
             {
                 ExitApplication(closeWindow: false);
@@ -153,6 +156,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         {
             AppLog.Info("Activating main window.");
             _window.Activate();
+            AppLog.Info("Main window Activate() returned.");
         }
     }
 
@@ -282,6 +286,7 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private void ExitApplication(bool closeWindow = true)
     {
+        AppLog.Info($"ExitApplication called. closeWindow={closeWindow}.");
         if (_isExiting)
         {
             return;
