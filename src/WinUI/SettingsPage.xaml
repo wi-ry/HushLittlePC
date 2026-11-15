@@ -15,22 +15,30 @@
 
             <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Idle behaviour" />
             <toolkit:SettingsCard
-                Description="Minutes without keyboard or mouse activity, from 1 minute to 24 hours."
+                Description="Time without keyboard or mouse activity, from 1 minute to 24 hours."
                 Header="Mute after inactivity">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE121;" />
                 </toolkit:SettingsCard.HeaderIcon>
-                <NumberBox
-                    x:Name="IdleMinutesNumberBox"
-                    MinWidth="150"
-                    AutomationProperties.HelpText="The number of minutes without keyboard or mouse activity before audio is muted."
-                    AutomationProperties.Name="Mute after inactivity, in minutes"
-                    LargeChange="5"
-                    Maximum="1440"
-                    Minimum="1"
-                    SmallChange="1"
-                    SpinButtonPlacementMode="Inline"
-                    ValueChanged="IdleMinutesNumberBox_ValueChanged" />
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <TextBlock
+                        x:Name="IdleTimeoutText"
+                        MinWidth="88"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextAlignment="Right" />
+                    <Slider
+                        x:Name="IdleTimeoutSlider"
+                        Width="240"
+                        VerticalAlignment="Center"
+                        AutomationProperties.HelpText="Time without keyboard or mouse activity before audio is muted."
+                        AutomationProperties.Name="Mute after inactivity"
+                        LargeChange="5"
+                        Minimum="0"
+                        SmallChange="1"
+                        StepFrequency="1"
+                        ValueChanged="IdleTimeoutSlider_ValueChanged" />
+                </StackPanel>
             </toolkit:SettingsCard>
 
             <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Behaviour" />

@@ -1,5 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace HushLittlePC.WinUI;
@@ -15,6 +18,8 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         InitializeComponent();
+        IdleTimeoutSlider.Maximum = IdleTimeoutScale.MaxIndex;
+        IdleTimeoutSlider.ThumbToolTipValueConverter = new IdleTimeoutToolTipConverter();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs args)
@@ -37,7 +42,9 @@ public sealed partial class SettingsPage : Page
         _loading = true;
         try
         {
-            IdleMinutesNumberBox.Value = settings.IdleMinutes;
+            // A saved value between steps (e.g. hand-edited) stays as-is until the slider moves.
+            IdleTimeoutSlider.Value = IdleTimeoutScale.IndexOf(settings.IdleMinutes);
+            ShowIdleTimeout(settings.IdleMinutes);
             EnabledToggle.IsOn = settings.Enabled;
             UnmuteOnActivityToggle.IsOn = settings.UnmuteOnActivity;
             SkipWhileAudioPlayingToggle.IsOn = settings.SkipWhileAudioPlaying;
@@ -51,25 +58,15 @@ public sealed partial class SettingsPage : Page
         }
     }
 
-    private void IdleMinutesNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+    private void IdleTimeoutSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs args)
     {
         if (_loading || _context is null)
         {
             return;
         }
 
-        // Clearing the box yields NaN; restore the current value rather than saving nothing.
-        if (double.IsNaN(args.NewValue))
-        {
-            sender.Value = _context.Settings.IdleMinutes;
-            return;
-        }
-
-        var minutes = (int)Math.Clamp(
-            Math.Round(args.NewValue),
-            Settings.MinIdleMinutes,
-            Settings.MaxIdleMinutes);
-
+        var minutes = IdleTimeoutScale.MinutesAt((int)Math.Round(args.NewValue));
+        ShowIdleTimeout(minutes);
         if (minutes == _context.Settings.IdleMinutes)
         {
             return;
@@ -77,6 +74,14 @@ public sealed partial class SettingsPage : Page
 
         _context.Settings.IdleMinutes = minutes;
         SaveSettings();
+    }
+
+    private void ShowIdleTimeout(int minutes)
+    {
+        var text = IdleTimeoutScale.Format(minutes);
+        IdleTimeoutText.Text = text;
+        // Screen readers announce the formatted time rather than the slider's step index.
+        AutomationProperties.SetItemStatus(IdleTimeoutSlider, text);
     }
 
     private void Setting_Toggled(object sender, RoutedEventArgs args)
@@ -124,4 +129,14 @@ public sealed partial class SettingsPage : Page
         SettingsStore.Save(_context.Settings);
         _context.SettingsChanged();
     }
+}
+
+/// <summary>Shows the slider thumb tooltip as a time ("1 hr 30 min") instead of a step index.</summary>
+internal sealed partial class IdleTimeoutToolTipConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language) =>
+        IdleTimeoutScale.Format(IdleTimeoutScale.MinutesAt((int)Math.Round(System.Convert.ToDouble(value))));
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+        throw new NotSupportedException();
 }
