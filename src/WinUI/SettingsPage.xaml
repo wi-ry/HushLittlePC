@@ -76,10 +76,10 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="8">
-                <StackPanel Spacing="0">
+                <StackPanel Spacing="0" HorizontalAlignment="Stretch">
                     <Grid Padding="16,16" ColumnDefinitions="*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="3" VerticalAlignment="Center">
-                            <TextBlock Text="Enable Hush Little PC" FontSize="16" />
+                            <TextBlock Text="Enable Hush Little PC" FontSize="14" />
                             <TextBlock Text="Allow automatic muting while you are away." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
                         <ToggleSwitch AutomationProperties.Name="Enable Hush Little PC" AutomationProperties.HelpText="Allow automatic muting while you are away." x:Name="EnabledToggle" Grid.Column="1" HorizontalAlignment="Right" Tag="Enabled" Toggled="Setting_Toggled" />
@@ -88,12 +88,12 @@
                     <Grid Padding="16,16" ColumnDefinitions="*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Unmute when I come back" FontSize="16" />
-                            <TextBlock Text="Only reverses a mute made by Hush Little PC." FontSize="14" Opacity="0.72" TextWrapping="Wrap" />
+                            <TextBlock Text="Only reverses a mute made by Hush Little PC." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
                         <ToggleSwitch AutomationProperties.Name="Unmute when I come back" AutomationProperties.HelpText="Only reverses a mute made by Hush Little PC." x:Name="UnmuteOnActivityToggle" Grid.Column="1" HorizontalAlignment="Right" Tag="UnmuteOnActivity" Toggled="Setting_Toggled" />
                     </Grid>
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="24,0" />
-                    <Grid Padding="24,18" ColumnDefinitions="*,Auto" ColumnSpacing="24" MinHeight="88">
+                    <Grid Padding="16,16" ColumnDefinitions="*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Stay unmuted while audio is playing" FontSize="16" />
                             <TextBlock Text="Avoid muting while sound is being output." FontSize="14" Opacity="0.72" TextWrapping="Wrap" />
