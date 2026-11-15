@@ -38,7 +38,7 @@ public class PortableStartupRegistrationTests
     [TestMethod]
     public void Remove_DeletesOnlyTheHushLittlePcRegistration()
     {
-        var subKeyPath = $@"Software\\HushLittlePC.Tests\\{Guid.NewGuid():N}";
+        var subKeyPath = $@"Software\HushLittlePC.Tests\{Guid.NewGuid():N}";
         try
         {
             using var runKey = Registry.CurrentUser.CreateSubKey(subKeyPath, writable: true);
