@@ -205,18 +205,23 @@ public partial class App : Microsoft.UI.Xaml.Application
             "Assets",
             "Tray",
             fileName + ".base64");
+        var appVersion = typeof(App).Assembly.GetName().Version?.ToString() ?? "1";
         var iconDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "HushLittlePC",
-            "TrayIcons");
+            "TrayIcons",
+            appVersion);
         var iconPath = Path.Combine(iconDirectory, fileName);
 
         try
         {
             Directory.CreateDirectory(iconDirectory);
-            var encodedIcon = File.ReadAllText(sourcePath).Trim();
-            var iconBytes = Convert.FromBase64String(encodedIcon);
-            File.WriteAllBytes(iconPath, iconBytes);
+            if (!File.Exists(iconPath))
+            {
+                var encodedIcon = File.ReadAllText(sourcePath).Trim();
+                var iconBytes = Convert.FromBase64String(encodedIcon);
+                File.WriteAllBytes(iconPath, iconBytes);
+            }
         }
         catch (Exception exception)
         {
