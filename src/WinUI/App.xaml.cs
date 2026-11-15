@@ -60,12 +60,14 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private void OnLaunchedCore(LaunchActivatedEventArgs args)
     {
+        AppLog.Info("Resolving activation arguments.");
         var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
         var isStartupTask = activationArgs?.Kind == ExtendedActivationKind.StartupTask;
         var isBackgroundLaunch = isStartupTask || Environment.GetCommandLineArgs().Any(argument =>
             argument.Equals("--background", StringComparison.OrdinalIgnoreCase) ||
             argument.Equals("-ToastActivated", StringComparison.OrdinalIgnoreCase));
 
+        AppLog.Info("Acquiring single-instance mutex.");
         _instanceMutex = new Mutex(
             initiallyOwned: true,
             name: "HushLittlePC_SingleInstance",
@@ -79,18 +81,21 @@ public partial class App : Microsoft.UI.Xaml.Application
             return;
         }
 
+        AppLog.Info("Initializing UI dispatcher and theme tracking.");
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread()
             ?? throw new InvalidOperationException("The WinUI dispatcher queue is unavailable.");
         _dispatcherQueue = dispatcherQueue;
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += OnColorValuesChanged;
 
+        AppLog.Info("Initializing audio controller.");
         var audio = new AudioController();
 
         // Subscribe as early as possible: toast activation is delivered shortly after process launch.
         Notifier.OnUnmuteClicked(deviceId =>
             dispatcherQueue.TryEnqueue(() => audio.SetMuteById(deviceId, false)));
 
+        AppLog.Info("Loading settings and initializing background services.");
         var settings = SettingsStore.Load();
         var idleMonitor = new IdleMonitor(settings, audio);
         var deviceWatcher = new DeviceWatcher();
@@ -100,6 +105,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         _audio = audio;
         _deviceWatcher = deviceWatcher;
 
+        AppLog.Info("Creating notification-area icon.");
         var trayIcon = new TaskbarIcon
         {
             ToolTipText = GetTrayText(),
@@ -122,6 +128,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             trayIcon.Dispose();
         }
 
+        AppLog.Info("Starting idle monitor and device watcher.");
         idleMonitor.NotificationRequested += Notifier.Muted;
         deviceWatcher.DefaultOutputChanged += deviceId =>
             dispatcherQueue.TryEnqueue(() => OnOutputChanged(deviceId));
@@ -132,6 +139,7 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         StartupManager.Set(settings.RunOnStartup);
 
+        AppLog.Info("Creating main window.");
         _window = new MainWindow(settings, OnSettingsChanged, _trayIcon is not null);
         _window.Closed += (_, _) =>
         {
@@ -143,6 +151,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         // Never leave the user with an invisible process if tray-icon creation failed.
         if (!isBackgroundLaunch || _trayIcon is null)
         {
+            AppLog.Info("Activating main window.");
             _window.Activate();
         }
     }
