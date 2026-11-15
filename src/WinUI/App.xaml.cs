@@ -11,7 +11,6 @@ public partial class App : Microsoft.UI.Xaml.Application
     private DispatcherQueueTimer? _timer;
     private Settings? _settings;
     private AudioController? _audio;
-    private IdleMonitor? _idleMonitor;
     private DeviceWatcher? _deviceWatcher;
     private TrayController? _trayController;
     private MainWindow? _window;
@@ -94,7 +93,6 @@ public partial class App : Microsoft.UI.Xaml.Application
         }
 
         var idleMonitor = new IdleMonitor(settings, audio);
-        _idleMonitor = idleMonitor;
         var deviceWatcher = new DeviceWatcher();
         var timer = dispatcherQueue.CreateTimer();
 
@@ -106,7 +104,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         var trayController = new TrayController(
             settings,
             ToggleEnabled,
-            () => _idleMonitor?.MuteNow(),
+            idleMonitor.MuteNow,
             ShowSettingsFromTray,
             () => ExitApplication(),
             GetTrayText);
@@ -245,7 +243,6 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         _audio?.Dispose();
         _audio = null;
-        _idleMonitor = null;
 
         _instanceMutex?.Dispose();
         _instanceMutex = null;
