@@ -48,15 +48,13 @@ dotnet test tests/HushLittlePC.Tests.csproj -c Release
 
 ### Run the WinUI 3 application locally
 
-The repository root project, `HushLittlePC.csproj`, is the retained WinForms fallback. Running `dotnet run` from the repository root launches that legacy UI.
-
-To run the new WinUI 3 application from source, explicitly select its project:
+Run the WinUI 3 application from source:
 
 ```powershell
 dotnet run --project src/WinUI/HushLittlePC.WinUI.csproj
 ```
 
-In Visual Studio, set **HushLittlePC.WinUI** as the startup project. Do not select **HushLittlePC.Legacy** when testing the Fluent UI.
+In Visual Studio, set **HushLittlePC.WinUI** as the startup project.
 
 Publish the self-contained WinUI portable executable:
 
@@ -121,12 +119,10 @@ Settings are saved automatically as you change them to `%AppData%\HushLittlePC\s
 
 | Path | Purpose |
 | --- | --- |
-| `HushLittlePC.sln` | Solution containing the legacy app, shared libraries, WinUI app, and tests |
+| `HushLittlePC.sln` | Solution containing the WinUI app, shared libraries, and tests |
 | `src/WinUI/` | WinUI 3 application, Fluent Settings/About pages, and window lifecycle |
 | `src/Core/` | Shared settings model, persistence, logging, and platform-independent policy |
 | `src/Platform/Windows/` | Audio, idle monitoring, device watching, startup, and notifications |
-| `src/UI/` | Legacy WinForms UI, tray icon drawing, and native popup menu retained temporarily as a fallback |
-| `HushLittlePC.csproj` | Legacy WinForms application project; still buildable but no longer used for releases |
 | `tests/` | MSTest coverage for policy, persistence, and Windows integration |
 | `packaging/` | MSIX manifest and Store assets |
 | `store/`, `docs/`, `resources/` | Store listing art, documentation, test guidance, and notification assets |
@@ -141,7 +137,7 @@ The About page shows the app/runtime version and can copy basic environment diag
 ## Contributing
 
 - Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/) because the title becomes the commit message on `main` and drives versioning.
-- CI formats and builds the full solution, runs unit tests, smoke-tests both the legacy fallback and WinUI portable app, and creates a test MSIX package.
+- CI formats and builds the full solution, runs unit tests, smoke-tests the WinUI portable app, and creates a test MSIX package.
 - When CI succeeds on `main`, [semantic-release](https://semantic-release.gitbook.io/) creates the version tag and GitHub release, attaches the portable executable, and submits the MSIX package to the Microsoft Store.
 - Store publishing requires repository variables `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER`, and `MSIX_PUBLISHER_DISPLAY_NAME`, plus secrets `TENANT_ID`, `SELLER_ID`, `CLIENT_ID`, `SECRET_VALUE`, and `STORE_ID`.
 - See [Windows integration testing](docs/windows-integration-testing.md) for automated coverage and the manual hardware/UI acceptance scenarios.

@@ -7,16 +7,15 @@ Hush Little PC now uses the WinUI 3 application as its primary desktop and relea
 - `src/WinUI` contains the native WinUI 3 application, settings and About pages, window lifecycle, and notification-area integration.
 - `src/Core` contains shared settings persistence, application logging, and UI-independent mute policy.
 - `src/Platform/Windows` contains Windows-specific audio, idle-input, output-device, notification, and startup integrations.
-- The root `HushLittlePC.csproj` remains the WinForms fallback while the WinUI application completes Windows acceptance.
 - `tests` contains policy, persistence, startup-registration, and integration smoke tests.
 
-The WinUI application owns the tray icon and application lifecycle. It uses the shared Windows services for audio muting, default-output changes, notifications, and startup registration. Settings are shared between the two application hosts.
+The WinUI application owns the tray icon and application lifecycle. It uses the shared Windows services for audio muting, default-output changes, notifications, and startup registration.
 
 ## Build and release
 
-The solution is `HushLittlePC.sln`. CI restores, formats, builds, and tests the complete solution, then publishes and smoke-tests both application hosts. It also assembles a test MSIX package.
+The solution is `HushLittlePC.sln`. CI restores, formats, builds, and tests the complete solution, then publishes and smoke-tests the WinUI portable executable. It also assembles a test MSIX package.
 
-The release workflow publishes the WinUI 3 self-contained portable executable and builds the MSIX package for Microsoft Store submission. The legacy WinForms project is retained as a buildable compatibility fallback; it is not the release target.
+The release workflow publishes the WinUI 3 self-contained portable executable and builds the MSIX package for Microsoft Store submission.
 
 ## Compatibility decisions
 
@@ -25,7 +24,7 @@ The release workflow publishes the WinUI 3 self-contained portable executable an
 - Mica is enabled only on Windows 11; Windows 10 uses the default WinUI window background.
 - Portable startup uses the per-user Run key and launches with `--background`.
 - Packaged startup uses the manifest StartupTask.
-- Both application hosts use the same single-instance mutex.
+- The WinForms application has been removed. Settings (`%AppData%\HushLittlePC\settings.json`) and the single-instance mutex name are unchanged, so existing settings carry over.
 
 ## Acceptance gate
 

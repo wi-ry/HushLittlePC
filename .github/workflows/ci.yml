@@ -67,16 +67,6 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Publish legacy WinForms fallback for compatibility
-        shell: pwsh
-        run: |
-          dotnet publish HushLittlePC.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o artifacts/smoke
-          if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXITCODE" }
-
-      - name: Test legacy WinForms fallback startup and single-instance behavior
-        shell: pwsh
-        run: ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/smoke/HushLittlePC.exe
-
       - name: Package WinUI MSIX
         shell: pwsh
         run: .github/scripts/package-msix.ps1 -Version "0.0.0" -Project "src/WinUI/HushLittlePC.WinUI.csproj" -OutputDir "artifacts/msix-ci"
