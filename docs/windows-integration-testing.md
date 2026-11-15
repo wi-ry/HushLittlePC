@@ -2,7 +2,7 @@
 
 The MSTest suite covers idle/mute policy, settings serialization, and settings file persistence through the shared `HushLittlePC.Core` project. Persistence tests use isolated temporary directories and exercise directory creation, saving, overwriting, reloading, missing-file defaults, and malformed-file recovery.
 
-CI builds the legacy WinForms fallback and the WinUI 3 application. It also publishes and launches the WinUI portable executable, checks single-instance enforcement and restart, and creates a test MSIX package. These are process and packaging checks; they do not emulate physical Windows audio endpoints or prove that every shell interaction works.
+CI builds the WinUI 3 application. It also publishes and launches the WinUI portable executable, checks single-instance enforcement and restart, and creates a test MSIX package. These are process and packaging checks; they do not emulate physical Windows audio endpoints or prove that every shell interaction works.
 
 ## Automated Windows validation
 
@@ -10,10 +10,9 @@ The `validate` job in `.github/workflows/ci.yml` restores and builds `HushLittle
 
 The `smoke-test` job runs on a Windows GitHub Actions runner and performs the following checks:
 
-1. Publish and launch the legacy WinForms fallback, then verify startup, single-instance enforcement, and restart.
-2. Assemble a test MSIX package from the WinUI self-contained publish output.
-3. Publish the WinUI app as a self-contained single-file executable.
-4. Launch the WinUI executable and verify startup, single-instance enforcement, and restart.
+1. Assemble a test MSIX package from the WinUI self-contained publish output.
+2. Publish the WinUI app as a self-contained single-file executable.
+3. Launch the WinUI executable and verify startup, single-instance enforcement, and restart.
 
 Successful or partially completed pull-request smoke-test runs upload a `winui-preview-<run-id>-<attempt>` artifact for 14 days. It contains the self-contained WinUI portable publish output under `artifacts/winui` and the unsigned test MSIX under `artifacts/msix-ci`. Use the portable executable for manual preview testing; the CI MSIX is unsigned and is intended for package validation, not direct installation.
 
@@ -65,7 +64,7 @@ Use a disposable Windows account or VM where practical. Record the Windows versi
 
 - Record the original default audio device, mute state, startup setting, and notification configuration before testing.
 - Restore the original audio and startup configuration during cleanup, including after a failed test.
-- Close the legacy WinForms tray process before launching the WinUI preview. Both hosts share the same single-instance mutex to prevent two audio engines from running simultaneously.
+- Close any running Hush Little PC tray process before launching a preview build. The single-instance mutex prevents two audio engines from running simultaneously.
 - Do not test against a user's normal startup configuration or disrupt an active audio session.
 - If the environment lacks suitable audio hardware, shell access, or an MSIX identity, mark the scenario **Not run**. A passing unit test or successful build is not a substitute.
 - For each scenario, record the steps, expected result, observed result, and pass/fail/not-run status.

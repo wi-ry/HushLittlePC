@@ -9,13 +9,13 @@ Use this workflow to evolve settings without unexpectedly changing existing user
 
 ## Procedure
 
-1. Read `SettingsModel.cs`, `Settings.cs`, `SettingsForm.cs`, and settings-related tests before editing. `SettingsModel.cs` contains the serializable model and JSON behavior; `Settings.cs` stores it and handles startup registration.
+1. Read `src/Core/SettingsModel.cs`, `src/Core/SettingsStore.cs`, `src/WinUI/SettingsPage.xaml(.cs)`, and settings-related tests before editing. `SettingsModel.cs` contains the serializable model and JSON behavior; `SettingsStore.cs` loads and saves it.
 2. For each new setting, define its default, valid range or allowed values, and behavior when the JSON property is absent or invalid. Prefer compatibility with existing settings files.
 3. Keep serialization/model behavior independent of Windows APIs where practical so it remains covered by the existing unit-test project.
-4. Wire the setting through every relevant surface: model, UI load/edit/save flow, runtime behavior, tests, and README settings documentation. Preserve the unsaved-changes behavior in the settings form.
+4. Wire the setting through every relevant surface: model, UI load/edit/save flow, runtime behavior, tests, and README settings documentation. Settings save immediately when changed on the Settings page; keep the tray menu and page in sync.
 5. Preserve atomic settings writes and the current per-user application-data location. Do not change portable versus MSIX storage behavior without explicitly tracing package redirection implications.
 6. Add tests for default values, valid round trips, boundary clamping or validation, and backward compatibility with JSON that omits newly introduced properties.
-7. Run `dotnet test tests/HushLittlePC.Tests.csproj -c Release` and `dotnet build HushLittlePC.csproj -c Release`.
+7. Run `dotnet test tests/HushLittlePC.Tests.csproj -c Release` and `dotnet build HushLittlePC.sln -c Release`.
 
 ## Review checklist
 
