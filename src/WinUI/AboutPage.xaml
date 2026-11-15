@@ -17,7 +17,7 @@
                 <TextBlock Text="About" FontSize="28" FontWeight="SemiBold" />
                 <TextBlock
                     Text="Application information and diagnostics."
-                    FontSize="12"
+                    FontSize="14"
                     Opacity="0.72"
                     TextWrapping="Wrap" />
             </StackPanel>
