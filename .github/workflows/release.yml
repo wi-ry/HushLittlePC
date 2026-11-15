@@ -173,12 +173,17 @@ jobs:
         id: winget-config
         shell: pwsh
         env:
+          WINGET_PUBLISH_ENABLED: ${{ vars.WINGET_PUBLISH_ENABLED }}
           WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+          if (-not [string]::Equals($env:WINGET_PUBLISH_ENABLED, 'TRUE', [StringComparison]::OrdinalIgnoreCase)) {
+            Write-Host 'WINGET_PUBLISH_ENABLED is not TRUE; WinGet submission is disabled.'
+            'enabled=false' >> $env:GITHUB_OUTPUT
+          } elseif ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
             Write-Host 'WINGET_CREATE_GITHUB_TOKEN is not configured; WinGet submission is disabled.'
             'enabled=false' >> $env:GITHUB_OUTPUT
           } else {
+            Write-Host 'WinGet submission is enabled.'
             'enabled=true' >> $env:GITHUB_OUTPUT
           }
 
