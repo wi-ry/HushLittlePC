@@ -32,6 +32,8 @@ Step away from your PC and Hush Little PC quietly mutes the sound. It runs in th
 
 The portable and Microsoft Store distributions include the required .NET and Windows App SDK runtimes. You do not need to install either runtime separately.
 
+For a portable installation, running the executable with `--uninstall` removes Hush Little PC's per-user Windows startup registration without deleting settings or logs. WinGet's `portable` uninstall currently does not invoke application-defined cleanup commands, so this flag cannot be wired into `winget uninstall` while the package remains a portable installer.
+
 ## Install
 
 - **Microsoft Store:** install [Hush Little PC from the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS). Updates are delivered by the Store.
