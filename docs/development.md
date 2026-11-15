@@ -105,4 +105,4 @@ When `README.md` or `docs/` changes on `main`, the sync-wiki workflow publishes 
 
 ## Diagnostics
 
-The app writes `winui-app.log` and `app.log` to its data directory (see [How it works](#how-it-works) and the [README](../README.md#troubleshooting)). When running from source, the data directory is `%LocalAppData%\HushLittlePC`. Check `winui-app.log` first for startup problems.
+The app writes a single `app.log` to `%LocalAppData%\\HushLittlePC` (see [How it works](#how-it-works) and the [README](../README.md#troubleshooting)). It contains startup, runtime, audio, and settings diagnostics. The log is capped at 512 KiB; the previous log is retained as `app.old.log`.

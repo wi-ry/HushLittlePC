@@ -10,18 +10,37 @@ class AudioController : IDisposable
     MMDevice? GetDevice()
     {
         try { return _enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia); }
-        catch { return null; }
+        catch (Exception exception)
+        {
+            AppLog.Warning("Unable to get the default playback device.", exception);
+            return null;
+        }
     }
 
     public bool IsMuted
     {
-        get { using var d = GetDevice(); return d?.AudioEndpointVolume.Mute ?? false; }
+        get
+        {
+            try
+            {
+                using var device = GetDevice();
+                return device?.AudioEndpointVolume.Mute ?? false;
+            }
+            catch (Exception exception)
+            {
+                AppLog.Warning("Unable to read the default playback device mute state.", exception);
+                return false;
+            }
+        }
     }
 
     public void SetMute(bool mute)
     {
         try { using var d = GetDevice(); if (d != null) d.AudioEndpointVolume.Mute = mute; }
-        catch { }
+        catch (Exception exception)
+        {
+            AppLog.Warning($"Unable to set mute state to {mute}.", exception);
+        }
     }
 
     /// <summary>Mutes the current default playback device and returns its id, name, and prior mute state (null if unavailable).</summary>
@@ -36,14 +55,21 @@ class AudioController : IDisposable
                 mute => d.AudioEndpointVolume.Mute = mute);
             return (d.ID, d.FriendlyName, wasMuted);
         }
-        catch { return null; }
+        catch (Exception exception)
+        {
+            AppLog.Warning("Unable to mute the default playback device.", exception);
+            return null;
+        }
     }
 
     /// <summary>Sets mute on a specific playback device by id.</summary>
     public void SetMuteById(string deviceId, bool mute)
     {
         try { using var d = _enumerator.GetDevice(deviceId); d.AudioEndpointVolume.Mute = mute; }
-        catch { }
+        catch (Exception exception)
+        {
+            AppLog.Warning($"Unable to set mute state for playback device '{deviceId}'.", exception);
+        }
     }
 
     /// <summary>Mutes a specific playback device by id and returns its friendly name and prior mute state (null on failure).</summary>
@@ -57,7 +83,11 @@ class AudioController : IDisposable
                 mute => d.AudioEndpointVolume.Mute = mute);
             return (d.FriendlyName, wasMuted);
         }
-        catch { return null; }
+        catch (Exception exception)
+        {
+            AppLog.Warning($"Unable to mute playback device '{deviceId}'.", exception);
+            return null;
+        }
     }
 
     /// <summary>True if the device is currently outputting audible sound.</summary>
@@ -66,7 +96,11 @@ class AudioController : IDisposable
         get
         {
             try { using var d = GetDevice(); return (d?.AudioMeterInformation.MasterPeakValue ?? 0f) > 0.001f; }
-            catch { return false; }
+            catch (Exception exception)
+            {
+                AppLog.Warning("Unable to read playback device audio level.", exception);
+                return false;
+            }
         }
     }
 

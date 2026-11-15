@@ -1,25 +1,32 @@
 namespace HushLittlePC;
 
 /// <summary>Best-effort application diagnostics stored in the user's local app-data folder.</summary>
-static class AppLog
+public static class AppLog
 {
-    static readonly object Sync = new();
-    static string FilePath => AppDataPaths.CoreLogFilePath;
+    private static readonly object Sync = new();
+    private static string FilePath => AppDataPaths.CoreLogFilePath;
 
-    public static void Error(string message, Exception exception)
-    {
-        Write($"ERROR {message}{Environment.NewLine}{exception}");
-    }
+    public static void Info(string message) => Write("INFO", message, null);
 
-    static void Write(string message)
+    public static void Warning(string message, Exception exception) =>
+        Write("WARN", message, exception);
+
+    public static void Error(string message, Exception exception) =>
+        Write("ERROR", message, exception);
+
+    private static void Write(string level, string message, Exception? exception)
     {
         try
         {
             lock (Sync)
             {
+                var entry = $"[{DateTimeOffset.UtcNow:O}] {level} {message}";
+                if (exception is not null)
+                    entry += Environment.NewLine + exception;
+
                 CappedLogFile.Append(
                     FilePath,
-                    $"[{DateTimeOffset.UtcNow:O}] {message}{Environment.NewLine}{Environment.NewLine}");
+                    entry + Environment.NewLine + Environment.NewLine);
             }
         }
         catch
