@@ -34,7 +34,10 @@ static class Notifier
                 t.ExpirationTime = DateTimeOffset.Now.AddHours(4);   // don't leave stale Unmute buttons around
             });
         }
-        catch { /* notifications are a nicety, never crash the app over them */ }
+        catch (Exception exception)
+        {
+            AppLog.Warning("Unable to show the mute notification.", exception);
+        }
     }
 
     static Uri? _logoUri;
@@ -64,7 +67,11 @@ static class Notifier
             }
             return _logoUri = new Uri(path);
         }
-        catch { return null; }
+        catch (Exception exception)
+        {
+            AppLog.Warning("Unable to resolve the notification logo.", exception);
+            return null;
+        }
     }
 
     /// <summary>Calls <paramref name="unmute"/> (on a background thread) when the user clicks Unmute.</summary>
@@ -80,12 +87,22 @@ static class Notifier
                 if (ToastActivationPolicy.TryGetUnmuteDeviceId(action, deviceId, out var targetDeviceId))
                     unmute(targetDeviceId);
             }
-            catch { }
+            catch (Exception exception)
+            {
+                AppLog.Warning("Unable to process notification activation.", exception);
+            }
         };
     }
 
     public static void ClearAll()
     {
-        try { ToastNotificationManagerCompat.History.Clear(); } catch { }
+        try
+        {
+            ToastNotificationManagerCompat.History.Clear();
+        }
+        catch (Exception exception)
+        {
+            AppLog.Warning("Unable to clear notification history.", exception);
+        }
     }
 }

@@ -31,7 +31,14 @@ sealed class DeviceWatcher : IMMNotificationClient, IDisposable
 
     public void Dispose()
     {
-        try { _enumerator.UnregisterEndpointNotificationCallback(this); } catch { }
+        try
+        {
+            _enumerator.UnregisterEndpointNotificationCallback(this);
+        }
+        catch (Exception exception)
+        {
+            AppLog.Warning("Unable to unregister the playback device notification callback.", exception);
+        }
         _enumerator.Dispose();
     }
 }

@@ -39,6 +39,9 @@ static class StartupManager
             if (enable) await task.RequestEnableAsync();
             else task.Disable();
         }
-        catch { /* ignore: startup is a convenience, not critical */ }
+        catch (Exception exception)
+        {
+            AppLog.Warning($"Unable to {(enable ? "enable" : "disable")} the packaged startup task.", exception);
+        }
     }
 }

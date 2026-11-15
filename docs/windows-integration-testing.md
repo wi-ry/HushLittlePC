@@ -75,4 +75,4 @@ Use a disposable Windows account or VM where practical. Record the Windows versi
 
 ## Diagnostic log
 
-`winui-app.log` and `app.log` are written to the app's data directory and are capped at 512 KiB each; see [Diagnostics](development.md#diagnostics) and the README's [Troubleshooting](../README.md#troubleshooting) section. Check `winui-app.log` first when the app exits or fails to open, and attach the relevant entries to test results.
+`app.log` is written to `%LocalAppData%\\HushLittlePC` and is capped at 512 KiB; the previous log is retained as `app.old.log`. It includes startup, runtime, audio, and settings diagnostics. See [Diagnostics](development.md#diagnostics) and the README's [Troubleshooting](../README.md#troubleshooting) section, and attach relevant entries to test results.

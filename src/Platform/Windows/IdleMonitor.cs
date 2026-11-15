@@ -7,6 +7,14 @@ sealed class IdleMonitor(Settings settings, AudioController audio)
 
     public event Action<string, string>? NotificationRequested;
 
+    /// <summary>Mutes the current default device and claims ownership only when this call changes its state.</summary>
+    public void MuteNow()
+    {
+        var device = audio.MuteDefault();
+        if (device is { } result)
+            _mutedByUs = MuteTransition.UpdateOwnershipAfterMute(_mutedByUs, result.WasMuted);
+    }
+
     public void Tick()
     {
         if (!settings.Enabled) return;
