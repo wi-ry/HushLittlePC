@@ -19,7 +19,33 @@ public class SettingsStoreTests
         Assert.IsTrue(settings.Enabled);
         Assert.AreEqual(10, settings.IdleMinutes);
         Assert.IsTrue(settings.ShowNotification);
+        Assert.IsFalse(settings.ShowSettingsOnStartup);
         Assert.AreEqual(0, errors.Count);
+    }
+
+    [TestMethod]
+    public void IsFirstRun_TrueUntilSettingsAreSaved()
+    {
+        using var directory = new TemporaryDirectory();
+
+        Assert.IsTrue(SettingsStore.IsFirstRun(directory.SettingsPath));
+
+        SettingsStore.Save(new Settings(), directory.SettingsPath, (_, _) => { });
+
+        Assert.IsFalse(SettingsStore.IsFirstRun(directory.SettingsPath));
+    }
+
+    [TestMethod]
+    public void Load_SettingsFileWithoutShowSettingsOnStartup_DefaultsToOff()
+    {
+        using var directory = new TemporaryDirectory();
+        Directory.CreateDirectory(Path.GetDirectoryName(directory.SettingsPath)!);
+        File.WriteAllText(directory.SettingsPath, """{ "Enabled": true, "IdleMinutes": 5 }""");
+
+        var settings = SettingsStore.Load(directory.SettingsPath, (_, _) => { });
+
+        Assert.IsFalse(settings.ShowSettingsOnStartup);
+        Assert.AreEqual(5, settings.IdleMinutes);
     }
 
     [TestMethod]
@@ -34,7 +60,8 @@ public class SettingsStoreTests
             SkipWhileAudioPlaying = true,
             MuteOnDeviceChange = true,
             ShowNotification = false,
-            RunOnStartup = true
+            RunOnStartup = true,
+            ShowSettingsOnStartup = true
         };
         var errors = new List<Exception>();
 
@@ -54,6 +81,7 @@ public class SettingsStoreTests
         Assert.AreEqual(expected.MuteOnDeviceChange, actual.MuteOnDeviceChange);
         Assert.AreEqual(expected.ShowNotification, actual.ShowNotification);
         Assert.AreEqual(expected.RunOnStartup, actual.RunOnStartup);
+        Assert.AreEqual(expected.ShowSettingsOnStartup, actual.ShowSettingsOnStartup);
         Assert.AreEqual(0, errors.Count);
     }
 

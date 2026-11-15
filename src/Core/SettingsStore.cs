@@ -11,6 +11,12 @@ static class SettingsStore
 
     public static Settings Load() => Load(FilePath, AppLog.Error);
 
+    /// <summary>True until settings have been saved once, i.e. on the first run after install.
+    /// Existing users already have a settings file, so upgrading does not count as a first run.</summary>
+    public static bool IsFirstRun() => IsFirstRun(FilePath);
+
+    internal static bool IsFirstRun(string filePath) => !File.Exists(filePath);
+
     internal static Settings Load(string filePath, Action<string, Exception> logError)
     {
         try

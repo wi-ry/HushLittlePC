@@ -25,6 +25,10 @@ public class Settings
     public bool ShowNotification { get; set; } = true;
     public bool RunOnStartup { get; set; } = false;
 
+    /// <summary>Open the settings window every time the app starts. Off by default: Hush Little PC
+    /// is a background utility and normally starts straight to the notification area.</summary>
+    public bool ShowSettingsOnStartup { get; set; } = false;
+
     public bool ToggleEnabled() => Enabled = !Enabled;
 }
 

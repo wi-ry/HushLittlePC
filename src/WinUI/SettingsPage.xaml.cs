@@ -51,6 +51,7 @@ public sealed partial class SettingsPage : Page
             MuteOnDeviceChangeToggle.IsOn = settings.MuteOnDeviceChange;
             ShowNotificationToggle.IsOn = settings.ShowNotification;
             RunOnStartupToggle.IsOn = settings.RunOnStartup;
+            ShowSettingsOnStartupToggle.IsOn = settings.ShowSettingsOnStartup;
         }
         finally
         {
@@ -111,6 +112,9 @@ public sealed partial class SettingsPage : Page
                 break;
             case "RunOnStartup":
                 settings.RunOnStartup = toggle.IsOn;
+                break;
+            case "ShowSettingsOnStartup":
+                settings.ShowSettingsOnStartup = toggle.IsOn;
                 break;
             default:
                 return;

@@ -5,7 +5,6 @@ using H.NotifyIcon.Core;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Windows.AppLifecycle;
 
 namespace HushLittlePC.WinUI;
 
@@ -60,10 +59,8 @@ public partial class App : Microsoft.UI.Xaml.Application
     private void OnLaunchedCore(LaunchActivatedEventArgs args)
     {
         AppLog.Info("Resolving activation arguments.");
-        var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
-        var isStartupTask = activationArgs?.Kind == ExtendedActivationKind.StartupTask;
-        var isBackgroundLaunch = isStartupTask || Environment.GetCommandLineArgs().Any(argument =>
-            argument.Equals("--background", StringComparison.OrdinalIgnoreCase) ||
+        // Notification buttons (e.g. Unmute) launch the app with -ToastActivated when it isn't running.
+        var isNotificationActivation = Environment.GetCommandLineArgs().Any(argument =>
             argument.Equals("-ToastActivated", StringComparison.OrdinalIgnoreCase));
 
         AppLog.Info("Acquiring single-instance mutex.");
@@ -91,7 +88,13 @@ public partial class App : Microsoft.UI.Xaml.Application
             dispatcherQueue.TryEnqueue(() => audio.SetMuteById(deviceId, false)));
 
         AppLog.Info("Loading settings and initializing background services.");
+        var isFirstRun = SettingsStore.IsFirstRun();
         var settings = SettingsStore.Load();
+        if (isFirstRun)
+        {
+            // Persist defaults now so the welcome window appears only once, even if nothing is changed.
+            SettingsStore.Save(settings);
+        }
         var idleMonitor = new IdleMonitor(settings, audio);
         var deviceWatcher = new DeviceWatcher();
         var timer = dispatcherQueue.CreateTimer();
@@ -136,12 +139,21 @@ public partial class App : Microsoft.UI.Xaml.Application
         StartupManager.Set(settings.RunOnStartup);
         AppLog.Info("Startup registration configured.");
 
-        // Background launches stay in the notification area. Create the settings window
-        // only when the user explicitly opens it from the tray menu.
-        if (!isBackgroundLaunch || _trayIcon is null)
+        // Hush Little PC is a background utility: it starts in the notification area and the
+        // settings window opens only on the first run, when the user opts in, or as a fallback
+        // when there is no tray icon to reach the app from.
+        if (LaunchWindowPolicy.ShouldShowSettings(
+                isFirstRun,
+                settings.ShowSettingsOnStartup,
+                isNotificationActivation,
+                trayIconAvailable: _trayIcon is not null))
         {
-            AppLog.Info("Showing settings window for an interactive launch or tray fallback.");
+            AppLog.Info($"Showing settings window (first run: {isFirstRun}, tray icon: {_trayIcon is not null}).");
             ShowSettingsFromTray();
+        }
+        else
+        {
+            AppLog.Info("Starting in the notification area.");
         }
     }
 

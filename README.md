@@ -85,6 +85,8 @@ pre-commit run --all-files
 
 ## Usage
 
+Hush Little PC runs in the notification area. The settings window opens on the first run; after that, open it from the tray menu (or turn on **Open settings on startup**).
+
 | Action | Result |
 | --- | --- |
 | Left-click the tray icon | Enable or disable idle muting |
@@ -101,6 +103,7 @@ pre-commit run --all-files
 | Mute when the audio output changes | Mutes the new default playback device when Windows switches outputs. |
 | Show mute notifications | Shows a Windows notification with an Unmute action. |
 | Run at startup | Portable build: uses the per-user Run key. Store build: uses the package StartupTask (manage it under **Settings > Apps > Startup**). |
+| Open settings on startup | Opens the settings window each time the app starts. Off by default, so the app starts in the notification area; the window always opens on the first run. |
 
 Settings are saved automatically as you change them to `%AppData%\HushLittlePC\settings.json`. For the Store version, Windows redirects this folder to the package's private storage and removes it when you uninstall.
 
