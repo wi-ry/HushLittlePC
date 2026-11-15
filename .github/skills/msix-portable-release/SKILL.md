@@ -1,6 +1,6 @@
 ---
 name: msix-portable-release
-description: 'Use when changing, building, or troubleshooting HushLittlePC MSIX packaging, Microsoft Store submissions, portable publishing, release versions, package manifests, or release workflows.'
+description: 'Use when changing, building, or troubleshooting HushLittlePC MSIX packaging, Microsoft Store submissions, standalone publishing, release versions, package manifests, or release workflows.'
 ---
 
 # MSIX and Standalone Releases
