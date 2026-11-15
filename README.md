@@ -77,12 +77,9 @@ When upgrading from an older standalone release, files in the previous `Data` fo
 
 ## Troubleshooting
 
-Hush Little PC writes two best-effort logs to its data folder (see [Settings](#settings)). Logging never prevents the app from running.
+Hush Little PC writes a single best-effort `app.log` to its data folder (see [Settings](#settings)). It includes startup, runtime, audio, and settings diagnostics. Logging never prevents the app from running.
 
-- `winui-app.log`: app startup steps and any startup or unhandled exceptions. Check this first if the app closes or fails to open.
-- `app.log`: errors from settings, audio, and Windows services.
-
-Each log is capped at 512 KiB. When a log reaches the cap it is renamed to `winui-app.old.log` or `app.old.log` (replacing the previous one) and a fresh log starts, so the entries just before the rollover are kept.
+The log is capped at 512 KiB. When it reaches the cap it is renamed to `app.old.log` (replacing the previous one) and a fresh log starts, so the entries just before the rollover are kept.
 
 The About page shows the app/runtime version and can copy basic environment diagnostics to the clipboard, which is handy when reporting a problem.
 
