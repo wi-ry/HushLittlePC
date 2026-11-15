@@ -26,10 +26,39 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     public App()
     {
+        AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
+        {
+            var exception = eventArgs.ExceptionObject as Exception
+                ?? new Exception(eventArgs.ExceptionObject?.ToString() ?? "Unknown unhandled exception.");
+            AppLog.Error("Unhandled process exception.", exception);
+        };
+
+        TaskScheduler.UnobservedTaskException += (_, eventArgs) =>
+            AppLog.Error("Unobserved task exception.", eventArgs.Exception);
+
+        UnhandledException += (_, eventArgs) =>
+            AppLog.Error("Unhandled WinUI exception.", eventArgs.Exception);
+
+        AppLog.Info("Application constructor entered.");
         InitializeComponent();
+        AppLog.Info("Application XAML initialized.");
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
+    {
+        AppLog.Info("OnLaunched entered.");
+        try
+        {
+            OnLaunchedCore(args);
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("Application startup failed.", exception);
+            throw;
+        }
+    }
+
+    private void OnLaunchedCore(LaunchActivatedEventArgs args)
     {
         var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
         var isStartupTask = activationArgs?.Kind == ExtendedActivationKind.StartupTask;
