@@ -29,6 +29,16 @@ static class StartupManager
         PortableStartupRegistration.Set(key, enable, Environment.ProcessPath);
     }
 
+    /// <summary>Removes the portable startup registration during an explicit uninstall request.</summary>
+    public static void Uninstall()
+    {
+        if (IsPackaged) return;
+
+        using var key = Registry.CurrentUser.OpenSubKey(RunKey, writable: true);
+        if (key == null) return;
+        PortableStartupRegistration.Remove(key);
+    }
+
     // Packaged apps can't use the HKCU Run key (writes are redirected); they use the manifest's StartupTask.
     // If the user turned it off in Task Manager > Startup apps, Windows only lets them turn it back on there.
     static async Task SetPackagedAsync(bool enable)
