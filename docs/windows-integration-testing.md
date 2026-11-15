@@ -2,7 +2,7 @@
 
 The MSTest suite covers idle/mute policy, mute transitions, the idle-timeout slider scale, the launch-window policy (first run, "Open settings on startup", notification launches), the Unmute notification-action policy, default-output change filtering, settings serialization, settings file persistence, data-directory resolution and migration, capped log rotation, and portable startup registration. Persistence tests use isolated temporary directories and exercise directory creation, saving, overwriting, reloading, missing-file defaults, first-run detection, and malformed-file recovery.
 
-CI builds the WinUI 3 application. It also publishes and launches the WinUI portable executable, checks single-instance enforcement and restart, and creates a test MSIX package. These are process and packaging checks; they do not emulate physical Windows audio endpoints or prove that every shell interaction works.
+CI builds the WinUI 3 application. It also publishes and launches the WinUI standalone executable, checks single-instance enforcement and restart, and creates a test MSIX package. These are process and packaging checks; they do not emulate physical Windows audio endpoints or prove that every shell interaction works.
 
 ## Automated Windows validation
 
@@ -13,9 +13,9 @@ The `smoke-test` job runs on a Windows GitHub Actions runner and performs the fo
 1. Assemble a test MSIX package from the WinUI self-contained publish output.
 2. Publish the WinUI app as a self-contained single-file executable.
 3. Launch the WinUI executable and verify startup, single-instance enforcement, and restart.
-4. Repeat step 3 with a copy renamed to the release file name (`HushLittlePC_<version>_x64-portable.exe`). The app loads its compiled XAML from `resources.pri`; this check catches a resource file that only works under the original exe name.
+4. Repeat step 3 with a copy renamed to the release file name (`HushLittlePC_<version>_x64.exe`). The app loads its compiled XAML from `resources.pri`; this check catches a resource file that only works under the original exe name.
 
-Successful or partially completed pull-request smoke-test runs upload a `winui-preview-<run-id>-<attempt>` artifact for 14 days. It contains the self-contained WinUI portable publish output under `artifacts/winui` and the unsigned test MSIX under `artifacts/msix-ci`. Use the portable executable for manual preview testing; the CI MSIX is unsigned and is intended for package validation, not direct installation.
+Successful or partially completed pull-request smoke-test runs upload a `winui-preview-<run-id>-<attempt>` artifact for 14 days. It contains the self-contained WinUI standalone publish output under `artifacts/winui` and the unsigned test MSIX under `artifacts/msix-ci`. Use the standalone executable for manual preview testing; the CI MSIX is unsigned and is intended for package validation, not direct installation.
 
 The shared smoke-test script is:
 
@@ -47,7 +47,7 @@ dotnet test tests/HushLittlePC.Tests.csproj -c Release
 
 ## Manual Windows acceptance
 
-Use a disposable Windows account or VM where practical. Record the Windows version, app version/commit, package type (portable or MSIX), and relevant audio-device setup with the results.
+Use a disposable Windows account or VM where practical. Record the Windows version, app version/commit, package type (standalone executable or MSIX), and relevant audio-device setup with the results.
 
 | Area | Scenarios | Notes |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ Use a disposable Windows account or VM where practical. Record the Windows versi
 | Output changes | Change the default output; disconnect and reconnect a device | Verify the new default device is the one affected. |
 | Notifications | Notifications enabled/disabled; activate the Unmute action | Confirm the action unmutes the intended device. |
 | First run and launch window | With no settings file, launch once (window opens) and again (tray only); turn on **Open settings on startup** and relaunch (window opens) | Back up and restore `settings.json` from the app's data folder (see the next row) around the test. |
-| Data folder | Portable exe in a writable folder (a `Data` folder appears beside it); portable exe in a non-writable folder such as `Program Files` (falls back to `%LocalAppData%\HushLittlePC`); first launch with an existing `%AppData%\HushLittlePC\settings.json` | Confirm settings and logs land in the expected folder, old files are copied rather than moved, and an upgrading user does not get the first-run window. Packaged installs always use `%LocalAppData%\HushLittlePC`. |
+| Data folder | Launch the standalone executable from a writable folder and from a protected folder; upgrade with files in the former adjacent `Data` folder and `%AppData%\HushLittlePC\settings.json` | Confirm settings and logs always use `%LocalAppData%\HushLittlePC`, existing files are copied rather than moved, current settings are not overwritten, and an upgrading user does not get the first-run window. The MSIX package uses the same logical location, redirected to package-private storage. |
 | Startup | Enable and disable startup registration; verify sign-in launch stays in the tray unless **Open settings on startup** is on | Test portable Run-key and packaged StartupTask paths separately. |
 | Tray UI | Left-click toggle; right-click menu; close-to-tray; Exit | Check icon state, menu actions, and graceful shutdown. |
 | Window and Fluent UI | Mica, light/dark mode, compact navigation, minimum window size, 100%/150%/200% scaling | Verify the window remains usable and content is not clipped. |
