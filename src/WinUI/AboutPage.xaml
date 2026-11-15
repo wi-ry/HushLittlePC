@@ -10,14 +10,14 @@
         ZoomMode="Disabled">
         <StackPanel
             MaxWidth="760"
-            Spacing="16"
-            Padding="32,28,32,40"
+            Spacing="12"
+            Padding="28,24,28,32"
             HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock Text="About" FontSize="28" FontWeight="SemiBold" />
                 <TextBlock
                     Text="Application information and diagnostics."
-                    FontSize="14"
+                    FontSize="12"
                     Opacity="0.72"
                     TextWrapping="Wrap" />
             </StackPanel>
@@ -27,10 +27,10 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="8"
-                Padding="24">
+                Padding="16">
                 <StackPanel Spacing="16">
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Hush Little PC" FontSize="22" FontWeight="SemiBold" />
+                        <TextBlock Text="Hush Little PC" FontSize="20" FontWeight="SemiBold" />
                         <TextBlock
                             Text="A quiet utility that helps manage audio muting when you step away from your PC."
                             TextWrapping="Wrap"
@@ -58,7 +58,7 @@
                 CornerRadius="8"
                 Padding="24">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Diagnostics" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="Diagnostics" FontSize="16" FontWeight="SemiBold" />
                     <Border
                         Background="{ThemeResource LayerFillColorDefaultBrush}"
                         CornerRadius="6"
