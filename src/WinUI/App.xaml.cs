@@ -24,6 +24,8 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     public App()
     {
+        AppDataPaths.Initialize();
+
         AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
         {
             var exception = eventArgs.ExceptionObject as Exception

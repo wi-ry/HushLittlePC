@@ -32,10 +32,35 @@ Step away from your PC and Hush Little PC quietly mutes the sound. It runs in th
 
 The portable and Microsoft Store distributions include the required .NET and Windows App SDK runtimes. You do not need to install either runtime separately.
 
+For a portable installation, settings and logs are stored in a `Data` folder beside the executable when that location is writable. If it is not (for example, under `Program Files`), the app uses `%LocalAppData%\HushLittlePC` instead. Existing settings and logs are copied into the new location on first launch; the original files are left in place.
+
+
 ## Install
 
 - **Microsoft Store:** install [Hush Little PC from the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS). Updates are delivered by the Store.
 - **Portable:** download `HushLittlePC_<version>_x64-portable.exe` from the [Releases](../../releases) page.
+
+- **WinGet:** once the community package listing has been accepted, install with `winget install --id WillRyan.HushLittlePC --exact`. The initial listing is a one-time manual submission; subsequent releases can update it automatically (see below).
+
+### WinGet distribution
+
+Hush Little PC is distributed as a self-contained portable x64 executable. The WinGet manifest should use the `portable` installer type; it does not install the Microsoft Store MSIX package.
+
+To submit the initial package:
+
+1. Install [WinGet Create](https://github.com/microsoft/winget-create): `winget install wingetcreate`.
+2. Run `wingetcreate new` with the URL of the current versioned portable executable from the [Releases](../../releases) page. For example:
+
+   ```powershell
+   wingetcreate new "https://github.com/wi-ry/HushLittlePC/releases/download/v1.5.0/HushLittlePC_1.5.0_x64-portable.exe"
+   ```
+
+3. In the prompts, use package identifier `WillRyan.HushLittlePC`, publisher `Will Ryan`, package name `Hush Little PC`, and the MIT license. Confirm the generated installer uses `InstallerType: portable`, review the manifest details, and submit the pull request to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs).
+4. After the listing is accepted and available in the WinGet community source, add the repository secret `WINGET_CREATE_GITHUB_TOKEN` under **Settings > Secrets and variables > Actions**. Use a GitHub token with the `repo` permission as described in the [WinGet Create token guidance](https://github.com/microsoft/winget-create/blob/main/doc/token.md).
+
+The release workflow then downloads the standalone WinGet Create CLI and runs `wingetcreate update` after uploading each portable release. It submits a manifest-update PR to `microsoft/winget-pkgs`. The token is supplied through the `WINGET_CREATE_GITHUB_TOKEN` environment variable rather than a command-line argument. If the secret is absent, this optional step is skipped and the existing release process continues unchanged.
+
+WinGet Create is a manifest-authoring and submission tool; it is not included in Hush Little PC and is not a runtime dependency.
 
 ## Build
 
@@ -110,7 +135,7 @@ Closing the settings window keeps Hush Little PC running in the notification are
 | Run at startup | Off | Starts Hush Little PC when you sign in. Portable build: uses the per-user Run key. Store build: uses the package StartupTask (manage it under **Settings > Apps > Startup**). |
 | Open settings on startup | Off | Opens the settings window each time the app starts. When off, the app starts in the notification area; the window still opens on the first run. |
 
-Settings are saved automatically as you change them to `%AppData%\HushLittlePC\settings.json`. For the Store version, Windows redirects this folder to the package's private storage and removes it when you uninstall.
+Settings are saved automatically as you change them to `Data\settings.json` beside the portable executable. If that location is not writable, settings are saved to `%LocalAppData%\HushLittlePC\settings.json`. The Store version uses its package-managed app-data location, which Windows removes when you uninstall.
 
 ## How it works
 
@@ -139,7 +164,7 @@ Settings are saved automatically as you change them to `%AppData%\HushLittlePC\s
 
 ## Diagnostics
 
-Hush Little PC writes two best-effort logs to `%LocalAppData%\HushLittlePC\`. Logging never prevents the app from running.
+Hush Little PC writes two best-effort logs to the same `Data` folder as its settings (or to `%LocalAppData%\HushLittlePC\` when the executable directory is not writable). Logging never prevents the app from running.
 
 - `winui-app.log`: app startup steps and any startup or unhandled WinUI exceptions. Check this first if the app closes or fails to open.
 - `app.log`: errors from settings, audio, and Windows services.
@@ -162,7 +187,7 @@ The About page shows the app/runtime version and can copy basic environment diag
 
 1. Turn off **Run at startup** in Settings.
 2. Right-click the tray icon and choose **Exit**.
-3. Delete the portable executable and, if desired, the `%AppData%\HushLittlePC` (settings) and `%LocalAppData%\HushLittlePC` (logs) folders.
+3. Delete the portable executable and, if desired, its adjacent `Data` folder (settings and logs). If the app used the fallback location, delete `%LocalAppData%\HushLittlePC` instead.
 
 For the Store version, uninstall it from **Settings > Apps > Installed apps**.
 

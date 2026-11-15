@@ -168,3 +168,36 @@ jobs:
           # 4. Commit and wait
           Invoke-Store submission publish $env:STORE_ID
           Invoke-Store submission poll $env:STORE_ID
+
+      - name: Check WinGet submission configuration
+        id: winget-config
+        shell: pwsh
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            Write-Host 'WINGET_CREATE_GITHUB_TOKEN is not configured; WinGet submission is disabled.'
+            'enabled=false' >> $env:GITHUB_OUTPUT
+          } else {
+            'enabled=true' >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Setup WinGet Create runtime
+        if: steps.winget-config.outputs.enabled == 'true'
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Update WinGet manifest
+        if: steps.winget-config.outputs.enabled == 'true'
+        shell: pwsh
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $toolPath = Join-Path $env:RUNNER_TEMP 'wingetcreate.exe'
+          Invoke-WebRequest 'https://aka.ms/wingetcreate/latest' -OutFile $toolPath
+
+          $installerUrl = "https://github.com/${{ github.repository }}/releases/download/${{ needs.release.outputs.tag }}/HushLittlePC_${{ needs.release.outputs.version }}_x64-portable.exe"
+          & $toolPath update WillRyan.HushLittlePC --urls $installerUrl --version "${{ needs.release.outputs.version }}" --submit --no-open
+          if ($LASTEXITCODE -ne 0) { throw "wingetcreate update failed (exit code $LASTEXITCODE)" }

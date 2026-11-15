@@ -4,10 +4,7 @@ namespace HushLittlePC.WinUI;
 internal static class AppLog
 {
     private static readonly object Sync = new();
-    private static readonly string LogPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "HushLittlePC",
-        "winui-app.log");
+    private static string LogPath => AppDataPaths.WinUiLogFilePath;
 
     public static void Info(string message) => Write("INFO", message, null);
 
