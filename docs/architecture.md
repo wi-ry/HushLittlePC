@@ -20,9 +20,9 @@ A launch from a notification button (`-ToastActivated`) never opens the window. 
 
 ## Build and release
 
-The solution is `HushLittlePC.sln`. CI restores, formats, builds, and tests the complete solution, then publishes and smoke-tests the WinUI portable executable under both its build name and its release file name. It also assembles a test MSIX package.
+The solution is `HushLittlePC.sln`. CI restores, formats, builds, and tests the complete solution, then publishes and smoke-tests the WinUI standalone executable under both its build name and its release file name. It also assembles a test MSIX package.
 
-The release workflow publishes the WinUI 3 self-contained portable executable, renames it to `HushLittlePC_<version>_x64-portable.exe`, and builds the MSIX package for Microsoft Store submission.
+The release workflow publishes the WinUI 3 self-contained standalone executable, renames it to `HushLittlePC_<version>_x64.exe`, and builds the MSIX package for Microsoft Store submission.
 
 ## Compatibility decisions
 
