@@ -22,7 +22,8 @@ Use this workflow for behavior that the hardware-independent MSTest suite cannot
 | --- | --- |
 | Audio | Default output available/unavailable; manually muted/app-muted; default device changes |
 | Toasts | Notification enabled/disabled; Unmute action reaches the intended device |
+| Launch window | First run opens the window once; later launches stay in the tray unless "Open settings on startup" is on |
 | Startup | Portable Run key and packaged StartupTask enable/disable behavior |
 | Tray | Left-click toggle; right-click menu; light/dark theme rendering |
 | Process | Second launch is handled; exit cleans up tray and device notifications |
-| Packaging | Install, launch, upgrade, and uninstall the MSIX; launch the portable build |
+| Packaging | Install, launch, upgrade, and uninstall the MSIX; launch the portable build under its release file name |

@@ -104,6 +104,18 @@
                     Tag="RunOnStartup"
                     Toggled="Setting_Toggled" />
             </toolkit:SettingsCard>
+            <toolkit:SettingsCard
+                Description="Show this window each time Hush Little PC starts. When off, it starts in the notification area."
+                Header="Open settings on startup">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE737;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch
+                    x:Name="ShowSettingsOnStartupToggle"
+                    AutomationProperties.Name="Open settings on startup"
+                    Tag="ShowSettingsOnStartup"
+                    Toggled="Setting_Toggled" />
+            </toolkit:SettingsCard>
         </StackPanel>
     </ScrollViewer>
 </Page>

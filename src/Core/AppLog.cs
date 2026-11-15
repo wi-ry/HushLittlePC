@@ -8,8 +8,6 @@ static class AppLog
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "HushLittlePC", "app.log");
 
-    const long MaxFileSize = 512 * 1024;
-
     public static void Error(string message, Exception exception)
     {
         Write($"ERROR {message}{Environment.NewLine}{exception}");
@@ -21,13 +19,7 @@ static class AppLog
         {
             lock (Sync)
             {
-                var directory = Path.GetDirectoryName(FilePath)!;
-                Directory.CreateDirectory(directory);
-
-                if (File.Exists(FilePath) && new FileInfo(FilePath).Length >= MaxFileSize)
-                    File.Delete(FilePath);
-
-                File.AppendAllText(
+                CappedLogFile.Append(
                     FilePath,
                     $"[{DateTimeOffset.UtcNow:O}] {message}{Environment.NewLine}{Environment.NewLine}");
             }

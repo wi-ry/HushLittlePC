@@ -1,6 +1,6 @@
 # Windows integration testing
 
-The MSTest suite covers idle/mute policy, settings serialization, and settings file persistence through the shared `HushLittlePC.Core` project. Persistence tests use isolated temporary directories and exercise directory creation, saving, overwriting, reloading, missing-file defaults, and malformed-file recovery.
+The MSTest suite covers idle/mute policy, the idle-timeout slider scale, the launch-window policy (first run, "Open settings on startup", notification launches), settings serialization, and settings file persistence through the shared `HushLittlePC.Core` project. Persistence tests use isolated temporary directories and exercise directory creation, saving, overwriting, reloading, missing-file defaults, first-run detection, and malformed-file recovery.
 
 CI builds the WinUI 3 application. It also publishes and launches the WinUI portable executable, checks single-instance enforcement and restart, and creates a test MSIX package. These are process and packaging checks; they do not emulate physical Windows audio endpoints or prove that every shell interaction works.
 
@@ -13,6 +13,7 @@ The `smoke-test` job runs on a Windows GitHub Actions runner and performs the fo
 1. Assemble a test MSIX package from the WinUI self-contained publish output.
 2. Publish the WinUI app as a self-contained single-file executable.
 3. Launch the WinUI executable and verify startup, single-instance enforcement, and restart.
+4. Repeat step 3 with a copy renamed to the release file name (`HushLittlePC_<version>_x64-portable.exe`). The app loads its compiled XAML from `resources.pri`; this check catches a resource file that only works under the original exe name.
 
 Successful or partially completed pull-request smoke-test runs upload a `winui-preview-<run-id>-<attempt>` artifact for 14 days. It contains the self-contained WinUI portable publish output under `artifacts/winui` and the unsigned test MSIX under `artifacts/msix-ci`. Use the portable executable for manual preview testing; the CI MSIX is unsigned and is intended for package validation, not direct installation.
 
@@ -32,6 +33,7 @@ The MSTest suite references the production `SettingsStore` in `HushLittlePC.Core
 - Saving creates the parent directory and writes settings that can be loaded again.
 - Saving over an existing settings file replaces the previous values.
 - Malformed JSON returns defaults and reports the parsing error through the supplied callback.
+- A first run is reported until settings have been saved once, and a settings file written before a setting existed loads that setting's default.
 
 These tests exercise the actual file I/O implementation without touching the user's real settings file or writing test errors to the user's application log.
 
@@ -53,12 +55,13 @@ Use a disposable Windows account or VM where practical. Record the Windows versi
 | Idle behavior | Threshold reached; activity resumes; audio-playing skip enabled/disabled | Use a short idle threshold in a test profile. |
 | Output changes | Change the default output; disconnect and reconnect a device | Verify the new default device is the one affected. |
 | Notifications | Notifications enabled/disabled; activate the Unmute action | Confirm the action unmutes the intended device. |
-| Startup | Enable and disable startup registration; verify sign-in launch stays in the tray without opening the settings window | Test portable Run-key and packaged StartupTask paths separately. |
+| First run and launch window | With no settings file, launch once (window opens) and again (tray only); turn on **Open settings on startup** and relaunch (window opens) | Back up and restore `%AppData%\HushLittlePC\settings.json` around the test. |
+| Startup | Enable and disable startup registration; verify sign-in launch stays in the tray unless **Open settings on startup** is on | Test portable Run-key and packaged StartupTask paths separately. |
 | Tray UI | Left-click toggle; right-click menu; close-to-tray; Exit | Check icon state, menu actions, and graceful shutdown. |
 | Window and Fluent UI | Mica, light/dark mode, compact navigation, minimum window size, 100%/150%/200% scaling | Verify the window remains usable and content is not clipped. |
 | Accessibility | Keyboard-only navigation, focus visibility, Narrator names/states, high-contrast mode | Native controls should expose useful labels and values. |
 | Process lifecycle | Launch a second instance; exit while monitoring is active | Confirm the second instance exits and resources are released. |
-| Packaging | Install, launch, upgrade, and uninstall MSIX; launch portable build | Verify settings and startup behavior for each package type. |
+| Packaging | Install, launch, upgrade, and uninstall MSIX; launch the portable build under its release file name | Verify settings and startup behavior for each package type, and that the window opens without a XAML error. |
 
 ## Test safety and reporting
 
@@ -71,4 +74,11 @@ Use a disposable Windows account or VM where practical. Record the Windows versi
 
 ## Diagnostic log
 
-The app writes best-effort error diagnostics to `%LocalAppData%\HushLittlePC\app.log`. The log is capped at approximately 512 KiB; when the limit is reached, the next write starts a fresh log. Logging failures are intentionally ignored so diagnostics cannot crash or block the tray app.
+The app writes two best-effort logs to `%LocalAppData%\HushLittlePC\`. Logging failures are intentionally ignored so diagnostics cannot crash or block the tray app.
+
+- `winui-app.log` records each startup step and any startup or unhandled WinUI exceptions, such as a `XamlParseException`. Check it first when the app exits or fails to open.
+- `app.log` records errors from settings, audio, and Windows services.
+
+Both logs are capped at 512 KiB by `CappedLogFile`. At the cap, the log is renamed to `<name>.old.log` (replacing any previous one) and a fresh log starts, so at most about 1 MiB is kept per log and the entries before a rollover are still available.
+
+For native fail-fast crashes (`0xC000027B`) that leave no useful log entry, see [Capturing WinUI crash dumps](winui-crash-dumps.md).
