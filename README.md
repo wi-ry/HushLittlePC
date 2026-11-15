@@ -63,7 +63,12 @@ Closing the settings window keeps Hush Little PC running in the notification are
 | Run at startup | Off | Starts Hush Little PC when you sign in. Portable build: uses the per-user Run key. Store build: uses the package StartupTask (manage it under **Settings > Apps > Startup**). |
 | Open settings on startup | Off | Opens the settings window each time the app starts. When off, the app starts in the notification area; the window still opens on the first run. |
 
-Settings are saved automatically as you change them to `%AppData%\HushLittlePC\settings.json`. For the Store version, Windows redirects this folder to the package's private storage and removes it when you uninstall.
+Settings are saved automatically as you change them, to `settings.json` in the app's data folder:
+
+- **Portable:** a `Data` folder next to the executable. If that location isn't writable (for example, under `Program Files`), it uses `%LocalAppData%\HushLittlePC` instead.
+- **Microsoft Store:** `%LocalAppData%\HushLittlePC`. Windows redirects this folder to the package's private storage and removes it when you uninstall.
+
+The first time this version runs, settings and logs from older versions (`%AppData%\HushLittlePC\settings.json` and `%LocalAppData%\HushLittlePC`) are copied into the data folder if it doesn't have them yet.
 
 ## Limitations
 
@@ -73,7 +78,7 @@ Settings are saved automatically as you change them to `%AppData%\HushLittlePC\s
 
 ## Troubleshooting
 
-Hush Little PC writes two best-effort logs to `%LocalAppData%\HushLittlePC\`. Logging never prevents the app from running.
+Hush Little PC writes two best-effort logs to its data folder (see [Settings](#settings)). Logging never prevents the app from running.
 
 - `winui-app.log`: app startup steps and any startup or unhandled exceptions. Check this first if the app closes or fails to open.
 - `app.log`: errors from settings, audio, and Windows services.
@@ -86,7 +91,7 @@ The About page shows the app/runtime version and can copy basic environment diag
 
 1. Turn off **Run at startup** in Settings.
 2. Right-click the tray icon and choose **Exit**.
-3. Delete the portable executable and, if desired, the `%AppData%\HushLittlePC` (settings) and `%LocalAppData%\HushLittlePC` (logs) folders.
+3. Delete the portable executable and the `Data` folder next to it. If you also want to remove leftovers, delete `%LocalAppData%\HushLittlePC` (the notification icon, plus settings and logs if the app couldn't write next to the executable) and the `%AppData%\HushLittlePC` folder from older versions.
 
 For the Store version, uninstall it from **Settings > Apps > Installed apps**.
 
