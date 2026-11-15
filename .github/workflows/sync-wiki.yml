@@ -1,0 +1,57 @@
+name: Sync GitHub Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - README.md
+      - docs/**
+      - .github/scripts/sync-wiki.py
+      - .github/workflows/sync-wiki.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-github-wiki
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Generate wiki home page from README
+        run: python .github/scripts/sync-wiki.py
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Publish to GitHub Wiki
+        env:
+          WIKI_TOKEN: ${{ secrets.WIKI_TOKEN }}
+        run: |
+          if [ -z "$WIKI_TOKEN" ]; then
+            echo "::error::Add a WIKI_TOKEN secret with write access to this repository's wiki."
+            exit 1
+          fi
+
+          wiki_dir="$RUNNER_TEMP/wiki"
+          git clone "https://x-access-token:${WIKI_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" "$wiki_dir"
+          cp Home.md "$wiki_dir/Home.md"
+
+          cd "$wiki_dir"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- Home.md; then
+            echo "Wiki is already up to date."
+            exit 0
+          fi
+
+          git add Home.md
+          git commit -m "docs: sync wiki home from README"
+          git push
