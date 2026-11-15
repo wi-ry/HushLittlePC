@@ -7,51 +7,51 @@ namespace HushLittlePC.Tests;
 public class AppDataPathsTests
 {
     [TestMethod]
-    public void ResolveDataDirectory_UsesWritablePortableDirectoryAndMigratesExistingFiles()
+    public void ResolveDataDirectory_UsesLocalAppDataAndMigratesPreviousData()
     {
         using var directory = new TemporaryDirectory();
         var executablePath = Path.Combine(directory.Root, "HushLittlePC.exe");
         var roamingAppData = Path.Combine(directory.Root, "Roaming");
         var localAppData = Path.Combine(directory.Root, "Local");
+        var previousData = Path.Combine(directory.Root, "Data");
         var oldSettings = Path.Combine(roamingAppData, "HushLittlePC", "settings.json");
-        var oldCoreLog = Path.Combine(localAppData, "HushLittlePC", "app.log");
-        var oldWinUiLog = Path.Combine(localAppData, "HushLittlePC", "winui-app.log");
 
+        Directory.CreateDirectory(previousData);
         Directory.CreateDirectory(Path.GetDirectoryName(oldSettings)!);
-        Directory.CreateDirectory(Path.GetDirectoryName(oldCoreLog)!);
-        File.WriteAllText(oldSettings, """{"IdleMinutes":25}""");
-        File.WriteAllText(oldCoreLog, "core log");
-        File.WriteAllText(oldWinUiLog, "winui log");
+        File.WriteAllText(Path.Combine(previousData, "settings.json"), """{"IdleMinutes":25}""");
+        File.WriteAllText(Path.Combine(previousData, "app.log"), "previous core log");
+        File.WriteAllText(Path.Combine(previousData, "winui-app.log"), "previous WinUI log");
+        File.WriteAllText(oldSettings, """{"IdleMinutes":30}""");
 
         var result = AppDataPaths.ResolveDataDirectory(executablePath, roamingAppData, localAppData);
 
-        var expectedDirectory = Path.Combine(directory.Root, "Data");
+        var expectedDirectory = Path.Combine(localAppData, "HushLittlePC");
         Assert.AreEqual(expectedDirectory, result);
         Assert.AreEqual("""{"IdleMinutes":25}""", File.ReadAllText(Path.Combine(result, "settings.json")));
-        Assert.AreEqual("core log", File.ReadAllText(Path.Combine(result, "app.log")));
-        Assert.AreEqual("winui log", File.ReadAllText(Path.Combine(result, "winui-app.log")));
-        Assert.IsTrue(File.Exists(oldSettings), "Migration should preserve the original settings file.");
-        Assert.IsTrue(File.Exists(oldCoreLog), "Migration should preserve the original log file.");
+        Assert.AreEqual("previous core log", File.ReadAllText(Path.Combine(result, "app.log")));
+        Assert.AreEqual("previous WinUI log", File.ReadAllText(Path.Combine(result, "winui-app.log")));
+        Assert.IsTrue(File.Exists(Path.Combine(previousData, "settings.json")), "Migration should preserve the previous data.");
+        Assert.IsTrue(File.Exists(oldSettings), "Migration should preserve the original roaming settings file.");
     }
 
     [TestMethod]
-    public void ResolveDataDirectory_PreservesFilesAlreadyInPortableDirectory()
+    public void ResolveDataDirectory_PreservesFilesAlreadyInLocalAppData()
     {
         using var directory = new TemporaryDirectory();
         var executablePath = Path.Combine(directory.Root, "HushLittlePC.exe");
         var roamingAppData = Path.Combine(directory.Root, "Roaming");
         var localAppData = Path.Combine(directory.Root, "Local");
-        var portableSettings = Path.Combine(directory.Root, "Data", "settings.json");
-        Directory.CreateDirectory(Path.GetDirectoryName(portableSettings)!);
-        File.WriteAllText(portableSettings, "new settings");
+        var settingsPath = Path.Combine(localAppData, "HushLittlePC", "settings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
+        File.WriteAllText(settingsPath, "current settings");
 
-        var oldSettings = Path.Combine(roamingAppData, "HushLittlePC", "settings.json");
-        Directory.CreateDirectory(Path.GetDirectoryName(oldSettings)!);
-        File.WriteAllText(oldSettings, "old settings");
+        var previousSettings = Path.Combine(directory.Root, "Data", "settings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(previousSettings)!);
+        File.WriteAllText(previousSettings, "previous settings");
 
         var result = AppDataPaths.ResolveDataDirectory(executablePath, roamingAppData, localAppData);
 
-        Assert.AreEqual("new settings", File.ReadAllText(Path.Combine(result, "settings.json")));
+        Assert.AreEqual("current settings", File.ReadAllText(Path.Combine(result, "settings.json")));
     }
 
     [TestMethod]
