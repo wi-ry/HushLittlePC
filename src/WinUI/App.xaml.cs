@@ -6,6 +6,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.UI.ViewManagement;
 using Microsoft.Windows.AppLifecycle;
 
 namespace HushLittlePC.WinUI;
@@ -20,6 +21,8 @@ public partial class App : Microsoft.UI.Xaml.Application
     private TaskbarIcon? _trayIcon;
     private MainWindow? _window;
     private bool _isExiting;
+    private DispatcherQueue? _dispatcherQueue;
+    private UISettings? _uiSettings;
 
     public App()
     {
@@ -49,6 +52,10 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread()
             ?? throw new InvalidOperationException("The WinUI dispatcher queue is unavailable.");
+        _dispatcherQueue = dispatcherQueue;
+        _uiSettings = new UISettings();
+        _uiSettings.ColorValuesChanged += OnColorValuesChanged;
+
         var audio = new AudioController();
 
         // Subscribe as early as possible: toast activation is delivered shortly after process launch.
@@ -157,26 +164,43 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private string GetTrayText()
     {
-        if (_settings is null || !_settings.Enabled)
+        if (_settings?.Enabled != true)
         {
-            return "Hush Little PC: OFF";
+            return "Hush Little PC — Disabled";
         }
 
-        return $"Hush Little PC: ON ({_settings.IdleMinutes} min)";
+        return $"Hush Little PC — Enabled ({_settings.IdleMinutes} min)";
     }
 
-    private static BitmapImage CreateTrayIcon()
+    private SvgImageSource CreateTrayIcon()
     {
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        var theme = IsLightTaskbarTheme() ? "light" : "dark";
+        var state = _settings?.Enabled == true ? "enabled" : "disabled";
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Tray", $"{theme}-{state}.svg");
         if (!File.Exists(iconPath))
         {
             throw new FileNotFoundException("The Hush Little PC tray icon asset was not found.", iconPath);
         }
 
-        return new BitmapImage
+        return new SvgImageSource
         {
-            UriSource = new Uri(iconPath, UriKind.Absolute)
+            UriSource = new Uri(iconPath, UriKind.Absolute),
+            RasterizePixelWidth = 32,
+            RasterizePixelHeight = 32
         };
+    }
+
+    private bool IsLightTaskbarTheme()
+    {
+        var background = _uiSettings?.GetColorValue(UIColorType.Background)
+            ?? Windows.UI.Color.FromArgb(255, 32, 32, 32);
+        var brightness = (0.2126 * background.R) + (0.7152 * background.G) + (0.0722 * background.B);
+        return brightness >= 128;
+    }
+
+    private void OnColorValuesChanged(UISettings sender, object args)
+    {
+        _dispatcherQueue?.TryEnqueue(() => RefreshTray());
     }
 
     private MenuFlyout CreateTrayMenu()
@@ -233,6 +257,12 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         _deviceWatcher?.Dispose();
         _deviceWatcher = null;
+
+        if (_uiSettings is not null)
+        {
+            _uiSettings.ColorValuesChanged -= OnColorValuesChanged;
+            _uiSettings = null;
+        }
 
         Notifier.ClearAll();
 
