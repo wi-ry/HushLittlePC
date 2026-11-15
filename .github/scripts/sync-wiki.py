@@ -2,11 +2,12 @@
 """Generate a GitHub Wiki Home.md from the repository README."""
 
 from pathlib import Path
-import re
 import os
+import re
 
 repository = os.environ["GITHUB_REPOSITORY"]
 readme = Path("README.md").read_text(encoding="utf-8")
+
 
 def rewrite_link(match: re.Match[str]) -> str:
     prefix, target, suffix = match.groups()
@@ -27,7 +28,7 @@ def rewrite_link(match: re.Match[str]) -> str:
 
     return f"{prefix}{destination}{encoded_fragment}{suffix}"
 
-# Rewrite relative Markdown links and image sources so they work from the
-# separate wiki repository, whose files do not share the source repo's paths.
-readme = re.sub(r"(!?\\[[^\\]]*\\]\\()([^)]+)(\\))", rewrite_link, readme)
-Path("Home.md").write_text(readme.rstrip() + "\\n", encoding="utf-8")
+
+# Rewrite relative Markdown links so they work from the separate wiki repository.
+readme = re.sub(r"(!?\[[^\]]*\]\()([^)]+)(\))", rewrite_link, readme)
+Path("Home.md").write_text(readme.rstrip() + "\n", encoding="utf-8")
