@@ -37,6 +37,28 @@ The portable and Microsoft Store distributions include the required .NET and Win
 - **Microsoft Store:** install [Hush Little PC from the Microsoft Store](https://apps.microsoft.com/store/detail/9PDNXTB6MG9L?cid=DevShareMCLPCS). Updates are delivered by the Store.
 - **Portable:** download `HushLittlePC_<version>_x64-portable.exe` from the [Releases](../../releases) page.
 
+- **WinGet:** once the community package listing has been accepted, install with `winget install --id WillRyan.HushLittlePC --exact`. The initial listing is a one-time manual submission; subsequent releases can update it automatically (see below).
+
+### WinGet distribution
+
+Hush Little PC is distributed as a self-contained portable x64 executable. The WinGet manifest should use the `portable` installer type; it does not install the Microsoft Store MSIX package.
+
+To submit the initial package:
+
+1. Install [WinGet Create](https://github.com/microsoft/winget-create): `winget install wingetcreate`.
+2. Run `wingetcreate new` with the URL of the current versioned portable executable from the [Releases](../../releases) page. For example:
+
+   ```powershell
+   wingetcreate new "https://github.com/wi-ry/HushLittlePC/releases/download/v1.5.0/HushLittlePC_1.5.0_x64-portable.exe"
+   ```
+
+3. In the prompts, use package identifier `WillRyan.HushLittlePC`, publisher `Will Ryan`, package name `Hush Little PC`, and the MIT license. Confirm the generated installer uses `InstallerType: portable`, review the manifest details, and submit the pull request to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs).
+4. After the listing is accepted and available in the WinGet community source, add the repository secret `WINGET_CREATE_GITHUB_TOKEN` under **Settings > Secrets and variables > Actions**. Use a GitHub token with the `repo` permission as described in the [WinGet Create token guidance](https://github.com/microsoft/winget-create/blob/main/doc/token.md).
+
+The release workflow then downloads the standalone WinGet Create CLI and runs `wingetcreate update` after uploading each portable release. It submits a manifest-update PR to `microsoft/winget-pkgs`. The token is supplied through the `WINGET_CREATE_GITHUB_TOKEN` environment variable rather than a command-line argument. If the secret is absent, this optional step is skipped and the existing release process continues unchanged.
+
+WinGet Create is a manifest-authoring and submission tool; it is not included in Hush Little PC and is not a runtime dependency.
+
 ## Build
 
 Install the [.NET 10 SDK](https://dotnet.microsoft.com/download).
