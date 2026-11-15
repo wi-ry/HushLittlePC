@@ -11,8 +11,8 @@
         IsTabStop="True"
         VerticalAlignment="Stretch">
         <StackPanel
-            Spacing="20"
-            Padding="32,28,32,40"
+            Spacing="16"
+            Padding="28,24,28,32"
             HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold" />
@@ -23,20 +23,20 @@
                     TextWrapping="Wrap" />
             </StackPanel>
 
-            <TextBlock Text="Idle behaviour" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="Idle behaviour" FontSize="14" FontWeight="SemiBold" />
             <Border
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="8"
-                Padding="24">
+                Padding="16">
                 <StackPanel Spacing="16">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Mute after inactivity" FontSize="16" />
                             <TextBlock
                                 Text="Minutes without keyboard or mouse activity."
-                                FontSize="14"
+                                FontSize="12"
                                 Opacity="0.72"
                                 TextWrapping="Wrap" />
                         </StackPanel>
@@ -70,19 +70,19 @@
                 </StackPanel>
             </Border>
 
-            <TextBlock Text="Behaviour" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="Behaviour" FontSize="16" FontWeight="SemiBold" />
             <Border
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="8">
                 <StackPanel Spacing="0">
-                    <Grid Padding="24,18" ColumnDefinitions="*,Auto" ColumnSpacing="24" MinHeight="88">
+                    <Grid Padding="16,16" ColumnDefinitions="*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Enable Hush Little PC" FontSize="16" />
-                            <TextBlock Text="Allow automatic muting while you are away." FontSize="14" Opacity="0.72" TextWrapping="Wrap" />
+                            <TextBlock Text="Allow automatic muting while you are away." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
                         </StackPanel>
-                        <ToggleSwitch AutomationProperties.Name="Enable Hush Little PC" AutomationProperties.HelpText="Allow automatic muting while you are away." x:Name="EnabledToggle" Grid.Column="1" Tag="Enabled" Toggled="Setting_Toggled" />
+                        <ToggleSwitch AutomationProperties.Name="Enable Hush Little PC" AutomationProperties.HelpText="Allow automatic muting while you are away." x:Name="EnabledToggle" Grid.Column="1" HorizontalAlignment="Right" Tag="Enabled" Toggled="Setting_Toggled" />
                     </Grid>
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="24,0" />
                     <Grid Padding="24,18" ColumnDefinitions="*,Auto" ColumnSpacing="24" MinHeight="88">
@@ -111,7 +111,7 @@
                 </StackPanel>
             </Border>
 
-            <TextBlock Text="General" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="General" FontSize="16" FontWeight="SemiBold" />
             <Border
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
