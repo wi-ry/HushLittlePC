@@ -90,7 +90,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path artifacts/winui-renamed | Out-Null
           Copy-Item artifacts/winui/HushLittlePC.WinUI.exe artifacts/winui-renamed/HushLittlePC_0.0.0_x64.exe
-          ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/winui-renamed/HushLittlePC_0.0.0_x64-portable.exe
+          ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/winui-renamed/HushLittlePC_0.0.0_x64.exe
 
       - name: Upload WinUI preview artifacts
         if: always()
