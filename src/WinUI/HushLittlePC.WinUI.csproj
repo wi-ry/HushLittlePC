@@ -13,6 +13,14 @@
     <ApplicationIcon>..\..\packaging\app.ico</ApplicationIcon>
     <Product>Hush Little PC</Product>
     <AssemblyTitle>Hush Little PC</AssemblyTitle>
+    <!--
+      Compiled XAML lives in the app's PRI file. Unpackaged apps look for "<exe name>.pri" and fall
+      back to "resources.pri"; packaged apps always use "resources.pri". The release renames the
+      portable exe (HushLittlePC_<version>_x64-portable.exe), so a PRI named after the assembly is
+      not found and MainWindow fails with XamlParseException. resources.pri works for every exe
+      name and for MSIX.
+    -->
+    <ProjectPriFileName>resources.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
