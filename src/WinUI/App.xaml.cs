@@ -1,4 +1,5 @@
 using System.Threading;
+using AppLog = HushLittlePC.AppLog;
 using System.Windows.Input;
 using H.NotifyIcon;
 using H.NotifyIcon.Core;
@@ -14,6 +15,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     private DispatcherQueueTimer? _timer;
     private Settings? _settings;
     private AudioController? _audio;
+    private IdleMonitor? _idleMonitor;
     private DeviceWatcher? _deviceWatcher;
     private TaskbarIcon? _trayIcon;
     private MainWindow? _window;
@@ -98,6 +100,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             SettingsStore.Save(settings);
         }
         var idleMonitor = new IdleMonitor(settings, audio);
+        _idleMonitor = idleMonitor;
         var deviceWatcher = new DeviceWatcher();
         var timer = dispatcherQueue.CreateTimer();
 
@@ -320,7 +323,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         menu.Items.Add(new MenuFlyoutItem
         {
             Text = "Mute now",
-            Command = new RelayCommand(() => _audio?.SetMute(true))
+            Command = new RelayCommand(() => _idleMonitor?.MuteNow())
         });
         menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(new MenuFlyoutItem
@@ -374,6 +377,7 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         _audio?.Dispose();
         _audio = null;
+        _idleMonitor = null;
 
         _instanceMutex?.Dispose();
         _instanceMutex = null;
