@@ -22,14 +22,14 @@
                 </toolkit:SettingsCard.HeaderIcon>
                 <NumberBox
                     x:Name="IdleMinutesNumberBox"
-                    MinWidth="120"
+                    MinWidth="150"
                     AutomationProperties.HelpText="The number of minutes without keyboard or mouse activity before audio is muted."
                     AutomationProperties.Name="Mute after inactivity, in minutes"
                     LargeChange="5"
                     Maximum="1440"
                     Minimum="1"
                     SmallChange="1"
-                    SpinButtonPlacementMode="Compact"
+                    SpinButtonPlacementMode="Inline"
                     ValueChanged="IdleMinutesNumberBox_ValueChanged" />
             </toolkit:SettingsCard>
 
