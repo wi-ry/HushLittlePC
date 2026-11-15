@@ -71,7 +71,7 @@ jobs:
         shell: pwsh
         run: .github/scripts/package-msix.ps1 -Version "0.0.0" -Project "src/WinUI/HushLittlePC.WinUI.csproj" -OutputDir "artifacts/msix-ci"
 
-      - name: Publish WinUI portable executable
+      - name: Publish WinUI standalone executable
         shell: pwsh
         run: |
           dotnet publish src/WinUI/HushLittlePC.WinUI.csproj -c Release -r win-x64 --self-contained true `
@@ -83,13 +83,13 @@ jobs:
         shell: pwsh
         run: ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/winui/HushLittlePC.WinUI.exe
 
-      # The release renames the exe (HushLittlePC_<version>_x64-portable.exe). XAML resources must
+      # The release renames the exe (HushLittlePC_<version>_x64.exe). XAML resources must
       # still load under that name, so test a copy named the way the release names it.
       - name: Test WinUI startup under the release file name
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts/winui-renamed | Out-Null
-          Copy-Item artifacts/winui/HushLittlePC.WinUI.exe artifacts/winui-renamed/HushLittlePC_0.0.0_x64-portable.exe
+          Copy-Item artifacts/winui/HushLittlePC.WinUI.exe artifacts/winui-renamed/HushLittlePC_0.0.0_x64.exe
           ./tests/Integration/SmokeTest.ps1 -ExecutablePath artifacts/winui-renamed/HushLittlePC_0.0.0_x64-portable.exe
 
       - name: Upload WinUI preview artifacts
