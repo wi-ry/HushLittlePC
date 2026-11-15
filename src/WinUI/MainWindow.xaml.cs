@@ -4,6 +4,8 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics;
 using WinRT.Interop;
 
@@ -26,6 +28,11 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         Title = "Hush Little PC";
 
+        // Draw the Fluent title bar ourselves so the Mica backdrop and the pane toggle
+        // extend into the caption area, as in Windows Settings and the WinUI Gallery.
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
+
         // Mica is supported on Windows 11. Keep the default window background on Windows 10.
         if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
         {
@@ -41,6 +48,7 @@ public sealed partial class MainWindow : Window
         if (File.Exists(iconPath))
         {
             _appWindow.SetIcon(iconPath);
+            AppTitleBarIcon.ImageSource = new BitmapImage(new Uri(iconPath, UriKind.Absolute));
         }
 
         var dpi = GetDpiForWindow(windowHandle);
@@ -53,14 +61,14 @@ public sealed partial class MainWindow : Window
 
         if (_appWindow.Presenter is OverlappedPresenter presenter)
         {
-            presenter.PreferredMinimumWidth = 720;
-            presenter.PreferredMinimumHeight = 600;
+            // AppWindow sizes are in physical pixels.
+            presenter.PreferredMinimumWidth = (int)Math.Round(500 * scale);
+            presenter.PreferredMinimumHeight = (int)Math.Round(500 * scale);
         }
 
         _appWindow.Closing += AppWindow_Closing;
 
-        Navigation.SelectedItem = Navigation.MenuItems[0];
-        ContentFrame.Content = new SettingsPage(_settings, _settingsChanged);
+        ShowSettingsPage();
     }
 
     [DllImport("user32.dll")]
@@ -75,12 +83,41 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        ContentFrame.Content = item.Tag?.ToString() switch
+        var (pageType, parameter) = item.Tag?.ToString() switch
         {
-            "settings" => new SettingsPage(_settings, _settingsChanged),
-            "about" => new AboutPage(),
-            _ => ContentFrame.Content
+            "settings" => (typeof(SettingsPage), (object?)new SettingsPageContext(_settings, _settingsChanged)),
+            "about" => (typeof(AboutPage), null),
+            _ => (null, null)
         };
+
+        if (pageType is null || ContentFrame.CurrentSourcePageType == pageType)
+        {
+            return;
+        }
+
+        ContentFrame.Navigate(pageType, parameter, args.RecommendedNavigationTransitionInfo);
+        ContentFrame.BackStack.Clear();
+    }
+
+    private void AppTitleBar_PaneToggleRequested(TitleBar sender, object args) =>
+        Navigation.IsPaneOpen = !Navigation.IsPaneOpen;
+
+    private void ShowSettingsPage()
+    {
+        // Selecting the item navigates through Navigation_SelectionChanged.
+        Navigation.SelectedItem = Navigation.MenuItems[0];
+        if (ContentFrame.Content is SettingsPage page)
+        {
+            page.LoadFromSettings();
+        }
+        else
+        {
+            ContentFrame.Navigate(
+                typeof(SettingsPage),
+                new SettingsPageContext(_settings, _settingsChanged),
+                new SuppressNavigationTransitionInfo());
+            ContentFrame.BackStack.Clear();
+        }
     }
 
     private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
@@ -96,18 +133,14 @@ public sealed partial class MainWindow : Window
 
     public void RefreshSettings()
     {
-        if (ContentFrame.Content is SettingsPage)
-        {
-            ContentFrame.Content = new SettingsPage(_settings, _settingsChanged);
-        }
+        (ContentFrame.Content as SettingsPage)?.LoadFromSettings();
     }
 
     public void ShowFromTray()
     {
-        // The tray menu can change Enabled while this window is hidden. Recreate the
-        // settings page so its controls reflect the current shared settings instance.
-        Navigation.SelectedItem = Navigation.MenuItems[0];
-        ContentFrame.Content = new SettingsPage(_settings, _settingsChanged);
+        // The tray menu can change Enabled while this window is hidden, so reload the
+        // settings page from the shared settings instance before showing it.
+        ShowSettingsPage();
 
         _appWindow.Show();
         Activate();

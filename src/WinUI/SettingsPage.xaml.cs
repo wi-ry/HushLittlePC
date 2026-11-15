@@ -1,51 +1,67 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace HushLittlePC.WinUI;
 
+/// <summary>State handed to <see cref="SettingsPage"/> through <see cref="Frame.Navigate(Type, object)"/>.</summary>
+public sealed record SettingsPageContext(Settings Settings, Action SettingsChanged);
+
 public sealed partial class SettingsPage : Page
 {
-    readonly Settings _settings;
-    readonly Action _settingsChanged;
-    bool _initializing = true;
+    private SettingsPageContext? _context;
+    private bool _loading;
 
-    public SettingsPage(Settings settings, Action settingsChanged)
+    public SettingsPage()
     {
-        _settings = settings;
-        _settingsChanged = settingsChanged;
-
         InitializeComponent();
-
-        IdleMinutesNumberBox.Value = _settings.IdleMinutes;
-        IdleMinutesSlider.Value = _settings.IdleMinutes;
-        EnabledToggle.IsOn = _settings.Enabled;
-        UnmuteOnActivityToggle.IsOn = _settings.UnmuteOnActivity;
-        SkipWhileAudioPlayingToggle.IsOn = _settings.SkipWhileAudioPlaying;
-        MuteOnDeviceChangeToggle.IsOn = _settings.MuteOnDeviceChange;
-        ShowNotificationToggle.IsOn = _settings.ShowNotification;
-        RunOnStartupToggle.IsOn = _settings.RunOnStartup;
-
-        _initializing = false;
     }
 
-    private void IdleMinutesSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs args)
+    protected override void OnNavigatedTo(NavigationEventArgs args)
     {
-        if (_initializing)
+        base.OnNavigatedTo(args);
+        _context = args.Parameter as SettingsPageContext
+            ?? throw new ArgumentException("SettingsPage requires a SettingsPageContext.", nameof(args));
+        LoadFromSettings();
+    }
+
+    /// <summary>Re-reads the shared settings, e.g. after the tray menu toggles Enabled.</summary>
+    public void LoadFromSettings()
+    {
+        if (_context is null)
         {
             return;
         }
 
-        var minutes = (int)Math.Round(args.NewValue);
-        _settings.IdleMinutes = minutes;
-        IdleMinutesNumberBox.Value = minutes;
-        SaveSettings();
+        var settings = _context.Settings;
+        _loading = true;
+        try
+        {
+            IdleMinutesNumberBox.Value = settings.IdleMinutes;
+            EnabledToggle.IsOn = settings.Enabled;
+            UnmuteOnActivityToggle.IsOn = settings.UnmuteOnActivity;
+            SkipWhileAudioPlayingToggle.IsOn = settings.SkipWhileAudioPlaying;
+            MuteOnDeviceChangeToggle.IsOn = settings.MuteOnDeviceChange;
+            ShowNotificationToggle.IsOn = settings.ShowNotification;
+            RunOnStartupToggle.IsOn = settings.RunOnStartup;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
-    private void IdleMinutesNumberBox_ValueChanged(object sender, NumberBoxValueChangedEventArgs args)
+    private void IdleMinutesNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
     {
-        if (_initializing || double.IsNaN(args.NewValue))
+        if (_loading || _context is null)
         {
+            return;
+        }
+
+        // Clearing the box yields NaN; restore the current value rather than saving nothing.
+        if (double.IsNaN(args.NewValue))
+        {
+            sender.Value = _context.Settings.IdleMinutes;
             return;
         }
 
@@ -54,37 +70,42 @@ public sealed partial class SettingsPage : Page
             Settings.MinIdleMinutes,
             Settings.MaxIdleMinutes);
 
-        _settings.IdleMinutes = minutes;
-        IdleMinutesSlider.Value = minutes;
+        if (minutes == _context.Settings.IdleMinutes)
+        {
+            return;
+        }
+
+        _context.Settings.IdleMinutes = minutes;
         SaveSettings();
     }
 
     private void Setting_Toggled(object sender, RoutedEventArgs args)
     {
-        if (_initializing || sender is not ToggleSwitch toggle)
+        if (_loading || _context is null || sender is not ToggleSwitch toggle)
         {
             return;
         }
 
+        var settings = _context.Settings;
         switch (toggle.Tag?.ToString())
         {
             case "Enabled":
-                _settings.Enabled = toggle.IsOn;
+                settings.Enabled = toggle.IsOn;
                 break;
             case "UnmuteOnActivity":
-                _settings.UnmuteOnActivity = toggle.IsOn;
+                settings.UnmuteOnActivity = toggle.IsOn;
                 break;
             case "SkipWhileAudioPlaying":
-                _settings.SkipWhileAudioPlaying = toggle.IsOn;
+                settings.SkipWhileAudioPlaying = toggle.IsOn;
                 break;
             case "MuteOnDeviceChange":
-                _settings.MuteOnDeviceChange = toggle.IsOn;
+                settings.MuteOnDeviceChange = toggle.IsOn;
                 break;
             case "ShowNotification":
-                _settings.ShowNotification = toggle.IsOn;
+                settings.ShowNotification = toggle.IsOn;
                 break;
             case "RunOnStartup":
-                _settings.RunOnStartup = toggle.IsOn;
+                settings.RunOnStartup = toggle.IsOn;
                 break;
             default:
                 return;
@@ -95,7 +116,12 @@ public sealed partial class SettingsPage : Page
 
     private void SaveSettings()
     {
-        SettingsStore.Save(_settings);
-        _settingsChanged();
+        if (_context is null)
+        {
+            return;
+        }
+
+        SettingsStore.Save(_context.Settings);
+        _context.SettingsChanged();
     }
 }
