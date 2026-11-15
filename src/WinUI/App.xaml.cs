@@ -103,13 +103,14 @@ public partial class App : Microsoft.UI.Xaml.Application
         _deviceWatcher = deviceWatcher;
 
         AppLog.Info("Creating notification-area icon.");
-        _trayController = new TrayController(
+        var trayController = new TrayController(
             settings,
             ToggleEnabled,
             () => _idleMonitor?.MuteNow(),
             ShowSettingsFromTray,
             () => ExitApplication(),
             GetTrayText);
+        _trayController = trayController;
 
         AppLog.Info("Starting idle monitor and device watcher.");
         idleMonitor.NotificationRequested += Notifier.Muted;
@@ -131,9 +132,9 @@ public partial class App : Microsoft.UI.Xaml.Application
                 isFirstRun,
                 settings.ShowSettingsOnStartup,
                 isNotificationActivation,
-                trayIconAvailable: _trayController.IsAvailable))
+                trayIconAvailable: trayController.IsAvailable))
         {
-            AppLog.Info($"Showing settings window (first run: {isFirstRun}, tray icon: {_trayController.IsAvailable}).");
+            AppLog.Info($"Showing settings window (first run: {isFirstRun}, tray icon: {trayController.IsAvailable}).");
             ShowSettingsFromTray();
         }
         else
