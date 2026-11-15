@@ -19,7 +19,6 @@ public static class AppDataPaths
 
     public static string SettingsFilePath => Path.Combine(DataDirectory, "settings.json");
     public static string CoreLogFilePath => Path.Combine(DataDirectory, "app.log");
-    public static string WinUiLogFilePath => Path.Combine(DataDirectory, "winui-app.log");
 
     /// <summary>Initializes storage before startup logging or settings access.</summary>
     public static void Initialize()
