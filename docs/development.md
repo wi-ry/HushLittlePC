@@ -10,7 +10,7 @@ This guide is for people who want to build, test, or contribute to Hush Little P
 - Output changes are detected through Windows Core Audio device notifications.
 - "Audio is playing" is detected from the device's master peak meter.
 - Notifications use the [Windows Community Toolkit notifications library](https://learn.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast).
-- Startup uses the per-user Run registry key for the portable executable and the manifest's StartupTask for the MSIX package.
+- Startup uses the per-user Run registry key for the standalone executable and the manifest's StartupTask for the MSIX package.
 - `AppDataPaths` picks the data directory for `settings.json` and the logs. Portable builds use a `Data` folder beside the executable when it is writable; otherwise (including the MSIX package) the app uses `%LocalAppData%\HushLittlePC`. On first run, existing settings from `%AppData%\HushLittlePC` and logs from `%LocalAppData%\HushLittlePC` are copied in if missing.
 - The settings window uses the Windows Community Toolkit `SettingsCard` controls, with Mica on Windows 11 only.
 - The tray icon and menu use H.NotifyIcon.WinUI and a WinUI MenuFlyout; audio and Windows integration remain in the shared Windows services.
@@ -57,7 +57,7 @@ dotnet run --project src/WinUI/HushLittlePC.WinUI.csproj
 
 In Visual Studio, set **HushLittlePC.WinUI** as the startup project.
 
-### Publish the portable executable
+### Publish the standalone executable
 
 Publish the self-contained WinUI portable executable:
 
@@ -93,7 +93,7 @@ pre-commit run --all-files
 ## Contributing
 
 - Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/) because the title becomes the commit message on `main` and drives versioning. The individual commits in a pull request are linted against the same rules.
-- CI verifies formatting, builds the full solution with warnings as errors, runs unit tests, smoke-tests the WinUI portable app (including under the release file name), and creates a test MSIX package.
+- CI verifies formatting, builds the full solution with warnings as errors, runs unit tests, smoke-tests the WinUI standalone app (including under the release file name), and creates a test MSIX package.
 - When CI succeeds on `main`, [semantic-release](https://semantic-release.gitbook.io/) creates the version tag and GitHub release, attaches the portable executable, and submits the MSIX package to the Microsoft Store. If the optional `WINGET_CREATE_GITHUB_TOKEN` secret is set, it also opens a WinGet manifest update for the new portable executable.
 - Store publishing requires repository variables `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER`, and `MSIX_PUBLISHER_DISPLAY_NAME`, plus secrets `TENANT_ID`, `SELLER_ID`, `CLIENT_ID`, `SECRET_VALUE`, and `STORE_ID`.
 - CodeQL analyzes the C# code on pull requests, pushes to `main`, and weekly. Dependabot proposes NuGet and GitHub Actions updates weekly.
@@ -105,4 +105,4 @@ When `README.md` or `docs/` changes on `main`, the sync-wiki workflow publishes 
 
 ## Diagnostics
 
-The app writes `winui-app.log` and `app.log` to its data directory (see [How it works](#how-it-works) and the [README](../README.md#troubleshooting)). When running from source, the data directory is a `Data` folder beside the built executable. Check `winui-app.log` first for startup problems.
+The app writes `winui-app.log` and `app.log` to its data directory (see [How it works](#how-it-works) and the [README](../README.md#troubleshooting)). When running from source, the data directory is `%LocalAppData%\HushLittlePC`. Check `winui-app.log` first for startup problems.
