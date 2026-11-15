@@ -32,7 +32,9 @@ Step away from your PC and Hush Little PC quietly mutes the sound. It runs in th
 
 The portable and Microsoft Store distributions include the required .NET and Windows App SDK runtimes. You do not need to install either runtime separately.
 
-For a portable installation, running the executable with `--uninstall` removes Hush Little PC's per-user Windows startup registration without deleting settings or logs. WinGet's `portable` uninstall currently does not invoke application-defined cleanup commands, so this flag cannot be wired into `winget uninstall` while the package remains a portable installer.
+For a portable installation, settings and logs are stored in a `Data` folder beside the executable when that location is writable. If it is not (for example, under `Program Files`), the app uses `%LocalAppData%\\HushLittlePC` instead. Existing settings and logs are copied into the new location on first launch; the original files are left in place.
+
+Running the executable with `--uninstall` removes Hush Little PC's per-user Windows startup registration without deleting settings or logs. WinGet's `portable` uninstall does not invoke application-defined cleanup commands, and its default `purgePortablePackage` setting is off, so the `Data` folder is normally retained when uninstalling through WinGet.
 
 ## Install
 
@@ -134,7 +136,7 @@ Closing the settings window keeps Hush Little PC running in the notification are
 | Run at startup | Off | Starts Hush Little PC when you sign in. Portable build: uses the per-user Run key. Store build: uses the package StartupTask (manage it under **Settings > Apps > Startup**). |
 | Open settings on startup | Off | Opens the settings window each time the app starts. When off, the app starts in the notification area; the window still opens on the first run. |
 
-Settings are saved automatically as you change them to `%AppData%\HushLittlePC\settings.json`. For the Store version, Windows redirects this folder to the package's private storage and removes it when you uninstall.
+Settings are saved automatically as you change them to `Data\\settings.json` beside the portable executable. If that location is not writable, settings are saved to `%LocalAppData%\\HushLittlePC\\settings.json`. The Store version uses its package-managed app-data location, which Windows removes when you uninstall.
 
 ## How it works
 
@@ -163,7 +165,7 @@ Settings are saved automatically as you change them to `%AppData%\HushLittlePC\s
 
 ## Diagnostics
 
-Hush Little PC writes two best-effort logs to `%LocalAppData%\HushLittlePC\`. Logging never prevents the app from running.
+Hush Little PC writes two best-effort logs to the same `Data` folder as its settings (or to `%LocalAppData%\\HushLittlePC\\` when the executable directory is not writable). Logging never prevents the app from running.
 
 - `winui-app.log`: app startup steps and any startup or unhandled WinUI exceptions. Check this first if the app closes or fails to open.
 - `app.log`: errors from settings, audio, and Windows services.
