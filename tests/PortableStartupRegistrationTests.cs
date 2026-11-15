@@ -36,6 +36,28 @@ public class PortableStartupRegistrationTests
     }
 
     [TestMethod]
+    public void Remove_DeletesOnlyTheHushLittlePcRegistration()
+    {
+        var subKeyPath = $@"Software\\HushLittlePC.Tests\\{Guid.NewGuid():N}";
+        try
+        {
+            using var runKey = Registry.CurrentUser.CreateSubKey(subKeyPath, writable: true);
+            Assert.IsNotNull(runKey);
+            runKey.SetValue("HushLittlePC", "old-value");
+            runKey.SetValue("AnotherApplication", "keep-me");
+
+            PortableStartupRegistration.Remove(runKey);
+
+            Assert.IsNull(runKey.GetValue("HushLittlePC"));
+            Assert.AreEqual("keep-me", runKey.GetValue("AnotherApplication"));
+        }
+        finally
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(subKeyPath, throwOnMissingSubKey: false);
+        }
+    }
+
+    [TestMethod]
     public void Set_WhenExecutablePathIsUnavailable_RemovesExistingRegistration()
     {
         var subKeyPath = $@"Software\HushLittlePC.Tests\{Guid.NewGuid():N}";
