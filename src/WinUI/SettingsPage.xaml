@@ -44,7 +44,7 @@
                         <NumberBox
                             x:Name="IdleMinutesNumberBox"
                             Grid.Column="2"
-                            Width="112"
+                            MinWidth="150"
                             Minimum="1"
                             Maximum="1440"
                             Value="10"
