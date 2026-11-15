@@ -29,7 +29,7 @@
   </Resources>
 
   <Applications>
-    <Application Id="HushLittlePC" Executable="HushLittlePC.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="HushLittlePC" Executable="HushLittlePC.WinUI.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="Hush Little PC"
         Description="Mutes your speakers after a period of inactivity."
@@ -38,17 +38,17 @@
         Square44x44Logo="Assets\Square44x44Logo.png" />
       <Extensions>
         <!-- Packaged apps can't use the HKCU Run key; this is the MSIX way to start with Windows. -->
-        <uap5:Extension Category="windows.startupTask" Executable="HushLittlePC.exe" EntryPoint="Windows.FullTrustApplication">
+        <uap5:Extension Category="windows.startupTask" Executable="HushLittlePC.WinUI.exe" EntryPoint="Windows.FullTrustApplication">
           <uap5:StartupTask TaskId="HushLittlePCStartup" Enabled="false" DisplayName="Hush Little PC" />
         </uap5:Extension>
 
-        <!-- Lets the Unmute button on notifications reach the app (Windows starts/targets HushLittlePC.exe) -->
+        <!-- Lets the Unmute button on notifications reach the app (Windows starts/targets HushLittlePC.WinUI.exe) -->
         <desktop:Extension Category="windows.toastNotificationActivation">
           <desktop:ToastNotificationActivation ToastActivatorCLSID="34B9CB82-69D0-4942-8044-7A0A1D5B37A3" />
         </desktop:Extension>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:ExeServer Executable="HushLittlePC.exe" Arguments="-ToastActivated" DisplayName="Hush Little PC toast activator">
+            <com:ExeServer Executable="HushLittlePC.WinUI.exe" Arguments="-ToastActivated" DisplayName="Hush Little PC toast activator">
               <com:Class Id="34B9CB82-69D0-4942-8044-7A0A1D5B37A3" DisplayName="Hush Little PC toast activator" />
             </com:ExeServer>
           </com:ComServer>

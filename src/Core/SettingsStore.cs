@@ -2,6 +2,7 @@ using System.Text.Json;
 
 namespace HushLittlePC;
 
+/// <summary>Loads and atomically saves the user's application settings.</summary>
 static class SettingsStore
 {
     static readonly string FilePath = Path.Combine(

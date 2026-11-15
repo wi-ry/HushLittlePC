@@ -26,7 +26,7 @@ class SettingsForm : Form
         AutoScaleMode = AutoScaleMode.Dpi;
         Font = new Font("Segoe UI", 9F);
         Text = "Hush Little PC Settings";
-        Icon = TrayApp.MakeIcon(true);
+        Icon = TrayIconFactory.MakeIcon(true);
         BackColor = SystemColors.Control;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = MinimizeBox = false;
