@@ -4,7 +4,7 @@ namespace HushLittlePC;
 
 /// <summary>
 /// Native Windows notifications (toasts) with an Unmute button.
-/// Works for the portable exe (the library registers the app automatically) and for the MSIX build
+/// Works for the standalone executable (the library registers the app automatically) and for the MSIX build
 /// (which declares the activator in AppxManifest.xml).
 /// </summary>
 static class Notifier
@@ -40,7 +40,7 @@ static class Notifier
     static Uri? _logoUri;
 
     /// <summary>
-    /// Packaged (Store) builds reference the logo inside the package. The portable exe has no package,
+    /// Packaged (Store) builds reference the logo inside the package. The standalone executable has no package,
     /// so the embedded PNG is copied to %LocalAppData% once and referenced by file path.
     /// </summary>
     static Uri? GetLogoUri()
@@ -54,7 +54,7 @@ static class Notifier
             using var src = typeof(Notifier).Assembly.GetManifestResourceStream("HushLittlePC.ToastIcon.png");
             if (src == null) return null;
 
-            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "HushLittlePC");
+            var dir = AppDataPaths.DataDirectory;
             Directory.CreateDirectory(dir);
             var path = Path.Combine(dir, "toast-icon.png");
             if (!File.Exists(path) || new FileInfo(path).Length != src.Length)
