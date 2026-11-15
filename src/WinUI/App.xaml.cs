@@ -5,7 +5,6 @@ using H.NotifyIcon.Core;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.AppLifecycle;
 
 namespace HushLittlePC.WinUI;
@@ -20,6 +19,9 @@ public partial class App : Microsoft.UI.Xaml.Application
     private TaskbarIcon? _trayIcon;
     private MainWindow? _window;
     private bool _isExiting;
+    private ToggleMenuFlyoutItem? _enabledMenuItem;
+
+    private const int TrayIconSize = 32;
 
     public App()
     {
@@ -102,7 +104,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         var trayIcon = new TaskbarIcon
         {
             ToolTipText = GetTrayText(),
-            IconSource = CreateTrayIcon(settings.Enabled),
+            Icon = CreateTrayIcon(settings.Enabled),
             LeftClickCommand = new RelayCommand(ToggleEnabled),
             NoLeftClickDelay = true,
             MenuActivation = PopupActivationMode.RightClick,
@@ -197,68 +199,75 @@ public partial class App : Microsoft.UI.Xaml.Application
         return $"Hush Little PC: ON ({_settings.IdleMinutes} min)";
     }
 
-    private static BitmapImage CreateTrayIcon(bool enabled)
+    // H.NotifyIcon hands a Win32 HICON to the shell. Passing a BitmapImage makes it decode the
+    // file with System.Drawing.Icon, which only accepts .ico data and fails fast on a PNG.
+    // Build a real Icon instead. TaskbarIcon takes ownership and disposes the previous Icon
+    // when it is replaced, so always hand it a new instance.
+    private static System.Drawing.Icon CreateTrayIcon(bool enabled)
     {
-        var appIconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        var appIcon = LoadAppIcon();
         if (enabled)
         {
-            return new BitmapImage
-            {
-                UriSource = new Uri(appIconPath, UriKind.Absolute)
-            };
+            return appIcon;
         }
-
-        var appVersion = typeof(App).Assembly.GetName().Version?.ToString() ?? "1";
-        var iconDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "HushLittlePC",
-            "TrayIcons",
-            appVersion);
-        var disabledIconPath = Path.Combine(iconDirectory, "speaker-disabled.png");
 
         try
         {
-            Directory.CreateDirectory(iconDirectory);
-            if (!File.Exists(disabledIconPath))
+            using (appIcon)
             {
-                using var sourceIcon = new System.Drawing.Icon(appIconPath, 48, 48);
-                using var sourceBitmap = sourceIcon.ToBitmap();
-                using var bitmap = new System.Drawing.Bitmap(
-                    sourceBitmap.Width,
-                    sourceBitmap.Height,
-                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                using var graphics = System.Drawing.Graphics.FromImage(bitmap);
-
-                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                graphics.DrawImage(sourceBitmap, 0, 0, sourceBitmap.Width, sourceBitmap.Height);
-
-                var lineWidth = Math.Max(3f, sourceBitmap.Width * 0.12f);
-                using var pen = new System.Drawing.Pen(System.Drawing.Color.Red, lineWidth)
-                {
-                    StartCap = System.Drawing.Drawing2D.LineCap.Round,
-                    EndCap = System.Drawing.Drawing2D.LineCap.Round
-                };
-                graphics.DrawLine(
-                    pen,
-                    sourceBitmap.Width * 0.16f,
-                    sourceBitmap.Height * 0.84f,
-                    sourceBitmap.Width * 0.84f,
-                    sourceBitmap.Height * 0.16f);
-
-                bitmap.Save(disabledIconPath, System.Drawing.Imaging.ImageFormat.Png);
+                return CreateDisabledIcon(appIcon);
             }
         }
         catch (Exception exception)
         {
-            AppLog.Error("Unable to create the disabled speaker tray icon. Falling back to the original speaker icon.", exception);
-            disabledIconPath = appIconPath;
+            AppLog.Error("Unable to create the disabled tray icon. Using the enabled icon.", exception);
+            return LoadAppIcon();
+        }
+    }
+
+    private static System.Drawing.Icon LoadAppIcon() =>
+        new(Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico"), TrayIconSize, TrayIconSize);
+
+    private static System.Drawing.Icon CreateDisabledIcon(System.Drawing.Icon source)
+    {
+        using var sourceBitmap = source.ToBitmap();
+        using var bitmap = new System.Drawing.Bitmap(
+            sourceBitmap.Width,
+            sourceBitmap.Height,
+            System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using (var graphics = System.Drawing.Graphics.FromImage(bitmap))
+        {
+            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            graphics.DrawImage(sourceBitmap, 0, 0, sourceBitmap.Width, sourceBitmap.Height);
+
+            var lineWidth = Math.Max(3f, sourceBitmap.Width * 0.12f);
+            using var pen = new System.Drawing.Pen(System.Drawing.Color.Red, lineWidth)
+            {
+                StartCap = System.Drawing.Drawing2D.LineCap.Round,
+                EndCap = System.Drawing.Drawing2D.LineCap.Round
+            };
+            graphics.DrawLine(
+                pen,
+                sourceBitmap.Width * 0.16f,
+                sourceBitmap.Height * 0.84f,
+                sourceBitmap.Width * 0.84f,
+                sourceBitmap.Height * 0.16f);
         }
 
-        return new BitmapImage
+        var handle = bitmap.GetHicon();
+        try
         {
-            UriSource = new Uri(disabledIconPath, UriKind.Absolute)
-        };
+            using var borrowed = System.Drawing.Icon.FromHandle(handle);
+            return (System.Drawing.Icon)borrowed.Clone();
+        }
+        finally
+        {
+            DestroyIcon(handle);
+        }
     }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool DestroyIcon(IntPtr handle);
 
     private void ShowSettingsFromTray()
     {
@@ -287,12 +296,13 @@ public partial class App : Microsoft.UI.Xaml.Application
     private MenuFlyout CreateTrayMenu()
     {
         var menu = new MenuFlyout();
-        menu.Items.Add(new ToggleMenuFlyoutItem
+        _enabledMenuItem = new ToggleMenuFlyoutItem
         {
             Text = "Enabled",
             IsChecked = _settings?.Enabled == true,
             Command = new RelayCommand(ToggleEnabled)
-        });
+        };
+        menu.Items.Add(_enabledMenuItem);
         menu.Items.Add(new MenuFlyoutItem
         {
             Text = "Mute now",
@@ -320,9 +330,12 @@ public partial class App : Microsoft.UI.Xaml.Application
             return;
         }
 
-        _trayIcon.IconSource = CreateTrayIcon(_settings.Enabled);
+        _trayIcon.Icon = CreateTrayIcon(_settings.Enabled);
         _trayIcon.ToolTipText = GetTrayText();
-        _trayIcon.ContextFlyout = CreateTrayMenu();
+        if (_enabledMenuItem is not null)
+        {
+            _enabledMenuItem.IsChecked = _settings.Enabled;
+        }
     }
 
     private void ExitApplication(bool closeWindow = true)
