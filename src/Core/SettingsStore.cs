@@ -5,9 +5,7 @@ namespace HushLittlePC;
 /// <summary>Loads and atomically saves the user's application settings.</summary>
 static class SettingsStore
 {
-    static readonly string FilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "HushLittlePC", "settings.json");
+    static string FilePath => AppDataPaths.SettingsFilePath;
 
     public static Settings Load() => Load(FilePath, AppLog.Error);
 
