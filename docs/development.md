@@ -11,7 +11,7 @@ This guide is for people who want to build, test, or contribute to Hush Little P
 - "Audio is playing" is detected from the device's master peak meter.
 - Notifications use the [Windows Community Toolkit notifications library](https://learn.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast).
 - Startup uses the per-user Run registry key for the standalone executable and the manifest's StartupTask for the MSIX package.
-- `AppDataPaths` picks the data directory for `settings.json` and the logs. Portable builds use a `Data` folder beside the executable when it is writable; otherwise (including the MSIX package) the app uses `%LocalAppData%\HushLittlePC`. On first run, existing settings from `%AppData%\HushLittlePC` and logs from `%LocalAppData%\HushLittlePC` are copied in if missing.
+- `AppDataPaths` picks the data directory for `settings.json` and the logs. Both the standalone executable and MSIX store `settings.json` and logs in `%LocalAppData%\HushLittlePC`. On first run after upgrading, files from the standalone build's former adjacent `Data` folder and legacy settings from `%AppData%\HushLittlePC` are copied in if missing; source files are preserved.
 - The settings window uses the Windows Community Toolkit `SettingsCard` controls, with Mica on Windows 11 only.
 - The tray icon and menu use H.NotifyIcon.WinUI and a WinUI MenuFlyout; audio and Windows integration remain in the shared Windows services.
 
@@ -59,7 +59,7 @@ In Visual Studio, set **HushLittlePC.WinUI** as the startup project.
 
 ### Publish the standalone executable
 
-Publish the self-contained WinUI portable executable:
+Publish the self-contained WinUI standalone executable:
 
 ```powershell
 dotnet publish src/WinUI/HushLittlePC.WinUI.csproj -c Release -r win-x64 --self-contained true `
@@ -67,7 +67,7 @@ dotnet publish src/WinUI/HushLittlePC.WinUI.csproj -c Release -r win-x64 --self-
   -p:IncludeAllContentForSelfExtract=true -p:PublishSingleFile=true
 ```
 
-The portable executable (`HushLittlePC.WinUI.exe`) is created under `src/WinUI/bin/Release/net10.0-windows10.0.19041.0/win-x64/publish/`. The release workflow renames it to `HushLittlePC_<version>_x64-portable.exe`.
+The standalone executable (`HushLittlePC.WinUI.exe`) is created under `src/WinUI/bin/Release/net10.0-windows10.0.19041.0/win-x64/publish/`. The release workflow renames it to `HushLittlePC_<version>_x64.exe`.
 
 The project sets `ProjectPriFileName` to `resources.pri` so the compiled XAML still loads after that rename, and `EnableMsixTooling=true` is required for the MSIX package to include it. See [WinUI 3 architecture](architecture.md#compatibility-decisions) before changing either.
 
@@ -94,7 +94,7 @@ pre-commit run --all-files
 
 - Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/) because the title becomes the commit message on `main` and drives versioning. The individual commits in a pull request are linted against the same rules.
 - CI verifies formatting, builds the full solution with warnings as errors, runs unit tests, smoke-tests the WinUI standalone app (including under the release file name), and creates a test MSIX package.
-- When CI succeeds on `main`, [semantic-release](https://semantic-release.gitbook.io/) creates the version tag and GitHub release, attaches the portable executable, and submits the MSIX package to the Microsoft Store. If the optional `WINGET_CREATE_GITHUB_TOKEN` secret is set, it also opens a WinGet manifest update for the new portable executable.
+- When CI succeeds on `main`, [semantic-release](https://semantic-release.gitbook.io/) creates the version tag and GitHub release, attaches the standalone executable, and submits the MSIX package to the Microsoft Store. If the optional `WINGET_CREATE_GITHUB_TOKEN` secret is set, it also opens a WinGet manifest update for the new standalone executable.
 - Store publishing requires repository variables `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER`, and `MSIX_PUBLISHER_DISPLAY_NAME`, plus secrets `TENANT_ID`, `SELLER_ID`, `CLIENT_ID`, `SECRET_VALUE`, and `STORE_ID`.
 - CodeQL analyzes the C# code on pull requests, pushes to `main`, and weekly. Dependabot proposes NuGet and GitHub Actions updates weekly.
 - See [Windows integration testing](windows-integration-testing.md) for automated coverage and the manual hardware/UI acceptance scenarios, and [WinUI 3 architecture](architecture.md) for launch behavior and compatibility decisions.
