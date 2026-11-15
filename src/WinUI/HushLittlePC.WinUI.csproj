@@ -12,6 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
+    <Content Include="Assets\Tray\*.svg" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\packaging\app.ico" Link="Assets\app.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
