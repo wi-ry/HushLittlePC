@@ -19,7 +19,19 @@ class AudioController : IDisposable
 
     public bool IsMuted
     {
-        get { using var d = GetDevice(); return d?.AudioEndpointVolume.Mute ?? false; }
+        get
+        {
+            try
+            {
+                using var device = GetDevice();
+                return device?.AudioEndpointVolume.Mute ?? false;
+            }
+            catch (Exception exception)
+            {
+                AppLog.Warning("Unable to read the default playback device mute state.", exception);
+                return false;
+            }
+        }
     }
 
     public void SetMute(bool mute)
