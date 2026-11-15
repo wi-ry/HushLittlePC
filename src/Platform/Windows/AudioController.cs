@@ -72,10 +72,10 @@ class AudioController : IDisposable
             return (d.FriendlyName, wasMuted);
         }
         catch (Exception exception)
-            {
-                AppLog.Warning("Unable to read playback device audio level.", exception);
-                return false;
-            }
+        {
+            AppLog.Warning($"Unable to mute playback device '{deviceId}'.", exception);
+            return null;
+        }
     }
 
     /// <summary>True if the device is currently outputting audible sound.</summary>
@@ -84,7 +84,11 @@ class AudioController : IDisposable
         get
         {
             try { using var d = GetDevice(); return (d?.AudioMeterInformation.MasterPeakValue ?? 0f) > 0.001f; }
-            catch { return false; }
+            catch (Exception exception)
+            {
+                AppLog.Warning("Unable to read playback device audio level.", exception);
+                return false;
+            }
         }
     }
 
