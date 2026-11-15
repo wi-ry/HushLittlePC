@@ -11,6 +11,7 @@
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
   <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
     <Content Include="..\..\packaging\app.ico" Link="Assets\app.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
