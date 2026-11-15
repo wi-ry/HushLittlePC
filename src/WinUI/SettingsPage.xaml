@@ -32,7 +32,7 @@
                 Padding="16">
                 <StackPanel Spacing="16">
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" HorizontalAlignment="Stretch">
-                        <FontIcon Grid.Column="0" Glyph="&#xE121;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" IsTextDecorative="True" />
+                        <FontIcon Grid.Column="0" Glyph="&#xE121;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Mute after inactivity" FontSize="14" />
                             <TextBlock
@@ -79,7 +79,7 @@
                 CornerRadius="8">
                 <StackPanel Spacing="0" HorizontalAlignment="Stretch">
                     <Grid Padding="16,16" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
-                        <FontIcon Grid.Column="0" Glyph="&#xE767;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" IsTextDecorative="True" />
+                        <FontIcon Grid.Column="0" Glyph="&#xE767;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Enable Hush Little PC" FontSize="14" />
                             <TextBlock Text="Allow automatic muting while you are away." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
@@ -88,7 +88,7 @@
                     </Grid>
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="24,0" />
                     <Grid Padding="16,16" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
-                        <FontIcon Grid.Column="0" Glyph="&#xE765;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" IsTextDecorative="True" />
+                        <FontIcon Grid.Column="0" Glyph="&#xE765;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Unmute when I come back" FontSize="14" />
                             <TextBlock Text="Only reverses a mute made by Hush Little PC." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
@@ -97,7 +97,7 @@
                     </Grid>
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="24,0" />
                     <Grid Padding="16,16" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
-                        <FontIcon Grid.Column="0" Glyph="&#xE8D6;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" IsTextDecorative="True" />
+                        <FontIcon Grid.Column="0" Glyph="&#xE8D6;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Stay unmuted while audio is playing" FontSize="14" />
                             <TextBlock Text="Avoid muting while sound is being output." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
@@ -106,7 +106,7 @@
                     </Grid>
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="24,0" />
                     <Grid Padding="16,16" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
-                        <FontIcon Grid.Column="0" Glyph="&#xE895;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" IsTextDecorative="True" />
+                        <FontIcon Grid.Column="0" Glyph="&#xE895;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Mute when the output device changes" FontSize="14" />
                             <TextBlock Text="Mute a newly selected playback device." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
@@ -124,7 +124,7 @@
                 CornerRadius="8">
                 <StackPanel Spacing="0" HorizontalAlignment="Stretch">
                     <Grid Padding="16,16" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
-                        <FontIcon Grid.Column="0" Glyph="&#xEA8F;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" IsTextDecorative="True" />
+                        <FontIcon Grid.Column="0" Glyph="&#xEA8F;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Show mute notifications" FontSize="14" />
                             <TextBlock Text="Show a Windows notification when audio is muted." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
@@ -133,7 +133,7 @@
                     </Grid>
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="24,0" />
                     <Grid Padding="16,16" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" MinHeight="76" HorizontalAlignment="Stretch">
-                        <FontIcon Grid.Column="0" Glyph="&#xE768;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" IsTextDecorative="True" />
+                        <FontIcon Grid.Column="0" Glyph="&#xE768;" FontFamily="Segoe Fluent Icons" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                             <TextBlock Text="Run at startup" FontSize="14" />
                             <TextBlock Text="Start Hush Little PC when you sign in to Windows." FontSize="12" Opacity="0.72" TextWrapping="Wrap" />
