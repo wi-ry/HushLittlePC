@@ -30,23 +30,10 @@ public static class AppDataPaths
             if (_dataDirectory is not null)
                 return;
 
-            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var roamingAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var fallbackDirectory = Path.Combine(localAppData, "HushLittlePC");
-            var executableDirectory = Path.GetDirectoryName(Environment.ProcessPath ?? string.Empty);
-
-            if (!string.IsNullOrWhiteSpace(executableDirectory) &&
-                TryCreateWritableDirectory(Path.Combine(executableDirectory, "Data")))
-            {
-                _dataDirectory = Path.Combine(executableDirectory, "Data");
-            }
-            else
-            {
-                Directory.CreateDirectory(fallbackDirectory);
-                _dataDirectory = fallbackDirectory;
-            }
-
-            MigrateExistingData(roamingAppData, localAppData, _dataDirectory);
+            _dataDirectory = ResolveDataDirectory(
+                Environment.ProcessPath,
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
         }
     }
 
@@ -54,6 +41,26 @@ public static class AppDataPaths
     {
         if (_dataDirectory is null)
             Initialize();
+    }
+
+    internal static string ResolveDataDirectory(
+        string? processPath,
+        string roamingAppData,
+        string localAppData)
+    {
+        var fallbackDirectory = Path.Combine(localAppData, "HushLittlePC");
+        var executableDirectory = Path.GetDirectoryName(processPath ?? string.Empty);
+        var portableDirectory = string.IsNullOrWhiteSpace(executableDirectory)
+            ? null
+            : Path.Combine(executableDirectory, "Data");
+
+        var dataDirectory = portableDirectory is not null && TryCreateWritableDirectory(portableDirectory)
+            ? portableDirectory
+            : fallbackDirectory;
+
+        Directory.CreateDirectory(dataDirectory);
+        MigrateExistingData(roamingAppData, localAppData, dataDirectory);
+        return dataDirectory;
     }
 
     private static bool TryCreateWritableDirectory(string directory)
