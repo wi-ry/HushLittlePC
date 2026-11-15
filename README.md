@@ -34,7 +34,6 @@ The portable and Microsoft Store distributions include the required .NET and Win
 
 For a portable installation, settings and logs are stored in a `Data` folder beside the executable when that location is writable. If it is not (for example, under `Program Files`), the app uses `%LocalAppData%\HushLittlePC` instead. Existing settings and logs are copied into the new location on first launch; the original files are left in place.
 
-Running the executable with `--uninstall` removes Hush Little PC's per-user Windows startup registration without deleting settings or logs. WinGet's `portable` uninstall does not invoke application-defined cleanup commands, and its default `purgePortablePackage` setting is off, so the `Data` folder is normally retained when uninstalling through WinGet.
 
 ## Install
 
