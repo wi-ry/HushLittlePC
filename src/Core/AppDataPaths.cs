@@ -1,8 +1,7 @@
 namespace HushLittlePC;
 
 /// <summary>
-/// Resolves the application's writable data directory. Portable builds keep data beside the
-/// executable; packaged or non-writable locations fall back to the user's local app-data folder.
+/// Resolves the application's writable data directory under the current user's local app-data folder.
 /// </summary>
 public static class AppDataPaths
 {
@@ -48,52 +47,32 @@ public static class AppDataPaths
         string roamingAppData,
         string localAppData)
     {
-        var fallbackDirectory = Path.Combine(localAppData, "HushLittlePC");
-        var executableDirectory = Path.GetDirectoryName(processPath ?? string.Empty);
-        var portableDirectory = string.IsNullOrWhiteSpace(executableDirectory)
-            ? null
-            : Path.Combine(executableDirectory, "Data");
-
-        var dataDirectory = portableDirectory is not null && TryCreateWritableDirectory(portableDirectory)
-            ? portableDirectory
-            : fallbackDirectory;
-
+        var dataDirectory = Path.Combine(localAppData, "HushLittlePC");
         Directory.CreateDirectory(dataDirectory);
-        MigrateExistingData(roamingAppData, localAppData, dataDirectory);
+
+        var executableDirectory = Path.GetDirectoryName(processPath ?? string.Empty);
+        if (!string.IsNullOrWhiteSpace(executableDirectory))
+        {
+            var previousStandaloneData = Path.Combine(executableDirectory, "Data");
+            MigrateDirectory(previousStandaloneData, dataDirectory);
+        }
+
+        MigrateExistingData(roamingAppData, dataDirectory);
         return dataDirectory;
     }
 
-    private static bool TryCreateWritableDirectory(string directory)
-    {
-        try
-        {
-            Directory.CreateDirectory(directory);
-            var probePath = Path.Combine(directory, $".write-test-{Guid.NewGuid():N}");
-            using (new FileStream(probePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            {
-            }
-
-            File.Delete(probePath);
-            return true;
-        }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException or System.Security.SecurityException)
-        {
-            return false;
-        }
-    }
-
-    private static void MigrateExistingData(
-        string roamingAppData,
-        string localAppData,
-        string destinationDirectory)
+    private static void MigrateExistingData(string roamingAppData, string destinationDirectory)
     {
         CopyIfMissing(
             Path.Combine(roamingAppData, "HushLittlePC", "settings.json"),
             Path.Combine(destinationDirectory, "settings.json"));
+    }
 
+    private static void MigrateDirectory(string sourceDirectory, string destinationDirectory)
+    {
         foreach (var fileName in new[]
         {
+            "settings.json",
             "app.log",
             "app.old.log",
             "winui-app.log",
@@ -101,7 +80,7 @@ public static class AppDataPaths
         })
         {
             CopyIfMissing(
-                Path.Combine(localAppData, "HushLittlePC", fileName),
+                Path.Combine(sourceDirectory, fileName),
                 Path.Combine(destinationDirectory, fileName));
         }
     }
