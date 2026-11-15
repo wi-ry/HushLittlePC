@@ -14,6 +14,11 @@ static class PortableStartupRegistration
         if (enable && !string.IsNullOrWhiteSpace(processPath))
             runKey.SetValue(ValueName, $"\"{processPath}\" --background", RegistryValueKind.String);
         else
-            runKey.DeleteValue(ValueName, throwOnMissingValue: false);
+            Remove(runKey);
+    }
+
+    public static void Remove(RegistryKey runKey)
+    {
+        runKey.DeleteValue(ValueName, throwOnMissingValue: false);
     }
 }
