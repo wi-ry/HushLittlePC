@@ -1,4 +1,3 @@
-
 using NAudio.CoreAudioApi;
 
 namespace HushLittlePC;
@@ -90,23 +89,32 @@ class AudioController : IDisposable
         }
     }
 
-    /// <summary>True if the device is currently outputting audible sound.</summary>
-    public bool IsPlaying
+    /// <summary>Reads the current audio level and identity of the default multimedia playback endpoint.</summary>
+    public PlaybackStatus GetPlaybackStatus()
     {
-        get
+        try
         {
-            try { using var d = GetDevice(); return (d?.AudioMeterInformation.MasterPeakValue ?? 0f) > 0.001f; }
-            catch (Exception exception)
-            {
-                AppLog.Warning("Unable to read playback device audio level.", exception);
-                return false;
-            }
+            using var device = GetDevice();
+            if (device is null)
+                return new PlaybackStatus(false, null, null, null);
+
+            var deviceId = device.ID;
+            var deviceName = device.FriendlyName;
+            var peakLevel = device.AudioMeterInformation.MasterPeakValue;
+            return new PlaybackStatus(true, deviceId, deviceName, peakLevel);
+        }
+        catch (Exception exception)
+        {
+            AppLog.Warning("Unable to read the default playback device audio level.", exception);
+            return new PlaybackStatus(false, null, null, null);
         }
     }
 
     public void Dispose() => _enumerator.Dispose();
 }
 
-/// <summary>Raises <see cref="DefaultOutputChanged"/> when Windows switches the default playback device
-/// (Bluetooth connects, USB/HDMI device appears or disappears, the user picks another output...).
-/// Events arrive on a COM thread, so subscribers should marshal to the UI thread.</summary>
+/// <summary>Snapshot of the default playback endpoint's audio meter at one point in time.</summary>
+readonly record struct PlaybackStatus(bool Available, string? DeviceId, string? DeviceName, float? PeakLevel)
+{
+    public bool IsPlaying => PeakLevel is > 0.001f;
+}
