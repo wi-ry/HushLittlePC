@@ -86,6 +86,11 @@ public partial class App : Microsoft.UI.Xaml.Application
         AppLog.Info("Loading settings and initializing background services.");
         var isFirstRun = SettingsStore.IsFirstRun();
         var settings = SettingsStore.Load();
+        AppLog.Info(
+            $"Settings loaded: Enabled={settings.Enabled}, IdleMinutes={settings.IdleMinutes}, " +
+            $"SkipWhileAudioPlaying={settings.SkipWhileAudioPlaying}, UnmuteOnActivity={settings.UnmuteOnActivity}, " +
+            $"MuteOnDeviceChange={settings.MuteOnDeviceChange}, ShowNotification={settings.ShowNotification}.");
+
         if (isFirstRun)
         {
             // Persist defaults now so the welcome window appears only once, even if nothing is changed.
